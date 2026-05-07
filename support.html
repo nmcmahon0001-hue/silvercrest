@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SilverCrest — Help & Support</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    .faq-item { border-bottom: 1px solid #f1f5f9; }
+    .faq-answer { display: none; }
+    .faq-answer.open { display: block; }
+    .faq-icon { transition: transform 0.2s ease; }
+    .faq-icon.open { transform: rotate(180deg); }
+    .chat-bubble-user {
+      background: #4f46e5; color: white; border-radius: 18px 18px 4px 18px;
+      padding: 10px 16px; font-size: 14px; max-width: 75%; align-self: flex-end;
+    }
+    .chat-bubble-agent {
+      background: white; color: #1e293b; border-radius: 18px 18px 18px 4px;
+      padding: 10px 16px; font-size: 14px; max-width: 75%; align-self: flex-start;
+      border: 1px solid #f1f5f9; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .chat-messages {
+      display: flex; flex-direction: column; gap: 12px;
+      padding: 20px; height: 320px; overflow-y: auto; background: #f8fafc;
+    }
+    .typing-dot {
+      width: 6px; height: 6px; background: #94a3b8; border-radius: 50%;
+      animation: typingBounce 1.2s infinite ease-in-out;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typingBounce {
+      0%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-6px); }
+    }
+  </style>
+</head>
+<body style="background:#f8fafc;min-height:100vh;">
+
+  <!-- TOP BAR -->
+  <div class="bg-white border-b border-gray-100 px-4 lg:px-8 py-4 flex items-center gap-3 sticky top-0 z-30">
+    <button onclick="history.back()"
+      class="w-9 h-9 bg-gray-50 border border-gray-200 rounded-xl flex items-center justify-center hover:bg-gray-100 transition">
+      <i data-lucide="arrow-left" class="w-5 h-5 text-gray-600"></i>
+    </button>
+    <div class="flex items-center gap-2">
+      <div class="w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center">
+        <span class="text-white font-bold text-xs">S</span>
+      </div>
+      <span class="text-gray-900 font-bold">SilverCrest</span>
+    </div>
+    <span class="text-gray-400 text-sm">/ Help & Support</span>
+  </div>
+
+  <div class="max-w-3xl mx-auto px-4 lg:px-8 py-8 space-y-6">
+
+    <!-- Hero -->
+    <div class="bg-gradient-to-r from-indigo-600 to-violet-600 rounded-2xl p-6 text-white">
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+          <i data-lucide="help-circle" class="w-5 h-5 text-white"></i>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold">How can we help you?</h1>
+          <p class="text-indigo-200 text-xs">We're here 24/7 for you</p>
+        </div>
+      </div>
+      <!-- Search -->
+      <div class="flex items-center gap-2 bg-white/10 border border-white/20 rounded-xl px-4 py-3 mt-4">
+        <i data-lucide="search" class="w-4 h-4 text-white/60"></i>
+        <input type="text" id="faq-search" placeholder="Search for help..."
+          oninput="filterFAQ()"
+          class="bg-transparent text-white placeholder-white/50 text-sm outline-none flex-1"/>
+      </div>
+    </div>
+
+    <!-- Quick Help Topics -->
+    <div>
+      <h2 class="text-base font-bold text-gray-900 mb-3">Browse Topics</h2>
+      <div class="grid grid-cols-2 lg:grid-cols-3 gap-3">
+        <button onclick="scrollToFAQ('account')"
+          class="flex items-center gap-3 bg-white border border-gray-100 rounded-2xl p-4 hover:border-indigo-200 hover:bg-indigo-50 transition text-left">
+          <div class="w-9 h-9 bg-indigo-100 rounded-xl flex items-center justify-center flex-shrink-0">
+            <i data-lucide="user" class="w-4 h-4 text-indigo-600"></i>
+          </div>
+          <span class="text-sm font-semibold text-gray-700">Account</span>
+        </button>
+        <button onclick="scrollToFAQ('transfers')"
+          class="flex items-center gap-3 bg-white border border-gray-100 rounded-2xl p-4 hover:border-indigo-200 hover:bg-indigo-50 transition text-left">
+          <div class="w-9 h-9 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
+            <i data-lucide="send" class="w-4 h-4 text-green-600"></i>
+          </div>
+          <span class="text-sm font-semibold text-gray-700">Transfers</span>
+        </button>
+        <button onclick="scrollToFAQ('cards')"
+          class="flex items-center gap-3 bg-white border border-gray-100 rounded-2xl p-4 hover:border-indigo-200 hover:bg-indigo-50 transition text-left">
+          <div class="w-9 h-9 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
+            <i data-lucide="credit-card" class="w-4 h-4 text-purple-600"></i>
+          </div>
+          <span class="text-sm font-semibold text-gray-700">Cards</span>
+        </button>
+        <button onclick="scrollToFAQ('crypto')"
+          class="flex items-center gap-3 bg-white border border-gray-100 rounded-2xl p-4 hover:border-indigo-200 hover:bg-indigo-50 transition text-left">
+          <div class="w-9 h-9 bg-yellow-100 rounded-xl flex items-center justify-center flex-shrink-0">
+            <i data-lucide="bitcoin" class="w-4 h-4 text-yellow-600"></i>
+          </div>
+          <span class="text-sm font-semibold text-gray-700">Crypto</span>
+        </button>
+        <button onclick="scrollToFAQ('security')"
+          class="flex items-center gap-3 bg-white border border-gray-100 rounded-2xl p-4 hover:border-indigo-200 hover:bg-indigo-50 transition text-left">
+          <div class="w-9 h-9 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0">
+            <i data-lucide="shield-check" class="w-4 h-4 text-red-500"></i>
+          </div>
+          <span class="text-sm font-semibold text-gray-700">Security</span>
+        </button>
+        <button onclick="scrollToFAQ('loans')"
+          class="flex items-center gap-3 bg-white border border-gray-100 rounded-2xl p-4 hover:border-indigo-200 hover:bg-indigo-50 transition text-left">
+          <div class="w-9 h-9 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
+            <i data-lucide="landmark" class="w-4 h-4 text-blue-600"></i>
+          </div>
+          <span class="text-sm font-semibold text-gray-700">Loans</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- FAQ Section -->
+    <div id="faq-container">
+      <h2 class="text-base font-bold text-gray-900 mb-3">Frequently Asked Questions</h2>
+      <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden" id="faq-list">
+
+        <!-- ACCOUNT -->
+        <div class="faq-item" data-category="account" data-q="how do i create an account">
+          <button class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition"
+            onclick="toggleFAQ(this)">
+            <span class="text-sm font-semibold text-gray-900">How do I create a SilverCrest account?</span>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 faq-icon flex-shrink-0"></i>
+          </button>
+          <div class="faq-answer px-5 pb-4">
+            <p class="text-sm text-gray-500 leading-relaxed">Click "Get started free" on our homepage, enter your full name, email address, and a password of at least 6 characters. Your account is created instantly and you receive a $1,000 welcome balance to get started.</p>
+          </div>
+        </div>
+
+        <div class="faq-item" data-category="account" data-q="how do i find my account number">
+          <button class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition"
+            onclick="toggleFAQ(this)">
+            <span class="text-sm font-semibold text-gray-900">Where do I find my account number?</span>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 faq-icon flex-shrink-0"></i>
+          </button>
+          <div class="faq-answer px-5 pb-4">
+            <p class="text-sm text-gray-500 leading-relaxed">Your account number is displayed on your main dashboard under the "Account Number" card. You can also find it in the Profile section. Tap the "Copy" button to copy it instantly and share with anyone who needs to send you money.</p>
+          </div>
+        </div>
+
+        <div class="faq-item" data-category="account" data-q="how do i update my profile">
+          <button class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition"
+            onclick="toggleFAQ(this)">
+            <span class="text-sm font-semibold text-gray-900">How do I update my profile information?</span>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 faq-icon flex-shrink-0"></i>
+          </button>
+          <div class="faq-answer px-5 pb-4">
+            <p class="text-sm text-gray-500 leading-relaxed">Go to the Profile section from the sidebar or bottom navigation. Currently, profile viewing is available. For changes to your name or email, please contact us at support@silvercrestfin.com.</p>
+          </div>
+        </div>
+
+        <!-- TRANSFERS -->
+        <div class="faq-item" data-category="transfers" data-q="how do i send money">
+          <button class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition"
+            onclick="toggleFAQ(this)">
+            <span class="text-sm font-semibold text-gray-900">How do I send money to someone?</span>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 faq-icon flex-shrink-0"></i>
+          </button>
+          <div class="faq-answer px-5 pb-4">
+            <p class="text-sm text-gray-500 leading-relaxed">Click "Send Money" from the dashboard or sidebar. Enter the recipient's registered email address, the amount you want to send, and an optional note. Click "Send Money" and the transfer happens instantly. Both you and the recipient will see the transaction in your history.</p>
+          </div>
+        </div>
+
+        <div class="faq-item" data-category="transfers" data-q="transfer failed not received">
+          <button class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition"
+            onclick="toggleFAQ(this)">
+            <span class="text-sm font-semibold text-gray-900">My transfer failed. What should I do?</span>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 faq-icon flex-shrink-0"></i>
+          </button>
+          <div class="faq-answer px-5 pb-4">
+            <p class="text-sm text-gray-500 leading-relaxed">First check that the recipient's email is correct and that they have a SilverCrest account. Also ensure you have sufficient balance. If the problem persists, contact us at support@silvercrestfin.com with the details and we'll resolve it within 24 hours.</p>
+          </div>
+        </div>
+
+        <div class="faq-item" data-category="transfers" data-q="transfer limits how much can i send">
+          <button class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition"
+            onclick="toggleFAQ(this)">
+            <span class="text-sm font-semibold text-gray-900">Are there transfer limits?</span>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 faq-icon flex-shrink-0"></i>
+          </button>
+          <div class="faq-answer px-5 pb-4">
+            <p class="text-sm text-gray-500 leading-relaxed">You can send up to your available balance in a single transfer. There are no daily limits for verified accounts. Transfers are instant and completely free between SilverCrest users.</p>
+          </div>
+        </div>
+
+        <!-- CARDS -->
+        <div class="faq-item" data-category="cards" data-q="how to get a card virtual physical">
+          <button class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition"
+            onclick="toggleFAQ(this)">
+            <span class="text-sm font-semibold text-gray-900">How do I get a SilverCrest card?</span>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 faq-icon flex-shrink-0"></i>
+          </button>
+          <div class="faq-answer px-5 pb-4">
+            <p class="text-sm text-gray-500 leading-relaxed">Go to "Cards" in the sidebar. You can request a free Virtual Card (instant), a Physical Debit Card ($5, delivered in 3–5 business days), or apply for a Credit Card. Virtual cards are ready immediately for online purchases.</p>
+          </div>
+        </div>
+
+        <div class="faq-item" data-category="cards" data-q="add external card link visa mastercard">
+          <button class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition"
+            onclick="toggleFAQ(this)">
+            <span class="text-sm font-semibold text-gray-900">Can I add my existing bank card?</span>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 faq-icon flex-shrink-0"></i>
+          </button>
+          <div class="faq-answer px-5 pb-4">
+            <p class="text-sm text-gray-500 leading-relaxed">Yes! Go to Cards → "Add External Card". We accept Visa, Mastercard, and Verve cards. Enter your card number, expiry date, CVV, and name. Your card is linked securely using bank-grade encryption.</p>
+          </div>
+        </div>
+
+        <!-- CRYPTO -->
+        <div class="faq-item" data-category="crypto" data-q="how to buy bitcoin ethereum crypto">
+          <button class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition"
+            onclick="toggleFAQ(this)">
+            <span class="text-sm font-semibold text-gray-900">How do I buy cryptocurrency?</span>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 faq-icon flex-shrink-0"></i>
+          </button>
+          <div class="faq-answer px-5 pb-4">
+            <p class="text-sm text-gray-500 leading-relaxed">Go to "Crypto" in the sidebar. Select the coin you want (Bitcoin, Ethereum, Solana, or BNB), choose "Buy", enter the dollar amount, and confirm. The purchase is deducted from your balance instantly. Note: this is a simulated feature for demonstration purposes.</p>
+          </div>
+        </div>
+
+        <div class="faq-item" data-category="crypto" data-q="how to sell crypto coins">
+          <button class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition"
+            onclick="toggleFAQ(this)">
+            <span class="text-sm font-semibold text-gray-900">How do I sell my crypto?</span>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 faq-icon flex-shrink-0"></i>
+          </button>
+          <div class="faq-answer px-5 pb-4">
+            <p class="text-sm text-gray-500 leading-relaxed">In the Crypto section, select the coin, choose "Sell", and enter the dollar amount you want to receive. The equivalent crypto will be deducted from your holdings and the cash added to your balance.</p>
+          </div>
+        </div>
+
+        <!-- SECURITY -->
+        <div class="faq-item" data-category="security" data-q="is my money safe secure">
+          <button class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition"
+            onclick="toggleFAQ(this)">
+            <span class="text-sm font-semibold text-gray-900">Is my money and data safe?</span>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 faq-icon flex-shrink-0"></i>
+          </button>
+          <div class="faq-answer px-5 pb-4">
+            <p class="text-sm text-gray-500 leading-relaxed">Yes. SilverCrest uses 256-bit SSL encryption, the same standard used by major banks worldwide. Your account is protected by Supabase Auth, and Row Level Security ensures you can only ever access your own data. We never store passwords in plain text.</p>
+          </div>
+        </div>
+
+        <div class="faq-item" data-category="security" data-q="forgot password reset login">
+          <button class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition"
+            onclick="toggleFAQ(this)">
+            <span class="text-sm font-semibold text-gray-900">I forgot my password. How do I reset it?</span>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 faq-icon flex-shrink-0"></i>
+          </button>
+          <div class="faq-answer px-5 pb-4">
+            <p class="text-sm text-gray-500 leading-relaxed">Password reset is coming soon. In the meantime, please email us at support@silvercrestfin.com with your registered email address and we'll help you regain access within 24 hours.</p>
+          </div>
+        </div>
+
+        <div class="faq-item" data-category="security" data-q="suspicious activity fraud unauthorized">
+          <button class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition"
+            onclick="toggleFAQ(this)">
+            <span class="text-sm font-semibold text-gray-900">I see suspicious activity on my account</span>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 faq-icon flex-shrink-0"></i>
+          </button>
+          <div class="faq-answer px-5 pb-4">
+            <p class="text-sm text-gray-500 leading-relaxed">If you notice any unauthorized transactions or suspicious activity, contact us immediately at support@silvercrestfin.com. Include your account email and details of the suspicious activity. We take security incidents very seriously and respond within 1 hour.</p>
+          </div>
+        </div>
+
+        <!-- LOANS -->
+        <div class="faq-item" data-category="loans" data-q="how to apply for a loan">
+          <button class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition"
+            onclick="toggleFAQ(this)">
+            <span class="text-sm font-semibold text-gray-900">How do I apply for a loan?</span>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 faq-icon flex-shrink-0"></i>
+          </button>
+          <div class="faq-answer px-5 pb-4">
+            <p class="text-sm text-gray-500 leading-relaxed">Go to "Loans" in the sidebar. Choose your loan type (Personal, Business, or Mortgage), enter the amount, select your repayment period, and review the loan summary. Click "Apply Now" to submit your application. We review and respond within 24 hours.</p>
+          </div>
+        </div>
+
+        <div class="faq-item" data-category="loans" data-q="loan interest rate how much">
+          <button class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition"
+            onclick="toggleFAQ(this)">
+            <span class="text-sm font-semibold text-gray-900">What are the loan interest rates?</span>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 faq-icon flex-shrink-0"></i>
+          </button>
+          <div class="faq-answer px-5 pb-4">
+            <p class="text-sm text-gray-500 leading-relaxed">Personal Loans start at 12% APR, Business Loans at 9% APR, and Mortgages at 6.5% APR. The loan calculator in the app shows your exact monthly payments and total interest before you apply.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- No results -->
+      <div id="faq-empty" class="hidden text-center py-10 bg-white rounded-2xl border border-gray-100 mt-3">
+        <i data-lucide="search" class="w-10 h-10 text-gray-200 mx-auto mb-3"></i>
+        <p class="text-gray-500 text-sm font-medium">No results found</p>
+        <p class="text-gray-400 text-xs mt-1">Try different keywords or contact support below</p>
+      </div>
+    </div>
+
+    <!-- Contact Support -->
+    <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+      <div class="px-5 py-4 border-b border-gray-100">
+        <h2 class="text-base font-bold text-gray-900">Contact Support</h2>
+        <p class="text-xs text-gray-400 mt-0.5">Can't find your answer? We're here to help</p>
+      </div>
+
+      <!-- Email Support -->
+      <div class="p-5 border-b border-gray-100">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center flex-shrink-0">
+            <i data-lucide="mail" class="w-5 h-5 text-indigo-600"></i>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-gray-900">Email Support</p>
+            <p class="text-xs text-gray-400">Response within 24 hours</p>
+          </div>
+        </div>
+        <a href="mailto:support@silvercrestfin.com"
+          class="flex items-center justify-between bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3 hover:bg-indigo-100 transition">
+          <span class="text-sm font-semibold text-indigo-600">support@silvercrestfin.com</span>
+          <i data-lucide="external-link" class="w-4 h-4 text-indigo-400"></i>
+        </a>
+      </div>
+
+      <!-- Live Chat -->
+      <div class="p-5">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
+            <i data-lucide="message-circle" class="w-5 h-5 text-green-600"></i>
+          </div>
+          <div class="flex-1">
+            <p class="text-sm font-semibold text-gray-900">Live Chat</p>
+            <p class="text-xs text-gray-400">Instant replies from our team</p>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+            <span class="text-xs text-green-500 font-semibold">Online</span>
+          </div>
+        </div>
+
+        <!-- Chat Window -->
+        <div class="border border-gray-100 rounded-2xl overflow-hidden" id="chat-section">
+          <!-- Chat messages -->
+          <div class="chat-messages" id="chat-messages">
+            <div class="chat-bubble-agent">
+              👋 Hi there! Welcome to SilverCrest Support. How can I help you today?
+            </div>
+          </div>
+
+          <!-- Quick reply buttons -->
+          <div class="bg-white border-t border-gray-100 p-3">
+            <p class="text-xs text-gray-400 mb-2 font-medium">Quick questions:</p>
+            <div class="flex flex-wrap gap-2 mb-3" id="quick-replies">
+              <button onclick="sendQuickReply('How do I send money?')"
+                class="text-xs bg-gray-50 border border-gray-200 text-gray-600 px-3 py-1.5 rounded-full hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-600 transition">
+                How do I send money?
+              </button>
+              <button onclick="sendQuickReply('My transfer failed')"
+                class="text-xs bg-gray-50 border border-gray-200 text-gray-600 px-3 py-1.5 rounded-full hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-600 transition">
+                My transfer failed
+              </button>
+              <button onclick="sendQuickReply('How do I get a card?')"
+                class="text-xs bg-gray-50 border border-gray-200 text-gray-600 px-3 py-1.5 rounded-full hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-600 transition">
+                How do I get a card?
+              </button>
+              <button onclick="sendQuickReply('I forgot my password')"
+                class="text-xs bg-gray-50 border border-gray-200 text-gray-600 px-3 py-1.5 rounded-full hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-600 transition">
+                I forgot my password
+              </button>
+            </div>
+
+            <!-- Message input -->
+            <div class="flex items-center gap-2">
+              <input type="text" id="chat-input" placeholder="Type your message..."
+                onkeypress="if(event.key==='Enter') sendMessage()"
+                class="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-400 transition"/>
+              <button onclick="sendMessage()"
+                class="w-10 h-10 bg-indigo-600 hover:bg-indigo-700 rounded-xl flex items-center justify-center transition flex-shrink-0">
+                <i data-lucide="send" class="w-4 h-4 text-white"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Back to app -->
+    <div class="text-center pb-4">
+      <a href="dashboard.html"
+        class="inline-flex items-center gap-2 text-sm text-indigo-600 font-medium hover:underline">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        Back to Dashboard
+      </a>
+    </div>
+
+  </div>
+
+  <script>
+    // ── FAQ TOGGLE ─────────────────────
+    function toggleFAQ(btn) {
+      const answer = btn.nextElementSibling
+      const icon = btn.querySelector('.faq-icon')
+      const isOpen = answer.classList.contains('open')
+      document.querySelectorAll('.faq-answer.open').forEach(el => {
+        el.classList.remove('open')
+        el.previousElementSibling.querySelector('.faq-icon').classList.remove('open')
+      })
+      if (!isOpen) {
+        answer.classList.add('open')
+        icon.classList.add('open')
+      }
+    }
+
+    // ── FAQ SEARCH ─────────────────────
+    function filterFAQ() {
+      const q = document.getElementById('faq-search').value.toLowerCase()
+      const items = document.querySelectorAll('.faq-item')
+      let visible = 0
+      items.forEach(item => {
+        const text = item.dataset.q || ''
+        const content = item.textContent.toLowerCase()
+        if (!q || text.includes(q) || content.includes(q)) {
+          item.style.display = ''
+          visible++
+        } else {
+          item.style.display = 'none'
+        }
+      })
+      document.getElementById('faq-empty').classList.toggle('hidden', visible > 0)
+    }
+
+    // ── SCROLL TO CATEGORY ─────────────
+    function scrollToFAQ(category) {
+      document.querySelectorAll('.faq-item').forEach(item => {
+        item.style.display = item.dataset.category === category ? '' : 'none'
+      })
+      document.getElementById('faq-search').value = category
+      document.getElementById('faq-container').scrollIntoView({ behavior: 'smooth' })
+      document.getElementById('faq-empty').classList.add('hidden')
+    }
+
+    // ── CHAT SYSTEM ────────────────────
+    const chatResponses = {
+      'how do i send money': 'To send money, go to **Send Money** in the sidebar or tap Send in Quick Actions. Enter the recipient\'s email, amount, and an optional note. Transfers are instant!',
+      'my transfer failed': 'Sorry to hear that! Please check that the recipient has a SilverCrest account and that their email is correct. Also ensure you have sufficient balance. If the issue persists, email us at support@silvercrestfin.com',
+      'how do i get a card': 'Go to **Cards** in the sidebar. You can get a free Virtual Card instantly, or request a Physical Debit Card for $5 (delivered in 3–5 days). You can also apply for a Credit Card!',
+      'i forgot my password': 'Password reset is coming soon! For now, email us at support@silvercrestfin.com with your registered email address and we\'ll help you within 24 hours.',
+      'default': 'Thanks for your message! Our support team will get back to you shortly. For urgent matters, email us directly at support@silvercrestfin.com — we respond within 24 hours.'
+    }
+
+    function addMessage(text, isUser = false) {
+      const messagesEl = document.getElementById('chat-messages')
+      const bubble = document.createElement('div')
+      bubble.className = isUser ? 'chat-bubble-user' : 'chat-bubble-agent'
+      bubble.textContent = text
+      messagesEl.appendChild(bubble)
+      messagesEl.scrollTop = messagesEl.scrollHeight
+    }
+
+    function showTyping() {
+      const messagesEl = document.getElementById('chat-messages')
+      const typingEl = document.createElement('div')
+      typingEl.id = 'typing-indicator'
+      typingEl.className = 'chat-bubble-agent'
+      typingEl.style.cssText = 'display:flex;align-items:center;gap:4px;padding:12px 16px;'
+      typingEl.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>'
+      messagesEl.appendChild(typingEl)
+      messagesEl.scrollTop = messagesEl.scrollHeight
+    }
+
+    function hideTyping() {
+      const el = document.getElementById('typing-indicator')
+      if (el) el.remove()
+    }
+
+    function getResponse(message) {
+      const lower = message.toLowerCase()
+      for (const [key, response] of Object.entries(chatResponses)) {
+        if (key !== 'default' && lower.includes(key.split(' ')[0])) {
+          return response
+        }
+      }
+      return chatResponses['default']
+    }
+
+    function sendMessage() {
+      const input = document.getElementById('chat-input')
+      const text = input.value.trim()
+      if (!text) return
+      addMessage(text, true)
+      input.value = ''
+      showTyping()
+      setTimeout(() => {
+        hideTyping()
+        addMessage(getResponse(text))
+      }, 1200)
+    }
+
+    function sendQuickReply(text) {
+      addMessage(text, true)
+      showTyping()
+      setTimeout(() => {
+        hideTyping()
+        addMessage(getResponse(text))
+      }, 1200)
+    }
+
+    // Init icons
+    lucide.createIcons()
+  </script>
+</body>
+</html>

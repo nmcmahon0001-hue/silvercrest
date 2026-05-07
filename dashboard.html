@@ -1,528 +1,1519 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SilverCrest — Help & Support</title>
+  <title>SilverCrest — Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <style>
     * { font-family: 'Inter', sans-serif; }
-    .faq-item { border-bottom: 1px solid #f1f5f9; }
-    .faq-answer { display: none; }
-    .faq-answer.open { display: block; }
-    .faq-icon { transition: transform 0.2s ease; }
-    .faq-icon.open { transform: rotate(180deg); }
-    .chat-bubble-user {
-      background: #4f46e5; color: white; border-radius: 18px 18px 4px 18px;
-      padding: 10px 16px; font-size: 14px; max-width: 75%; align-self: flex-end;
+
+    .sidebar {
+      width: 260px; position: fixed; top: 0; left: 0; bottom: 0;
+      background: white; border-right: 1px solid #f1f5f9;
+      display: flex; flex-direction: column; padding: 20px;
+      z-index: 40; transition: transform 0.3s ease;
     }
-    .chat-bubble-agent {
-      background: white; color: #1e293b; border-radius: 18px 18px 18px 4px;
-      padding: 10px 16px; font-size: 14px; max-width: 75%; align-self: flex-start;
-      border: 1px solid #f1f5f9; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    .sidebar-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.4); z-index: 39;
+      backdrop-filter: blur(2px);
     }
-    .chat-messages {
-      display: flex; flex-direction: column; gap: 12px;
-      padding: 20px; height: 320px; overflow-y: auto; background: #f8fafc;
+    .main-content { margin-left: 260px; min-height: 100vh; }
+
+    @media (max-width: 1024px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .sidebar-overlay.open { display: block; }
+      .main-content { margin-left: 0; padding-bottom: 80px; }
+      .mobile-nav { display: flex !important; }
+      .desktop-topbar { display: none !important; }
     }
-    .typing-dot {
-      width: 6px; height: 6px; background: #94a3b8; border-radius: 50%;
-      animation: typingBounce 1.2s infinite ease-in-out;
+    @media (min-width: 1025px) {
+      .mobile-topbar { display: none !important; }
     }
-    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-    @keyframes typingBounce {
-      0%, 80%, 100% { transform: translateY(0); }
-      40% { transform: translateY(-6px); }
+
+    .nav-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 14px; border-radius: 12px;
+      color: #64748b; font-size: 14px; font-weight: 500;
+      cursor: pointer; transition: all 0.2s ease;
+      border: none; background: none; width: 100%; text-align: left;
     }
+    .nav-item:hover { background: #f1f5f9; color: #1e293b; }
+    .nav-item.active { background: #eef2ff; color: #4f46e5; }
+
+    .balance-card {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      border-radius: 20px; padding: 24px; color: white;
+      position: relative; overflow: hidden;
+    }
+    .balance-card::before {
+      content: ''; position: absolute; width: 250px; height: 250px;
+      border-radius: 50%; background: rgba(255,255,255,0.06);
+      top: -80px; right: -60px;
+    }
+    .balance-card::after {
+      content: ''; position: absolute; width: 180px; height: 180px;
+      border-radius: 50%; background: rgba(255,255,255,0.04);
+      bottom: -60px; left: 20px;
+    }
+    .stat-card {
+      background: white; border-radius: 16px;
+      padding: 18px; border: 1px solid #f1f5f9;
+      transition: box-shadow 0.2s ease;
+    }
+    .stat-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+    .section-card {
+      background: white; border-radius: 20px;
+      padding: 20px; border: 1px solid #f1f5f9;
+    }
+    .quick-action {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 8px; padding: 16px 8px; border-radius: 16px;
+      background: #f8fafc; border: 1px solid #f1f5f9;
+      cursor: pointer; transition: all 0.2s ease; text-align: center;
+    }
+    .quick-action:hover { background: #eef2ff; border-color: #c7d2fe; transform: translateY(-2px); }
+    .quick-action-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .tx-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 0; border-bottom: 1px solid #f8fafc;
+    }
+    .tx-item:last-child { border-bottom: none; }
+    .tx-icon {
+      width: 40px; height: 40px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .input-field {
+      width: 100%; background: #f8fafc; border: 1px solid #e2e8f0;
+      border-radius: 12px; padding: 12px 16px; font-size: 14px;
+      color: #1e293b; outline: none; transition: all 0.2s ease;
+      font-family: 'Inter', sans-serif; box-sizing: border-box;
+    }
+    .input-field:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,0.1); }
+    .btn-primary {
+      background: #4f46e5; color: white; border: none;
+      border-radius: 12px; padding: 13px 20px; font-size: 14px;
+      font-weight: 600; cursor: pointer; transition: all 0.2s ease;
+      width: 100%; font-family: 'Inter', sans-serif;
+    }
+    .btn-primary:hover { background: #4338ca; }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
+    }
+    .debit-card {
+      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
+      border-radius: 18px; padding: 22px; color: white;
+      position: relative; overflow: hidden;
+    }
+    .debit-card::before {
+      content:''; position:absolute; width:180px; height:180px;
+      border-radius:50%; background:rgba(255,255,255,0.05); top:-50px; right:-30px;
+    }
+    .shimmer {
+      background: linear-gradient(90deg,#f0f4ff 25%,#e8ecff 50%,#f0f4ff 75%);
+      background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 10px;
+    }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+    /* Mobile top bar */
+    .mobile-topbar {
+      background: white; border-bottom: 1px solid #f1f5f9;
+      padding: 12px 16px;
+      align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 30;
+      display: flex;
+    }
+
+    /* Notification dot */
+    .notif-dot {
+      position: absolute; top: -2px; right: -2px;
+      width: 8px; height: 8px; background: #ef4444;
+      border-radius: 50%; border: 1px solid white;
+    }
+
+    /* Mobile bottom nav */
+    .mobile-nav {
+      display: none; position: fixed; bottom: 0; left: 0; right: 0;
+      background: white; border-top: 1px solid #f1f5f9;
+      padding: 8px 4px 12px; z-index: 50; justify-content: space-around;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+    }
+    .mobile-nav-btn {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      padding: 6px 12px; border-radius: 12px; border: none; background: none;
+      cursor: pointer; transition: all 0.2s ease; min-width: 56px;
+    }
+    .mobile-nav-btn.active { background: #eef2ff; }
+    .mobile-nav-btn span { font-size: 10px; font-weight: 600; color: #94a3b8; }
+    .mobile-nav-btn.active span { color: #4f46e5; }
+    .mobile-nav-btn svg { color: #94a3b8; }
+    .mobile-nav-btn.active svg { color: #4f46e5; }
+
+    /* Eye button */
+    .eye-btn {
+      background: rgba(255,255,255,0.15); border: none; border-radius: 8px;
+      padding: 6px 8px; cursor: pointer; display: flex; align-items: center;
+      gap: 5px; color: white; font-size: 12px; font-weight: 500;
+      transition: background 0.2s ease;
+    }
+    .eye-btn:hover { background: rgba(255,255,255,0.25); }
+
+    /* Icon button */
+    .icon-btn {
+      position: relative; width: 38px; height: 38px;
+      background: #f8fafc; border: 1px solid #f1f5f9;
+      border-radius: 12px; display: flex; align-items: center;
+      justify-content: center; cursor: pointer; transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    .icon-btn:hover { background: #eef2ff; border-color: #c7d2fe; }
   </style>
 </head>
-<body style="background:#f8fafc;min-height:100vh;">
+<body style="background:#f8fafc;">
 
-  <!-- TOP BAR -->
-  <div class="bg-white border-b border-gray-100 px-4 lg:px-8 py-4 flex items-center gap-3 sticky top-0 z-30">
-    <button onclick="history.back()"
-      class="w-9 h-9 bg-gray-50 border border-gray-200 rounded-xl flex items-center justify-center hover:bg-gray-100 transition">
-      <i data-lucide="arrow-left" class="w-5 h-5 text-gray-600"></i>
-    </button>
-    <div class="flex items-center gap-2">
-      <div class="w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center">
-        <span class="text-white font-bold text-xs">S</span>
+  <!-- SIDEBAR OVERLAY -->
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="flex items-center gap-2.5 px-2 mb-8 mt-1">
+      <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+        <span class="text-white font-bold text-sm">S</span>
       </div>
-      <span class="text-gray-900 font-bold">SilverCrest</span>
+      <span class="text-gray-900 font-bold text-lg">SilverCrest</span>
     </div>
-    <span class="text-gray-400 text-sm">/ Help & Support</span>
-  </div>
-
-  <div class="max-w-3xl mx-auto px-4 lg:px-8 py-8 space-y-6">
-
-    <!-- Hero -->
-    <div class="bg-gradient-to-r from-indigo-600 to-violet-600 rounded-2xl p-6 text-white">
-      <div class="flex items-center gap-3 mb-3">
-        <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-          <i data-lucide="help-circle" class="w-5 h-5 text-white"></i>
+    <nav class="flex flex-col gap-1 flex-1">
+      <button class="nav-item active" id="nav-dashboard" onclick="showSection('dashboard');closeSidebar()">
+        <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard
+      </button>
+      <button class="nav-item" id="nav-transfer" onclick="showSection('transfer');closeSidebar()">
+        <i data-lucide="send" class="w-4 h-4"></i> Send Money
+      </button>
+      <button class="nav-item" id="nav-transactions" onclick="showSection('transactions');closeSidebar()">
+        <i data-lucide="list" class="w-4 h-4"></i> Transactions
+      </button>
+      <button class="nav-item" id="nav-crypto" onclick="showSection('crypto');closeSidebar()">
+        <i data-lucide="bitcoin" class="w-4 h-4"></i> Crypto
+      </button>
+      <button class="nav-item" id="nav-cards" onclick="showSection('cards');closeSidebar()">
+        <i data-lucide="credit-card" class="w-4 h-4"></i> Cards
+      </button>
+      <button class="nav-item" id="nav-bills" onclick="showSection('bills');closeSidebar()">
+        <i data-lucide="file-text" class="w-4 h-4"></i> Pay Bills
+      </button>
+      <button class="nav-item" id="nav-loans" onclick="showSection('loans');closeSidebar()">
+        <i data-lucide="landmark" class="w-4 h-4"></i> Loans
+      </button>
+      <div class="mt-4 mb-2 px-2">
+        <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest">Account</p>
+      </div>
+      <button class="nav-item" id="nav-profile" onclick="showSection('profile');closeSidebar()">
+        <i data-lucide="user" class="w-4 h-4"></i> Profile
+      </button>
+      <button class="nav-item" onclick="window.location.href='support.html'">
+        <i data-lucide="help-circle" class="w-4 h-4"></i> Help & Support
+      </button>
+    </nav>
+    <div class="border-t border-gray-100 pt-4 mt-4">
+      <div class="flex items-center gap-3 px-2 mb-3">
+        <div class="w-9 h-9 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
+          <span id="avatar-letter" class="text-indigo-600 font-bold text-sm">U</span>
         </div>
-        <div>
-          <h1 class="text-lg font-bold">How can we help you?</h1>
-          <p class="text-indigo-200 text-xs">We're here 24/7 for you</p>
+        <div class="overflow-hidden">
+          <p id="sidebar-name" class="text-sm font-semibold text-gray-900 truncate">Loading...</p>
+          <p id="sidebar-email" class="text-xs text-gray-400 truncate">...</p>
         </div>
       </div>
-      <!-- Search -->
-      <div class="flex items-center gap-2 bg-white/10 border border-white/20 rounded-xl px-4 py-3 mt-4">
-        <i data-lucide="search" class="w-4 h-4 text-white/60"></i>
-        <input type="text" id="faq-search" placeholder="Search for help..."
-          oninput="filterFAQ()"
-          class="bg-transparent text-white placeholder-white/50 text-sm outline-none flex-1"/>
-      </div>
+      <button onclick="handleLogout()" class="nav-item text-red-500 hover:bg-red-50 hover:text-red-600">
+        <i data-lucide="log-out" class="w-4 h-4"></i> Sign out
+      </button>
     </div>
+  </aside>
 
-    <!-- Quick Help Topics -->
-    <div>
-      <h2 class="text-base font-bold text-gray-900 mb-3">Browse Topics</h2>
-      <div class="grid grid-cols-2 lg:grid-cols-3 gap-3">
-        <button onclick="scrollToFAQ('account')"
-          class="flex items-center gap-3 bg-white border border-gray-100 rounded-2xl p-4 hover:border-indigo-200 hover:bg-indigo-50 transition text-left">
-          <div class="w-9 h-9 bg-indigo-100 rounded-xl flex items-center justify-center flex-shrink-0">
-            <i data-lucide="user" class="w-4 h-4 text-indigo-600"></i>
-          </div>
-          <span class="text-sm font-semibold text-gray-700">Account</span>
-        </button>
-        <button onclick="scrollToFAQ('transfers')"
-          class="flex items-center gap-3 bg-white border border-gray-100 rounded-2xl p-4 hover:border-indigo-200 hover:bg-indigo-50 transition text-left">
-          <div class="w-9 h-9 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
-            <i data-lucide="send" class="w-4 h-4 text-green-600"></i>
-          </div>
-          <span class="text-sm font-semibold text-gray-700">Transfers</span>
-        </button>
-        <button onclick="scrollToFAQ('cards')"
-          class="flex items-center gap-3 bg-white border border-gray-100 rounded-2xl p-4 hover:border-indigo-200 hover:bg-indigo-50 transition text-left">
-          <div class="w-9 h-9 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
-            <i data-lucide="credit-card" class="w-4 h-4 text-purple-600"></i>
-          </div>
-          <span class="text-sm font-semibold text-gray-700">Cards</span>
-        </button>
-        <button onclick="scrollToFAQ('crypto')"
-          class="flex items-center gap-3 bg-white border border-gray-100 rounded-2xl p-4 hover:border-indigo-200 hover:bg-indigo-50 transition text-left">
-          <div class="w-9 h-9 bg-yellow-100 rounded-xl flex items-center justify-center flex-shrink-0">
-            <i data-lucide="bitcoin" class="w-4 h-4 text-yellow-600"></i>
-          </div>
-          <span class="text-sm font-semibold text-gray-700">Crypto</span>
-        </button>
-        <button onclick="scrollToFAQ('security')"
-          class="flex items-center gap-3 bg-white border border-gray-100 rounded-2xl p-4 hover:border-indigo-200 hover:bg-indigo-50 transition text-left">
-          <div class="w-9 h-9 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0">
-            <i data-lucide="shield-check" class="w-4 h-4 text-red-500"></i>
-          </div>
-          <span class="text-sm font-semibold text-gray-700">Security</span>
-        </button>
-        <button onclick="scrollToFAQ('loans')"
-          class="flex items-center gap-3 bg-white border border-gray-100 rounded-2xl p-4 hover:border-indigo-200 hover:bg-indigo-50 transition text-left">
-          <div class="w-9 h-9 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
-            <i data-lucide="landmark" class="w-4 h-4 text-blue-600"></i>
-          </div>
-          <span class="text-sm font-semibold text-gray-700">Loans</span>
-        </button>
+  <!-- MAIN CONTENT -->
+  <main class="main-content" style="background:#f8fafc;">
+
+    <!-- DESKTOP TOP BAR (hidden on mobile) -->
+    <div class="desktop-topbar bg-white border-b border-gray-100 px-8 py-4 flex justify-between items-center sticky top-0 z-30">
+      <div>
+        <h1 id="page-title-desktop" class="text-lg font-bold text-gray-900">Dashboard</h1>
+        <p class="text-xs text-gray-400 mt-0.5">Welcome back, <span id="topbar-name">...</span></p>
       </div>
-    </div>
-
-    <!-- FAQ Section -->
-    <div id="faq-container">
-      <h2 class="text-base font-bold text-gray-900 mb-3">Frequently Asked Questions</h2>
-      <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden" id="faq-list">
-
-        <!-- ACCOUNT -->
-        <div class="faq-item" data-category="account" data-q="how do i create an account">
-          <button class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition"
-            onclick="toggleFAQ(this)">
-            <span class="text-sm font-semibold text-gray-900">How do I create a SilverCrest account?</span>
-            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 faq-icon flex-shrink-0"></i>
-          </button>
-          <div class="faq-answer px-5 pb-4">
-            <p class="text-sm text-gray-500 leading-relaxed">Click "Get started free" on our homepage, enter your full name, email address, and a password of at least 6 characters. Your account is created instantly and you receive a $1,000 welcome balance to get started.</p>
-          </div>
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2">
+          <i data-lucide="credit-card" class="w-3.5 h-3.5 text-gray-400"></i>
+          <span id="account-number-display" class="text-xs font-mono text-gray-500">Loading...</span>
         </div>
-
-        <div class="faq-item" data-category="account" data-q="how do i find my account number">
-          <button class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition"
-            onclick="toggleFAQ(this)">
-            <span class="text-sm font-semibold text-gray-900">Where do I find my account number?</span>
-            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 faq-icon flex-shrink-0"></i>
-          </button>
-          <div class="faq-answer px-5 pb-4">
-            <p class="text-sm text-gray-500 leading-relaxed">Your account number is displayed on your main dashboard under the "Account Number" card. You can also find it in the Profile section. Tap the "Copy" button to copy it instantly and share with anyone who needs to send you money.</p>
-          </div>
+        <a href="support.html" class="icon-btn" title="Help & Support">
+          <i data-lucide="message-circle" class="w-4 h-4 text-gray-500"></i>
+        </a>
+        <div class="icon-btn" title="Notifications" onclick="showNotifications()">
+          <i data-lucide="bell" class="w-4 h-4 text-gray-500"></i>
+          <span class="notif-dot"></span>
         </div>
-
-        <div class="faq-item" data-category="account" data-q="how do i update my profile">
-          <button class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition"
-            onclick="toggleFAQ(this)">
-            <span class="text-sm font-semibold text-gray-900">How do I update my profile information?</span>
-            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 faq-icon flex-shrink-0"></i>
-          </button>
-          <div class="faq-answer px-5 pb-4">
-            <p class="text-sm text-gray-500 leading-relaxed">Go to the Profile section from the sidebar or bottom navigation. Currently, profile viewing is available. For changes to your name or email, please contact us at support@silvercrestfin.com.</p>
-          </div>
+        <div class="w-9 h-9 bg-indigo-100 rounded-full flex items-center justify-center">
+          <span id="topbar-avatar" class="text-indigo-600 font-bold text-sm">U</span>
         </div>
-
-        <!-- TRANSFERS -->
-        <div class="faq-item" data-category="transfers" data-q="how do i send money">
-          <button class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition"
-            onclick="toggleFAQ(this)">
-            <span class="text-sm font-semibold text-gray-900">How do I send money to someone?</span>
-            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 faq-icon flex-shrink-0"></i>
-          </button>
-          <div class="faq-answer px-5 pb-4">
-            <p class="text-sm text-gray-500 leading-relaxed">Click "Send Money" from the dashboard or sidebar. Enter the recipient's registered email address, the amount you want to send, and an optional note. Click "Send Money" and the transfer happens instantly. Both you and the recipient will see the transaction in your history.</p>
-          </div>
-        </div>
-
-        <div class="faq-item" data-category="transfers" data-q="transfer failed not received">
-          <button class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition"
-            onclick="toggleFAQ(this)">
-            <span class="text-sm font-semibold text-gray-900">My transfer failed. What should I do?</span>
-            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 faq-icon flex-shrink-0"></i>
-          </button>
-          <div class="faq-answer px-5 pb-4">
-            <p class="text-sm text-gray-500 leading-relaxed">First check that the recipient's email is correct and that they have a SilverCrest account. Also ensure you have sufficient balance. If the problem persists, contact us at support@silvercrestfin.com with the details and we'll resolve it within 24 hours.</p>
-          </div>
-        </div>
-
-        <div class="faq-item" data-category="transfers" data-q="transfer limits how much can i send">
-          <button class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition"
-            onclick="toggleFAQ(this)">
-            <span class="text-sm font-semibold text-gray-900">Are there transfer limits?</span>
-            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 faq-icon flex-shrink-0"></i>
-          </button>
-          <div class="faq-answer px-5 pb-4">
-            <p class="text-sm text-gray-500 leading-relaxed">You can send up to your available balance in a single transfer. There are no daily limits for verified accounts. Transfers are instant and completely free between SilverCrest users.</p>
-          </div>
-        </div>
-
-        <!-- CARDS -->
-        <div class="faq-item" data-category="cards" data-q="how to get a card virtual physical">
-          <button class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition"
-            onclick="toggleFAQ(this)">
-            <span class="text-sm font-semibold text-gray-900">How do I get a SilverCrest card?</span>
-            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 faq-icon flex-shrink-0"></i>
-          </button>
-          <div class="faq-answer px-5 pb-4">
-            <p class="text-sm text-gray-500 leading-relaxed">Go to "Cards" in the sidebar. You can request a free Virtual Card (instant), a Physical Debit Card ($5, delivered in 3–5 business days), or apply for a Credit Card. Virtual cards are ready immediately for online purchases.</p>
-          </div>
-        </div>
-
-        <div class="faq-item" data-category="cards" data-q="add external card link visa mastercard">
-          <button class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition"
-            onclick="toggleFAQ(this)">
-            <span class="text-sm font-semibold text-gray-900">Can I add my existing bank card?</span>
-            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 faq-icon flex-shrink-0"></i>
-          </button>
-          <div class="faq-answer px-5 pb-4">
-            <p class="text-sm text-gray-500 leading-relaxed">Yes! Go to Cards → "Add External Card". We accept Visa, Mastercard, and Verve cards. Enter your card number, expiry date, CVV, and name. Your card is linked securely using bank-grade encryption.</p>
-          </div>
-        </div>
-
-        <!-- CRYPTO -->
-        <div class="faq-item" data-category="crypto" data-q="how to buy bitcoin ethereum crypto">
-          <button class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition"
-            onclick="toggleFAQ(this)">
-            <span class="text-sm font-semibold text-gray-900">How do I buy cryptocurrency?</span>
-            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 faq-icon flex-shrink-0"></i>
-          </button>
-          <div class="faq-answer px-5 pb-4">
-            <p class="text-sm text-gray-500 leading-relaxed">Go to "Crypto" in the sidebar. Select the coin you want (Bitcoin, Ethereum, Solana, or BNB), choose "Buy", enter the dollar amount, and confirm. The purchase is deducted from your balance instantly. Note: this is a simulated feature for demonstration purposes.</p>
-          </div>
-        </div>
-
-        <div class="faq-item" data-category="crypto" data-q="how to sell crypto coins">
-          <button class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition"
-            onclick="toggleFAQ(this)">
-            <span class="text-sm font-semibold text-gray-900">How do I sell my crypto?</span>
-            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 faq-icon flex-shrink-0"></i>
-          </button>
-          <div class="faq-answer px-5 pb-4">
-            <p class="text-sm text-gray-500 leading-relaxed">In the Crypto section, select the coin, choose "Sell", and enter the dollar amount you want to receive. The equivalent crypto will be deducted from your holdings and the cash added to your balance.</p>
-          </div>
-        </div>
-
-        <!-- SECURITY -->
-        <div class="faq-item" data-category="security" data-q="is my money safe secure">
-          <button class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition"
-            onclick="toggleFAQ(this)">
-            <span class="text-sm font-semibold text-gray-900">Is my money and data safe?</span>
-            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 faq-icon flex-shrink-0"></i>
-          </button>
-          <div class="faq-answer px-5 pb-4">
-            <p class="text-sm text-gray-500 leading-relaxed">Yes. SilverCrest uses 256-bit SSL encryption, the same standard used by major banks worldwide. Your account is protected by Supabase Auth, and Row Level Security ensures you can only ever access your own data. We never store passwords in plain text.</p>
-          </div>
-        </div>
-
-        <div class="faq-item" data-category="security" data-q="forgot password reset login">
-          <button class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition"
-            onclick="toggleFAQ(this)">
-            <span class="text-sm font-semibold text-gray-900">I forgot my password. How do I reset it?</span>
-            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 faq-icon flex-shrink-0"></i>
-          </button>
-          <div class="faq-answer px-5 pb-4">
-            <p class="text-sm text-gray-500 leading-relaxed">Password reset is coming soon. In the meantime, please email us at support@silvercrestfin.com with your registered email address and we'll help you regain access within 24 hours.</p>
-          </div>
-        </div>
-
-        <div class="faq-item" data-category="security" data-q="suspicious activity fraud unauthorized">
-          <button class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition"
-            onclick="toggleFAQ(this)">
-            <span class="text-sm font-semibold text-gray-900">I see suspicious activity on my account</span>
-            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 faq-icon flex-shrink-0"></i>
-          </button>
-          <div class="faq-answer px-5 pb-4">
-            <p class="text-sm text-gray-500 leading-relaxed">If you notice any unauthorized transactions or suspicious activity, contact us immediately at support@silvercrestfin.com. Include your account email and details of the suspicious activity. We take security incidents very seriously and respond within 1 hour.</p>
-          </div>
-        </div>
-
-        <!-- LOANS -->
-        <div class="faq-item" data-category="loans" data-q="how to apply for a loan">
-          <button class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition"
-            onclick="toggleFAQ(this)">
-            <span class="text-sm font-semibold text-gray-900">How do I apply for a loan?</span>
-            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 faq-icon flex-shrink-0"></i>
-          </button>
-          <div class="faq-answer px-5 pb-4">
-            <p class="text-sm text-gray-500 leading-relaxed">Go to "Loans" in the sidebar. Choose your loan type (Personal, Business, or Mortgage), enter the amount, select your repayment period, and review the loan summary. Click "Apply Now" to submit your application. We review and respond within 24 hours.</p>
-          </div>
-        </div>
-
-        <div class="faq-item" data-category="loans" data-q="loan interest rate how much">
-          <button class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition"
-            onclick="toggleFAQ(this)">
-            <span class="text-sm font-semibold text-gray-900">What are the loan interest rates?</span>
-            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 faq-icon flex-shrink-0"></i>
-          </button>
-          <div class="faq-answer px-5 pb-4">
-            <p class="text-sm text-gray-500 leading-relaxed">Personal Loans start at 12% APR, Business Loans at 9% APR, and Mortgages at 6.5% APR. The loan calculator in the app shows your exact monthly payments and total interest before you apply.</p>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- No results -->
-      <div id="faq-empty" class="hidden text-center py-10 bg-white rounded-2xl border border-gray-100 mt-3">
-        <i data-lucide="search" class="w-10 h-10 text-gray-200 mx-auto mb-3"></i>
-        <p class="text-gray-500 text-sm font-medium">No results found</p>
-        <p class="text-gray-400 text-xs mt-1">Try different keywords or contact support below</p>
       </div>
     </div>
 
-    <!-- Contact Support -->
-    <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-      <div class="px-5 py-4 border-b border-gray-100">
-        <h2 class="text-base font-bold text-gray-900">Contact Support</h2>
-        <p class="text-xs text-gray-400 mt-0.5">Can't find your answer? We're here to help</p>
+    <!-- MOBILE TOP BAR -->
+    <div class="mobile-topbar">
+      <!-- Hamburger -->
+      <button onclick="openSidebar()"
+        class="w-9 h-9 bg-gray-50 border border-gray-200 rounded-xl flex items-center justify-center">
+        <i data-lucide="menu" class="w-5 h-5 text-gray-600"></i>
+      </button>
+
+      <!-- Logo -->
+      <div class="flex items-center gap-2">
+        <div class="w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center">
+          <span class="text-white font-bold text-xs">S</span>
+        </div>
+        <span class="text-gray-900 font-bold">SilverCrest</span>
       </div>
 
-      <!-- Email Support -->
-      <div class="p-5 border-b border-gray-100">
-        <div class="flex items-center gap-3 mb-3">
-          <div class="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center flex-shrink-0">
-            <i data-lucide="mail" class="w-5 h-5 text-indigo-600"></i>
+      <!-- Right icons: Live Chat + Notifications -->
+      <div class="flex items-center gap-2">
+        <!-- Live Chat -->
+        <a href="support.html"
+          class="w-9 h-9 bg-gray-50 border border-gray-200 rounded-xl flex items-center justify-center"
+          title="Live Chat">
+          <i data-lucide="message-circle" class="w-5 h-5 text-indigo-500"></i>
+        </a>
+        <!-- Notifications -->
+        <button onclick="showNotifications()"
+          class="w-9 h-9 bg-gray-50 border border-gray-200 rounded-xl flex items-center justify-center relative"
+          title="Notifications">
+          <i data-lucide="bell" class="w-5 h-5 text-gray-600"></i>
+          <span class="notif-dot"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- NOTIFICATIONS DROPDOWN -->
+    <div id="notif-panel" class="hidden fixed top-16 right-4 w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 overflow-hidden">
+      <div class="px-4 py-3 border-b border-gray-100 flex justify-between items-center">
+        <h3 class="text-sm font-bold text-gray-900">Notifications</h3>
+        <button onclick="hideNotifications()" class="text-xs text-gray-400 hover:text-gray-600">Close</button>
+      </div>
+      <div class="p-4 space-y-3">
+        <div class="flex items-start gap-3">
+          <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+            <i data-lucide="check-circle" class="w-4 h-4 text-green-600"></i>
           </div>
           <div>
-            <p class="text-sm font-semibold text-gray-900">Email Support</p>
-            <p class="text-xs text-gray-400">Response within 24 hours</p>
+            <p class="text-sm font-semibold text-gray-900">Welcome to SilverCrest!</p>
+            <p class="text-xs text-gray-400 mt-0.5">Your account is active and ready to use.</p>
           </div>
         </div>
-        <a href="mailto:support@silvercrestfin.com"
-          class="flex items-center justify-between bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3 hover:bg-indigo-100 transition">
-          <span class="text-sm font-semibold text-indigo-600">support@silvercrestfin.com</span>
-          <i data-lucide="external-link" class="w-4 h-4 text-indigo-400"></i>
-        </a>
-      </div>
-
-      <!-- Live Chat -->
-      <div class="p-5">
-        <div class="flex items-center gap-3 mb-3">
-          <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
-            <i data-lucide="message-circle" class="w-5 h-5 text-green-600"></i>
+        <div class="flex items-start gap-3">
+          <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
+            <i data-lucide="shield-check" class="w-4 h-4 text-indigo-600"></i>
           </div>
-          <div class="flex-1">
-            <p class="text-sm font-semibold text-gray-900">Live Chat</p>
-            <p class="text-xs text-gray-400">Instant replies from our team</p>
-          </div>
-          <div class="flex items-center gap-1.5">
-            <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-            <span class="text-xs text-green-500 font-semibold">Online</span>
+          <div>
+            <p class="text-sm font-semibold text-gray-900">Account Verified</p>
+            <p class="text-xs text-gray-400 mt-0.5">Your identity has been verified successfully.</p>
           </div>
         </div>
-
-        <!-- Chat Window -->
-        <div class="border border-gray-100 rounded-2xl overflow-hidden" id="chat-section">
-          <!-- Chat messages -->
-          <div class="chat-messages" id="chat-messages">
-            <div class="chat-bubble-agent">
-              👋 Hi there! Welcome to SilverCrest Support. How can I help you today?
-            </div>
+        <div class="flex items-start gap-3">
+          <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0">
+            <i data-lucide="bitcoin" class="w-4 h-4 text-yellow-600"></i>
           </div>
-
-          <!-- Quick reply buttons -->
-          <div class="bg-white border-t border-gray-100 p-3">
-            <p class="text-xs text-gray-400 mb-2 font-medium">Quick questions:</p>
-            <div class="flex flex-wrap gap-2 mb-3" id="quick-replies">
-              <button onclick="sendQuickReply('How do I send money?')"
-                class="text-xs bg-gray-50 border border-gray-200 text-gray-600 px-3 py-1.5 rounded-full hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-600 transition">
-                How do I send money?
-              </button>
-              <button onclick="sendQuickReply('My transfer failed')"
-                class="text-xs bg-gray-50 border border-gray-200 text-gray-600 px-3 py-1.5 rounded-full hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-600 transition">
-                My transfer failed
-              </button>
-              <button onclick="sendQuickReply('How do I get a card?')"
-                class="text-xs bg-gray-50 border border-gray-200 text-gray-600 px-3 py-1.5 rounded-full hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-600 transition">
-                How do I get a card?
-              </button>
-              <button onclick="sendQuickReply('I forgot my password')"
-                class="text-xs bg-gray-50 border border-gray-200 text-gray-600 px-3 py-1.5 rounded-full hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-600 transition">
-                I forgot my password
-              </button>
-            </div>
-
-            <!-- Message input -->
-            <div class="flex items-center gap-2">
-              <input type="text" id="chat-input" placeholder="Type your message..."
-                onkeypress="if(event.key==='Enter') sendMessage()"
-                class="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-400 transition"/>
-              <button onclick="sendMessage()"
-                class="w-10 h-10 bg-indigo-600 hover:bg-indigo-700 rounded-xl flex items-center justify-center transition flex-shrink-0">
-                <i data-lucide="send" class="w-4 h-4 text-white"></i>
-              </button>
-            </div>
+          <div>
+            <p class="text-sm font-semibold text-gray-900">Crypto is now available</p>
+            <p class="text-xs text-gray-400 mt-0.5">Buy and sell Bitcoin, Ethereum and more.</p>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Back to app -->
-    <div class="text-center pb-4">
-      <a href="dashboard.html"
-        class="inline-flex items-center gap-2 text-sm text-indigo-600 font-medium hover:underline">
-        <i data-lucide="arrow-left" class="w-4 h-4"></i>
-        Back to Dashboard
-      </a>
-    </div>
+    <!-- PAGE CONTENT -->
+    <div class="p-4 lg:p-8">
 
+      <!-- ══════════ DASHBOARD ══════════ -->
+      <div id="section-dashboard">
+
+        <!-- Mobile greeting -->
+        <div class="lg:hidden mb-4">
+          <h2 class="text-lg font-bold text-gray-900">
+            Good day, <span id="mobile-name">...</span> 👋
+          </h2>
+          <p class="text-xs text-gray-400 mt-0.5">Here's your financial overview</p>
+        </div>
+
+        <!-- 3 Column Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-5">
+
+          <!-- Balance Card -->
+          <div class="balance-card lg:col-span-1">
+            <div class="relative z-10">
+              <div class="flex items-center justify-between mb-1">
+                <p style="color:rgba(200,210,255,0.8);" class="text-xs font-medium">
+                  Available Balance
+                </p>
+                <!-- Eye toggle button -->
+                <button class="eye-btn" id="toggle-balance-btn" onclick="toggleBalance()">
+                  <i data-lucide="eye" class="w-3.5 h-3.5" id="eye-icon"></i>
+                  <span id="eye-label">Hide</span>
+                </button>
+              </div>
+              <h2 id="balance-display" class="text-3xl lg:text-4xl font-bold text-white mb-5">
+                $0.00
+              </h2>
+              <div class="flex items-center gap-2 flex-wrap">
+                <button onclick="showSection('transfer')"
+                  class="flex items-center gap-1.5 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition"
+                  style="background:rgba(255,255,255,0.15);">
+                  <i data-lucide="send" class="w-3.5 h-3.5"></i> Send
+                </button>
+                <button onclick="showSection('cards')"
+                  class="flex items-center gap-1.5 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition"
+                  style="background:rgba(255,255,255,0.15);">
+                  <i data-lucide="credit-card" class="w-3.5 h-3.5"></i> Cards
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Account Number Card -->
+          <div class="stat-card flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+                  <i data-lucide="hash" class="w-4 h-4 text-indigo-600"></i>
+                </div>
+                <span class="text-xs font-semibold text-gray-500">Account Number</span>
+              </div>
+              <button onclick="copyAccountNumber()"
+                class="flex items-center gap-1 text-xs text-indigo-600 font-semibold hover:bg-indigo-50 px-2 py-1 rounded-lg transition">
+                <i data-lucide="copy" class="w-3 h-3"></i> Copy
+              </button>
+            </div>
+            <p id="acct-number"
+              class="text-base lg:text-lg font-bold text-gray-900 font-mono tracking-wider mb-1">
+              ····
+            </p>
+            <p class="text-xs text-gray-400">Share this to receive money</p>
+            <div class="mt-3 pt-3 border-t border-gray-100 flex items-center gap-2">
+              <i data-lucide="shield-check" class="w-3.5 h-3.5 text-green-500"></i>
+              <span class="text-xs text-gray-400">Encrypted · Secure</span>
+            </div>
+          </div>
+
+          <!-- Status + Crypto Card -->
+          <div class="stat-card flex flex-col justify-between">
+            <div class="flex items-center gap-2 mb-3">
+              <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                <i data-lucide="check-circle" class="w-4 h-4 text-green-600"></i>
+              </div>
+              <span class="text-xs font-semibold text-gray-500">Account Status</span>
+            </div>
+            <div class="flex flex-wrap gap-2 mb-3">
+              <span class="badge" style="background:#f0fdf4;color:#16a34a;">
+                <i data-lucide="check" style="width:10px;height:10px;"></i> Active
+              </span>
+              <span class="badge" style="background:#eff6ff;color:#2563eb;">
+                <i data-lucide="shield" style="width:10px;height:10px;"></i> Verified
+              </span>
+              <span class="badge" style="background:#faf5ff;color:#7c3aed;">
+                <i data-lucide="user" style="width:10px;height:10px;"></i> Personal
+              </span>
+            </div>
+            <div class="border-t border-gray-100 pt-3">
+              <div class="flex items-center justify-between mb-1">
+                <div class="flex items-center gap-1.5">
+                  <i data-lucide="bitcoin" class="w-3.5 h-3.5 text-yellow-500"></i>
+                  <span class="text-xs font-semibold text-gray-500">Crypto Portfolio</span>
+                </div>
+                <button onclick="showSection('crypto')" class="text-xs text-indigo-600 font-medium">View →</button>
+              </div>
+              <p id="crypto-portfolio-value" class="text-xl font-bold text-gray-900">$0.00</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="section-card mb-4">
+          <h3 class="text-sm font-bold text-gray-900 mb-3">Quick Actions</h3>
+          <div class="grid grid-cols-4 gap-2 lg:gap-3">
+            <div class="quick-action" onclick="showSection('transfer')">
+              <div class="quick-action-icon bg-indigo-100">
+                <i data-lucide="send" class="w-5 h-5 text-indigo-600"></i>
+              </div>
+              <span class="text-xs font-semibold text-gray-700">Send</span>
+            </div>
+            <div class="quick-action" onclick="showSection('bills')">
+              <div class="quick-action-icon bg-orange-100">
+                <i data-lucide="zap" class="w-5 h-5 text-orange-500"></i>
+              </div>
+              <span class="text-xs font-semibold text-gray-700">Bills</span>
+            </div>
+            <div class="quick-action" onclick="showSection('loans')">
+              <div class="quick-action-icon bg-green-100">
+                <i data-lucide="landmark" class="w-5 h-5 text-green-600"></i>
+              </div>
+              <span class="text-xs font-semibold text-gray-700">Loans</span>
+            </div>
+            <div class="quick-action" onclick="showSection('cards')">
+              <div class="quick-action-icon bg-purple-100">
+                <i data-lucide="credit-card" class="w-5 h-5 text-purple-600"></i>
+              </div>
+              <span class="text-xs font-semibold text-gray-700">Cards</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="section-card">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-sm font-bold text-gray-900">Recent Transactions</h3>
+            <button onclick="showSection('transactions')"
+              class="text-xs text-indigo-600 font-medium flex items-center gap-1">
+              View all <i data-lucide="arrow-right" class="w-3 h-3"></i>
+            </button>
+          </div>
+          <div id="recent-tx-list">
+            <div class="shimmer h-12 mb-2"></div>
+            <div class="shimmer h-12 mb-2"></div>
+            <div class="shimmer h-12"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ SEND MONEY ══════════ -->
+      <div id="section-transfer" class="hidden">
+        <div class="section-card max-w-lg mx-auto">
+          <div class="flex items-center gap-3 mb-5">
+            <div class="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
+              <i data-lucide="send" class="w-5 h-5 text-indigo-600"></i>
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-gray-900">Send Money</h3>
+              <p class="text-xs text-gray-400">Instant transfer to any SilverCrest user</p>
+            </div>
+          </div>
+          <div id="transfer-error" class="hidden bg-red-50 border border-red-100 text-red-500 px-4 py-3 rounded-xl mb-4 text-sm"></div>
+          <div id="transfer-success" class="hidden bg-green-50 border border-green-100 text-green-600 px-4 py-3 rounded-xl mb-4 text-sm"></div>
+          <div class="space-y-4">
+            <div>
+              <label class="text-sm font-medium text-gray-700 mb-1.5 block">Recipient Email</label>
+              <input type="email" id="recipient-email" placeholder="friend@example.com" class="input-field"/>
+            </div>
+            <div>
+              <label class="text-sm font-medium text-gray-700 mb-1.5 block">Amount</label>
+              <div class="relative">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                <input type="number" id="transfer-amount" placeholder="0.00" min="1"
+                  class="input-field" style="padding-left:28px;"/>
+              </div>
+              <p class="text-xs text-gray-400 mt-1.5">
+                Available: <span id="available-balance-transfer" class="font-semibold text-gray-700">$0.00</span>
+              </p>
+            </div>
+            <div>
+              <label class="text-sm font-medium text-gray-700 mb-1.5 block">
+                Note <span class="font-normal text-gray-400">(optional)</span>
+              </label>
+              <input type="text" id="transfer-note" placeholder="For rent, lunch, etc." class="input-field"/>
+            </div>
+            <button id="transfer-btn" class="btn-primary">Send Money</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ TRANSACTIONS ══════════ -->
+      <div id="section-transactions" class="hidden">
+        <div class="section-card">
+          <div class="flex justify-between items-center mb-5">
+            <h3 class="text-base font-bold text-gray-900">All Transactions</h3>
+            <div class="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2">
+              <i data-lucide="search" class="w-3.5 h-3.5 text-gray-400"></i>
+              <input type="text" id="tx-search" placeholder="Search..."
+                class="bg-transparent text-sm outline-none w-28 lg:w-36" oninput="filterTransactions()"/>
+            </div>
+          </div>
+          <div id="all-tx-list">
+            <div class="shimmer h-14 mb-3"></div>
+            <div class="shimmer h-14 mb-3"></div>
+            <div class="shimmer h-14"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ CRYPTO ══════════ -->
+      <div id="section-crypto" class="hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="section-card">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 bg-yellow-100 rounded-xl flex items-center justify-center">
+                <i data-lucide="bitcoin" class="w-5 h-5 text-yellow-600"></i>
+              </div>
+              <div>
+                <h3 class="text-base font-bold text-gray-900">Crypto Portfolio</h3>
+                <p class="text-xs text-gray-400">Simulated — demo only</p>
+              </div>
+            </div>
+            <div class="space-y-3" id="crypto-list"></div>
+          </div>
+          <div class="section-card">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
+                <i data-lucide="refresh-cw" class="w-5 h-5 text-indigo-600"></i>
+              </div>
+              <div>
+                <h3 class="text-base font-bold text-gray-900">Buy / Sell</h3>
+                <p class="text-xs text-gray-400">Simulated transactions</p>
+              </div>
+            </div>
+            <div id="crypto-error" class="hidden bg-red-50 border border-red-100 text-red-500 px-4 py-3 rounded-xl mb-4 text-sm"></div>
+            <div id="crypto-success" class="hidden bg-green-50 border border-green-100 text-green-600 px-4 py-3 rounded-xl mb-4 text-sm"></div>
+            <div class="space-y-4">
+              <div>
+                <label class="text-sm font-medium text-gray-700 mb-1.5 block">Coin</label>
+                <select id="crypto-coin" class="input-field" onchange="updateCryptoPreview()">
+                  <option value="BTC" data-price="63420">Bitcoin (BTC) — $63,420</option>
+                  <option value="ETH" data-price="3290">Ethereum (ETH) — $3,290</option>
+                  <option value="SOL" data-price="142">Solana (SOL) — $142</option>
+                  <option value="BNB" data-price="580">BNB — $580</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-sm font-medium text-gray-700 mb-1.5 block">Action</label>
+                <div class="grid grid-cols-2 gap-2">
+                  <button id="btn-buy" onclick="setCryptoAction('buy')"
+                    class="py-2.5 rounded-xl text-sm font-semibold border-2 cursor-pointer"
+                    style="background:#eef2ff;color:#4f46e5;border-color:#4f46e5;">Buy</button>
+                  <button id="btn-sell" onclick="setCryptoAction('sell')"
+                    class="py-2.5 rounded-xl text-sm font-semibold border-2 cursor-pointer"
+                    style="background:#f8fafc;color:#64748b;border-color:#e2e8f0;">Sell</button>
+                </div>
+              </div>
+              <div>
+                <label class="text-sm font-medium text-gray-700 mb-1.5 block">Amount ($)</label>
+                <div class="relative">
+                  <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                  <input type="number" id="crypto-amount" placeholder="0.00"
+                    class="input-field" style="padding-left:28px;" oninput="updateCryptoPreview()"/>
+                </div>
+                <p id="crypto-preview" class="text-xs text-gray-400 mt-1.5">You will receive: —</p>
+              </div>
+              <button id="crypto-btn" class="btn-primary" onclick="executeCryptoTrade()">
+                Confirm Purchase
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ CARDS ══════════ -->
+      <div id="section-cards" class="hidden">
+        <div class="mb-5">
+          <div class="debit-card max-w-sm">
+            <div class="relative z-10">
+              <div class="flex justify-between items-start mb-7">
+                <div>
+                  <p style="color:rgba(180,200,255,0.7);" class="text-xs font-semibold tracking-widest uppercase">SilverCrest</p>
+                  <p class="text-white text-sm font-medium mt-0.5">Virtual Debit Card</p>
+                </div>
+                <div class="w-10 h-7 rounded" style="background:linear-gradient(135deg,#f59e0b,#fcd34d);"></div>
+              </div>
+              <p style="color:rgba(255,255,255,0.5);" class="text-xs tracking-widest mb-1">CARD NUMBER</p>
+              <p id="virtual-card-number" class="text-white font-mono text-sm tracking-wider mb-5">•••• •••• •••• ••••</p>
+              <div class="flex justify-between items-end">
+                <div>
+                  <p style="color:rgba(255,255,255,0.5);" class="text-xs mb-0.5">Card Holder</p>
+                  <p id="card-holder-name" class="text-white font-semibold text-sm">—</p>
+                </div>
+                <div class="text-right">
+                  <p style="color:rgba(255,255,255,0.5);" class="text-xs mb-0.5">Expires</p>
+                  <p class="text-white font-semibold text-sm">12/29</p>
+                </div>
+                <div class="flex -space-x-2">
+                  <div class="w-8 h-8 rounded-full" style="background:#ef4444;opacity:0.9;"></div>
+                  <div class="w-8 h-8 rounded-full" style="background:#f59e0b;opacity:0.9;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="section-card">
+            <div class="flex items-center gap-3 mb-5">
+              <div class="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
+                <i data-lucide="credit-card" class="w-5 h-5 text-indigo-600"></i>
+              </div>
+              <div>
+                <h3 class="text-base font-bold text-gray-900">Request a Card</h3>
+                <p class="text-xs text-gray-400">Get a SilverCrest card</p>
+              </div>
+            </div>
+            <div class="space-y-3 mb-5">
+              <div id="card-type-virtual" onclick="selectCardType('virtual')"
+                class="flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer"
+                style="border-color:#4f46e5;background:#eef2ff;">
+                <div class="w-9 h-9 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <i data-lucide="smartphone" class="w-4 h-4 text-indigo-600"></i>
+                </div>
+                <div class="flex-1">
+                  <p class="text-sm font-semibold text-gray-900">Virtual Card</p>
+                  <p class="text-xs text-gray-400">Instant · Free</p>
+                </div>
+                <span class="badge" style="background:#eef2ff;color:#4f46e5;">Free</span>
+              </div>
+              <div id="card-type-debit" onclick="selectCardType('debit')"
+                class="flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer"
+                style="border-color:#e2e8f0;background:#f8fafc;">
+                <div class="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <i data-lucide="credit-card" class="w-4 h-4 text-blue-600"></i>
+                </div>
+                <div class="flex-1">
+                  <p class="text-sm font-semibold text-gray-900">Physical Debit</p>
+                  <p class="text-xs text-gray-400">3–5 business days</p>
+                </div>
+                <span class="badge" style="background:#eff6ff;color:#2563eb;">$5</span>
+              </div>
+              <div id="card-type-credit" onclick="selectCardType('credit')"
+                class="flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer"
+                style="border-color:#e2e8f0;background:#f8fafc;">
+                <div class="w-9 h-9 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <i data-lucide="landmark" class="w-4 h-4 text-purple-600"></i>
+                </div>
+                <div class="flex-1">
+                  <p class="text-sm font-semibold text-gray-900">Credit Card</p>
+                  <p class="text-xs text-gray-400">Subject to approval</p>
+                </div>
+                <span class="badge" style="background:#faf5ff;color:#7c3aed;">Apply</span>
+              </div>
+            </div>
+            <button onclick="requestCard()" class="btn-primary">Request Selected Card</button>
+            <div id="card-request-msg" class="hidden mt-3 bg-green-50 border border-green-100 text-green-600 px-4 py-3 rounded-xl text-sm"></div>
+          </div>
+          <div class="section-card">
+            <div class="flex items-center gap-3 mb-5">
+              <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                <i data-lucide="plus-circle" class="w-5 h-5 text-green-600"></i>
+              </div>
+              <div>
+                <h3 class="text-base font-bold text-gray-900">Add External Card</h3>
+                <p class="text-xs text-gray-400">Link Visa, Mastercard or Verve</p>
+              </div>
+            </div>
+            <div class="space-y-4">
+              <div>
+                <label class="text-sm font-medium text-gray-700 mb-1.5 block">Card Number</label>
+                <input type="text" id="ext-card-number" placeholder="1234 5678 9012 3456"
+                  maxlength="19" class="input-field" oninput="formatCardNumber(this)"/>
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="text-sm font-medium text-gray-700 mb-1.5 block">Expiry</label>
+                  <input type="text" id="ext-card-expiry" placeholder="MM/YY"
+                    maxlength="5" class="input-field" oninput="formatExpiry(this)"/>
+                </div>
+                <div>
+                  <label class="text-sm font-medium text-gray-700 mb-1.5 block">CVV</label>
+                  <input type="password" id="ext-card-cvv" placeholder="•••" maxlength="3" class="input-field"/>
+                </div>
+              </div>
+              <div>
+                <label class="text-sm font-medium text-gray-700 mb-1.5 block">Name on Card</label>
+                <input type="text" id="ext-card-name" placeholder="John Doe" class="input-field"/>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-gray-400">Accepted:</span>
+                <div class="px-2 py-1 bg-blue-600 rounded text-white text-xs font-bold">VISA</div>
+                <div class="px-2 py-1 bg-gray-800 rounded flex items-center gap-0.5">
+                  <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                  <div class="w-3 h-3 bg-yellow-400 rounded-full -ml-1"></div>
+                </div>
+                <div class="px-2 py-1 bg-green-600 rounded text-white text-xs font-bold">VERVE</div>
+              </div>
+              <button onclick="addExternalCard()" class="btn-primary">Add Card Securely</button>
+              <div id="ext-card-msg" class="hidden px-4 py-3 rounded-xl text-sm"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ PAY BILLS ══════════ -->
+      <div id="section-bills" class="hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="section-card">
+            <div class="flex items-center gap-3 mb-5">
+              <div class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
+                <i data-lucide="zap" class="w-5 h-5 text-orange-500"></i>
+              </div>
+              <div>
+                <h3 class="text-base font-bold text-gray-900">Pay Bills</h3>
+                <p class="text-xs text-gray-400">Electricity, water, internet and more</p>
+              </div>
+            </div>
+            <div class="grid grid-cols-3 gap-2 mb-5">
+              <div onclick="selectBill('electricity')" id="bill-electricity"
+                class="flex flex-col items-center gap-2 p-3 rounded-xl cursor-pointer border-2"
+                style="border-color:#4f46e5;background:#eef2ff;">
+                <i data-lucide="zap" class="w-5 h-5 text-orange-500"></i>
+                <span class="text-xs font-semibold text-gray-700">Electricity</span>
+              </div>
+              <div onclick="selectBill('water')" id="bill-water"
+                class="flex flex-col items-center gap-2 p-3 rounded-xl cursor-pointer border-2"
+                style="border-color:#e2e8f0;background:#f8fafc;">
+                <i data-lucide="droplets" class="w-5 h-5 text-blue-500"></i>
+                <span class="text-xs font-semibold text-gray-700">Water</span>
+              </div>
+              <div onclick="selectBill('internet')" id="bill-internet"
+                class="flex flex-col items-center gap-2 p-3 rounded-xl cursor-pointer border-2"
+                style="border-color:#e2e8f0;background:#f8fafc;">
+                <i data-lucide="wifi" class="w-5 h-5 text-indigo-500"></i>
+                <span class="text-xs font-semibold text-gray-700">Internet</span>
+              </div>
+              <div onclick="selectBill('tv')" id="bill-tv"
+                class="flex flex-col items-center gap-2 p-3 rounded-xl cursor-pointer border-2"
+                style="border-color:#e2e8f0;background:#f8fafc;">
+                <i data-lucide="tv" class="w-5 h-5 text-purple-500"></i>
+                <span class="text-xs font-semibold text-gray-700">Cable TV</span>
+              </div>
+              <div onclick="selectBill('phone')" id="bill-phone"
+                class="flex flex-col items-center gap-2 p-3 rounded-xl cursor-pointer border-2"
+                style="border-color:#e2e8f0;background:#f8fafc;">
+                <i data-lucide="phone" class="w-5 h-5 text-green-500"></i>
+                <span class="text-xs font-semibold text-gray-700">Airtime</span>
+              </div>
+              <div onclick="selectBill('rent')" id="bill-rent"
+                class="flex flex-col items-center gap-2 p-3 rounded-xl cursor-pointer border-2"
+                style="border-color:#e2e8f0;background:#f8fafc;">
+                <i data-lucide="home" class="w-5 h-5 text-red-500"></i>
+                <span class="text-xs font-semibold text-gray-700">Rent</span>
+              </div>
+            </div>
+            <div class="space-y-4">
+              <div>
+                <label class="text-sm font-medium text-gray-700 mb-1.5 block">Account / Meter No.</label>
+                <input type="text" id="bill-account" placeholder="Enter account number" class="input-field"/>
+              </div>
+              <div>
+                <label class="text-sm font-medium text-gray-700 mb-1.5 block">Amount ($)</label>
+                <div class="relative">
+                  <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                  <input type="number" id="bill-amount" placeholder="0.00" class="input-field" style="padding-left:28px;"/>
+                </div>
+              </div>
+              <div id="bill-error" class="hidden bg-red-50 border border-red-100 text-red-500 px-4 py-3 rounded-xl text-sm"></div>
+              <div id="bill-success" class="hidden bg-green-50 border border-green-100 text-green-600 px-4 py-3 rounded-xl text-sm"></div>
+              <button onclick="payBill()" class="btn-primary">Pay Bill Now</button>
+            </div>
+          </div>
+          <div class="section-card">
+            <h3 class="text-base font-bold text-gray-900 mb-4">Recent Bill Payments</h3>
+            <div id="bill-history">
+              <div class="text-center py-10">
+                <i data-lucide="receipt" class="w-10 h-10 text-gray-200 mx-auto mb-3"></i>
+                <p class="text-gray-400 text-sm">No bills paid yet</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ LOANS ══════════ -->
+      <div id="section-loans" class="hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="section-card">
+            <div class="flex items-center gap-3 mb-5">
+              <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                <i data-lucide="landmark" class="w-5 h-5 text-green-600"></i>
+              </div>
+              <div>
+                <h3 class="text-base font-bold text-gray-900">Apply for a Loan</h3>
+                <p class="text-xs text-gray-400">Quick approval · Low rates</p>
+              </div>
+            </div>
+            <div class="space-y-2 mb-5">
+              <div onclick="selectLoan('personal')" id="loan-personal"
+                class="flex items-center gap-3 p-3 rounded-xl cursor-pointer border-2"
+                style="border-color:#4f46e5;background:#eef2ff;">
+                <i data-lucide="user" class="w-4 h-4 text-indigo-600 flex-shrink-0"></i>
+                <div class="flex-1">
+                  <p class="text-sm font-semibold text-gray-900">Personal Loan</p>
+                  <p class="text-xs text-gray-400">Up to $50,000 · 12% APR</p>
+                </div>
+                <span class="badge" style="background:#eef2ff;color:#4f46e5;">Popular</span>
+              </div>
+              <div onclick="selectLoan('business')" id="loan-business"
+                class="flex items-center gap-3 p-3 rounded-xl cursor-pointer border-2"
+                style="border-color:#e2e8f0;background:#f8fafc;">
+                <i data-lucide="briefcase" class="w-4 h-4 text-blue-600 flex-shrink-0"></i>
+                <div class="flex-1">
+                  <p class="text-sm font-semibold text-gray-900">Business Loan</p>
+                  <p class="text-xs text-gray-400">Up to $500,000 · 9% APR</p>
+                </div>
+              </div>
+              <div onclick="selectLoan('mortgage')" id="loan-mortgage"
+                class="flex items-center gap-3 p-3 rounded-xl cursor-pointer border-2"
+                style="border-color:#e2e8f0;background:#f8fafc;">
+                <i data-lucide="home" class="w-4 h-4 text-green-600 flex-shrink-0"></i>
+                <div class="flex-1">
+                  <p class="text-sm font-semibold text-gray-900">Mortgage</p>
+                  <p class="text-xs text-gray-400">Up to $2M · 6.5% APR</p>
+                </div>
+              </div>
+            </div>
+            <div class="space-y-4">
+              <div>
+                <label class="text-sm font-medium text-gray-700 mb-1.5 block">Loan Amount ($)</label>
+                <div class="relative">
+                  <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                  <input type="number" id="loan-amount" placeholder="0.00" class="input-field"
+                    style="padding-left:28px;" oninput="updateLoanPreview()"/>
+                </div>
+              </div>
+              <div>
+                <label class="text-sm font-medium text-gray-700 mb-1.5 block">Repayment Period</label>
+                <select id="loan-period" class="input-field" onchange="updateLoanPreview()">
+                  <option value="6">6 months</option>
+                  <option value="12" selected>12 months</option>
+                  <option value="24">24 months</option>
+                  <option value="36">36 months</option>
+                  <option value="60">60 months</option>
+                </select>
+              </div>
+              <div id="loan-preview" class="hidden rounded-xl p-4" style="background:#f8fafc;border:1px solid #e2e8f0;">
+                <p class="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-3">Loan Summary</p>
+                <div class="space-y-2">
+                  <div class="flex justify-between">
+                    <span class="text-xs text-gray-500">Monthly Payment</span>
+                    <span id="loan-monthly" class="text-xs font-bold text-gray-900">$0</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-xs text-gray-500">Total Repayment</span>
+                    <span id="loan-total" class="text-xs font-bold text-gray-900">$0</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-xs text-gray-500">Interest</span>
+                    <span id="loan-interest" class="text-xs font-bold text-red-500">$0</span>
+                  </div>
+                </div>
+              </div>
+              <div id="loan-success" class="hidden px-4 py-3 rounded-xl text-sm"></div>
+              <button onclick="applyLoan()" class="btn-primary">Apply Now</button>
+            </div>
+          </div>
+          <div class="section-card">
+            <h3 class="text-base font-bold text-gray-900 mb-5">Why SilverCrest Loans?</h3>
+            <div class="space-y-4">
+              <div class="flex items-start gap-3">
+                <div class="w-9 h-9 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <i data-lucide="check-circle" class="w-4 h-4 text-green-600"></i>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-gray-900">Instant Decision</p>
+                  <p class="text-xs text-gray-400 mt-0.5">Approved in under 60 seconds</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <div class="w-9 h-9 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <i data-lucide="percent" class="w-4 h-4 text-blue-600"></i>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-gray-900">Low Interest Rates</p>
+                  <p class="text-xs text-gray-400 mt-0.5">Starting from 6.5% APR</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <div class="w-9 h-9 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <i data-lucide="shield-check" class="w-4 h-4 text-purple-600"></i>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-gray-900">No Collateral</p>
+                  <p class="text-xs text-gray-400 mt-0.5">Personal loans up to $50K unsecured</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <div class="w-9 h-9 bg-indigo-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <i data-lucide="calendar" class="w-4 h-4 text-indigo-600"></i>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-gray-900">Flexible Repayment</p>
+                  <p class="text-xs text-gray-400 mt-0.5">6 to 60 months</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ PROFILE ══════════ -->
+      <div id="section-profile" class="hidden">
+        <div class="section-card max-w-lg mx-auto">
+          <div class="flex items-center gap-4 mb-6 pb-6 border-b border-gray-100">
+            <div class="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center">
+              <span id="profile-avatar" class="text-indigo-600 font-bold text-2xl">U</span>
+            </div>
+            <div>
+              <h3 id="profile-name" class="text-lg font-bold text-gray-900">Loading...</h3>
+              <p id="profile-email" class="text-sm text-gray-400">...</p>
+              <span class="badge mt-1" style="background:#eef2ff;color:#4f46e5;">Personal Account</span>
+            </div>
+          </div>
+          <div class="space-y-4">
+            <div>
+              <label class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-1.5 block">Account Number</label>
+              <div class="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
+                <i data-lucide="credit-card" class="w-4 h-4 text-gray-400"></i>
+                <span id="profile-acct-number" class="text-sm font-mono text-gray-700 flex-1">Loading...</span>
+                <button onclick="copyAccountNumber()" class="text-xs text-indigo-600 font-medium flex items-center gap-1">
+                  <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy
+                </button>
+              </div>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-1.5 block">Full Name</label>
+              <div class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
+                <span id="profile-fullname" class="text-sm text-gray-700">Loading...</span>
+              </div>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-1.5 block">Email</label>
+              <div class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
+                <span id="profile-email-field" class="text-sm text-gray-700">Loading...</span>
+              </div>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-1.5 block">Balance</label>
+              <div class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
+                <span id="profile-balance" class="text-sm font-bold text-indigo-600">Loading...</span>
+              </div>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-1.5 block">Member Since</label>
+              <div class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
+                <span id="profile-joined" class="text-sm text-gray-700">Loading...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- MOBILE BOTTOM NAV -->
+  <div class="mobile-nav">
+    <button class="mobile-nav-btn active" id="mob-dashboard" onclick="showSection('dashboard')">
+      <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+      <span>Home</span>
+    </button>
+    <button class="mobile-nav-btn" id="mob-transfer" onclick="showSection('transfer')">
+      <i data-lucide="send" class="w-5 h-5"></i>
+      <span>Send</span>
+    </button>
+    <button class="mobile-nav-btn" id="mob-cards" onclick="showSection('cards')">
+      <i data-lucide="credit-card" class="w-5 h-5"></i>
+      <span>Cards</span>
+    </button>
+    <button class="mobile-nav-btn" id="mob-crypto" onclick="showSection('crypto')">
+      <i data-lucide="bitcoin" class="w-5 h-5"></i>
+      <span>Crypto</span>
+    </button>
+    <button class="mobile-nav-btn" id="mob-profile" onclick="showSection('profile')">
+      <i data-lucide="user" class="w-5 h-5"></i>
+      <span>Profile</span>
+    </button>
   </div>
 
-  <script>
-    // ── FAQ TOGGLE ─────────────────────
-    function toggleFAQ(btn) {
-      const answer = btn.nextElementSibling
-      const icon = btn.querySelector('.faq-icon')
-      const isOpen = answer.classList.contains('open')
-      document.querySelectorAll('.faq-answer.open').forEach(el => {
-        el.classList.remove('open')
-        el.previousElementSibling.querySelector('.faq-icon').classList.remove('open')
-      })
-      if (!isOpen) {
-        answer.classList.add('open')
-        icon.classList.add('open')
+  <script type="module">
+    import { supabase } from './supabase.js'
+
+    let currentUser = null
+    let currentProfile = null
+    let allTransactions = []
+    let cryptoAction = 'buy'
+    let cryptoHoldings = {}
+    let selectedCardType = 'virtual'
+    let selectedLoanType = 'personal'
+    let selectedBillType = 'electricity'
+    let billPayments = []
+    let balanceVisible = true
+    let realBalance = '$0.00'
+
+    // ── SIDEBAR ───────────────────────────
+    window.openSidebar = function() {
+      document.getElementById('sidebar').classList.add('open')
+      document.getElementById('sidebar-overlay').classList.add('open')
+      document.body.style.overflow = 'hidden'
+    }
+    window.closeSidebar = function() {
+      document.getElementById('sidebar').classList.remove('open')
+      document.getElementById('sidebar-overlay').classList.remove('open')
+      document.body.style.overflow = ''
+    }
+
+    // ── NOTIFICATIONS ─────────────────────
+    window.showNotifications = function() {
+      const panel = document.getElementById('notif-panel')
+      panel.classList.toggle('hidden')
+    }
+    window.hideNotifications = function() {
+      document.getElementById('notif-panel').classList.add('hidden')
+    }
+    document.addEventListener('click', function(e) {
+      const panel = document.getElementById('notif-panel')
+      if (!panel.contains(e.target) && !e.target.closest('[onclick="showNotifications()"]')) {
+        panel.classList.add('hidden')
+      }
+    })
+
+    // ── BALANCE TOGGLE ────────────────────
+    window.toggleBalance = function() {
+      balanceVisible = !balanceVisible
+      const balanceEl = document.getElementById('balance-display')
+      const eyeIcon = document.getElementById('eye-icon')
+      const eyeLabel = document.getElementById('eye-label')
+
+      if (balanceVisible) {
+        balanceEl.textContent = realBalance
+        eyeIcon.setAttribute('data-lucide', 'eye')
+        eyeLabel.textContent = 'Hide'
+      } else {
+        balanceEl.textContent = '****'
+        eyeIcon.setAttribute('data-lucide', 'eye-off')
+        eyeLabel.textContent = 'Show'
+      }
+      lucide.createIcons()
+    }
+
+    // ── INIT ──────────────────────────────
+    async function init() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { window.location.href = 'index.html'; return }
+      currentUser = user
+      await loadProfile()
+      await loadTransactions()
+      loadCryptoPortfolio()
+    }
+
+    // ── PROFILE ───────────────────────────
+    async function loadProfile() {
+      const { data: profile } = await supabase
+        .from('profiles').select('*').eq('id', currentUser.id).single()
+      if (!profile) return
+      currentProfile = profile
+
+      // Generate numeric-only account number from user ID
+      const numericId = profile.id.replace(/-/g,'')
+      const digits = numericId.replace(/[a-f]/gi, d => d.charCodeAt(0) - 87)
+        .replace(/[^0-9]/g,'').substring(0, 12).padEnd(12, '0')
+      const acctNum = digits.match(/.{1,4}/g).join(' ')
+      const acctNumRaw = digits
+
+      const name = profile.full_name || 'User'
+      const initial = name.charAt(0).toUpperCase()
+      const bal = '$' + parseFloat(profile.balance).toFixed(2)
+      realBalance = bal
+
+      document.getElementById('sidebar-name').textContent = name
+      document.getElementById('sidebar-email').textContent = profile.email
+      document.getElementById('avatar-letter').textContent = initial
+      document.getElementById('mobile-avatar') && (document.getElementById('mobile-avatar').textContent = initial)
+      document.getElementById('topbar-name').textContent = name.split(' ')[0]
+      document.getElementById('topbar-avatar').textContent = initial
+      document.getElementById('mobile-name').textContent = name.split(' ')[0]
+
+      if (balanceVisible) document.getElementById('balance-display').textContent = bal
+
+      document.getElementById('acct-number').textContent = acctNum
+      document.getElementById('account-number-display').textContent = acctNum
+      document.getElementById('available-balance-transfer').textContent = bal
+      document.getElementById('profile-avatar').textContent = initial
+      document.getElementById('profile-name').textContent = name
+      document.getElementById('profile-email').textContent = profile.email
+      document.getElementById('profile-fullname').textContent = name
+      document.getElementById('profile-email-field').textContent = profile.email
+      document.getElementById('profile-balance').textContent = bal
+      document.getElementById('profile-acct-number').textContent = acctNumRaw
+      document.getElementById('profile-joined').textContent =
+        new Date(profile.created_at).toLocaleDateString('en-US',
+          { year:'numeric', month:'long', day:'numeric' })
+      document.getElementById('card-holder-name').textContent = name.toUpperCase()
+
+      // Card number last 4 digits (numeric)
+      const last4 = digits.slice(-4)
+      document.getElementById('virtual-card-number').textContent = `•••• •••• •••• ${last4}`
+      window._acctNum = acctNumRaw
+
+      // Crypto portfolio value
+      const cryptoSaved = JSON.parse(localStorage.getItem('sc_crypto_' + currentUser.id) || '{}')
+      const cryptoPrices = { BTC:63420, ETH:3290, SOL:142, BNB:580 }
+      const totalCrypto = Object.entries(cryptoSaved).reduce((sum, [coin, amt]) => {
+        return sum + (amt * (cryptoPrices[coin] || 0))
+      }, 0)
+      const cryptoEl = document.getElementById('crypto-portfolio-value')
+      if (cryptoEl) {
+        cryptoEl.textContent = '$' + totalCrypto.toFixed(2)
+        if (totalCrypto > 0) cryptoEl.style.color = '#16a34a'
       }
     }
 
-    // ── FAQ SEARCH ─────────────────────
-    function filterFAQ() {
-      const q = document.getElementById('faq-search').value.toLowerCase()
-      const items = document.querySelectorAll('.faq-item')
-      let visible = 0
-      items.forEach(item => {
-        const text = item.dataset.q || ''
-        const content = item.textContent.toLowerCase()
-        if (!q || text.includes(q) || content.includes(q)) {
-          item.style.display = ''
-          visible++
-        } else {
-          item.style.display = 'none'
-        }
-      })
-      document.getElementById('faq-empty').classList.toggle('hidden', visible > 0)
+    // ── TRANSACTIONS ──────────────────────
+    async function loadTransactions() {
+      const { data: txs } = await supabase
+        .from('transactions')
+        .select('*, sender:sender_id(full_name,email), receiver:receiver_id(full_name,email)')
+        .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
+        .order('created_at', { ascending: false })
+      allTransactions = txs || []
+      renderTransactions(allTransactions, 'recent-tx-list', 5)
+      renderTransactions(allTransactions, 'all-tx-list')
     }
 
-    // ── SCROLL TO CATEGORY ─────────────
-    function scrollToFAQ(category) {
-      document.querySelectorAll('.faq-item').forEach(item => {
-        item.style.display = item.dataset.category === category ? '' : 'none'
-      })
-      document.getElementById('faq-search').value = category
-      document.getElementById('faq-container').scrollIntoView({ behavior: 'smooth' })
-      document.getElementById('faq-empty').classList.add('hidden')
-    }
-
-    // ── CHAT SYSTEM ────────────────────
-    const chatResponses = {
-      'how do i send money': 'To send money, go to **Send Money** in the sidebar or tap Send in Quick Actions. Enter the recipient\'s email, amount, and an optional note. Transfers are instant!',
-      'my transfer failed': 'Sorry to hear that! Please check that the recipient has a SilverCrest account and that their email is correct. Also ensure you have sufficient balance. If the issue persists, email us at support@silvercrestfin.com',
-      'how do i get a card': 'Go to **Cards** in the sidebar. You can get a free Virtual Card instantly, or request a Physical Debit Card for $5 (delivered in 3–5 days). You can also apply for a Credit Card!',
-      'i forgot my password': 'Password reset is coming soon! For now, email us at support@silvercrestfin.com with your registered email address and we\'ll help you within 24 hours.',
-      'default': 'Thanks for your message! Our support team will get back to you shortly. For urgent matters, email us directly at support@silvercrestfin.com — we respond within 24 hours.'
-    }
-
-    function addMessage(text, isUser = false) {
-      const messagesEl = document.getElementById('chat-messages')
-      const bubble = document.createElement('div')
-      bubble.className = isUser ? 'chat-bubble-user' : 'chat-bubble-agent'
-      bubble.textContent = text
-      messagesEl.appendChild(bubble)
-      messagesEl.scrollTop = messagesEl.scrollHeight
-    }
-
-    function showTyping() {
-      const messagesEl = document.getElementById('chat-messages')
-      const typingEl = document.createElement('div')
-      typingEl.id = 'typing-indicator'
-      typingEl.className = 'chat-bubble-agent'
-      typingEl.style.cssText = 'display:flex;align-items:center;gap:4px;padding:12px 16px;'
-      typingEl.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>'
-      messagesEl.appendChild(typingEl)
-      messagesEl.scrollTop = messagesEl.scrollHeight
-    }
-
-    function hideTyping() {
-      const el = document.getElementById('typing-indicator')
-      if (el) el.remove()
-    }
-
-    function getResponse(message) {
-      const lower = message.toLowerCase()
-      for (const [key, response] of Object.entries(chatResponses)) {
-        if (key !== 'default' && lower.includes(key.split(' ')[0])) {
-          return response
-        }
+    function renderTransactions(txs, containerId, limit = null) {
+      const container = document.getElementById(containerId)
+      const list = limit ? txs.slice(0, limit) : txs
+      if (!list.length) {
+        container.innerHTML = `
+          <div style="text-align:center;padding:32px 0;">
+            <i data-lucide="inbox" style="width:32px;height:32px;color:#e2e8f0;margin:0 auto 8px;display:block;"></i>
+            <p style="color:#94a3b8;font-size:14px;">No transactions yet</p>
+          </div>`
+        lucide.createIcons(); return
       }
-      return chatResponses['default']
+      container.innerHTML = list.map(tx => {
+        const isSender = tx.sender_id === currentUser.id
+        const isSelf = tx.sender_id === currentUser.id && tx.receiver_id === currentUser.id
+        const name = isSelf ? 'Crypto/Bill'
+          : isSender ? (tx.receiver?.full_name || 'Unknown')
+          : (tx.sender?.full_name || 'Unknown')
+        const label = isSelf ? (tx.note || 'Transfer')
+          : isSender ? `To ${name}` : `From ${name}`
+        const amountStr = '$' + parseFloat(tx.amount).toFixed(2)
+        const amountColor = isSender && !isSelf ? '#ef4444' : isSelf ? '#6366f1' : '#22c55e'
+        const amountPrefix = isSender && !isSelf ? '-' : isSelf ? '' : '+'
+        const iconBg = isSender && !isSelf ? '#fff1f2' : isSelf ? '#eef2ff' : '#f0fdf4'
+        const iconColor = isSender && !isSelf ? '#ef4444' : isSelf ? '#6366f1' : '#22c55e'
+        const iconName = isSender && !isSelf ? 'arrow-up-right' : isSelf ? 'refresh-cw' : 'arrow-down-left'
+        const date = new Date(tx.created_at).toLocaleDateString('en-US',
+          { month:'short', day:'numeric' })
+        return `
+          <div class="tx-item">
+            <div class="tx-icon" style="background:${iconBg};">
+              <i data-lucide="${iconName}" style="width:16px;height:16px;color:${iconColor};"></i>
+            </div>
+            <div style="flex:1;min-width:0;">
+              <p style="font-size:13px;font-weight:600;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${label}</p>
+              <p style="font-size:11px;color:#94a3b8;margin-top:2px;">${date}</p>
+            </div>
+            <span style="font-size:13px;font-weight:700;color:${amountColor};flex-shrink:0;">
+              ${amountPrefix}${amountStr}
+            </span>
+          </div>`
+      }).join('')
+      lucide.createIcons()
     }
 
-    function sendMessage() {
-      const input = document.getElementById('chat-input')
-      const text = input.value.trim()
-      if (!text) return
-      addMessage(text, true)
-      input.value = ''
-      showTyping()
-      setTimeout(() => {
-        hideTyping()
-        addMessage(getResponse(text))
-      }, 1200)
+    window.filterTransactions = function() {
+      const q = document.getElementById('tx-search').value.toLowerCase()
+      const filtered = allTransactions.filter(tx =>
+        (tx.sender?.full_name || '').toLowerCase().includes(q) ||
+        (tx.receiver?.full_name || '').toLowerCase().includes(q) ||
+        (tx.note || '').toLowerCase().includes(q)
+      )
+      renderTransactions(filtered, 'all-tx-list')
     }
 
-    function sendQuickReply(text) {
-      addMessage(text, true)
-      showTyping()
-      setTimeout(() => {
-        hideTyping()
-        addMessage(getResponse(text))
-      }, 1200)
+    // ── SEND MONEY ────────────────────────
+    document.getElementById('transfer-btn').addEventListener('click', async () => {
+      const email = document.getElementById('recipient-email').value.trim()
+      const amount = parseFloat(document.getElementById('transfer-amount').value)
+      const note = document.getElementById('transfer-note').value.trim()
+      const errDiv = document.getElementById('transfer-error')
+      const okDiv = document.getElementById('transfer-success')
+      const btn = document.getElementById('transfer-btn')
+      errDiv.classList.add('hidden'); okDiv.classList.add('hidden')
+
+      if (!email || !amount || amount <= 0) {
+        errDiv.textContent = 'Please enter a valid recipient and amount.'
+        errDiv.classList.remove('hidden'); return
+      }
+      if (amount > currentProfile.balance) {
+        errDiv.textContent = 'Insufficient balance.'
+        errDiv.classList.remove('hidden'); return
+      }
+      if (email === currentProfile.email) {
+        errDiv.textContent = 'You cannot send money to yourself.'
+        errDiv.classList.remove('hidden'); return
+      }
+      btn.textContent = 'Sending...'; btn.disabled = true
+
+      const { data: recipient } = await supabase
+        .from('profiles').select('*').eq('email', email).single()
+      if (!recipient) {
+        errDiv.textContent = 'Recipient not found.'
+        errDiv.classList.remove('hidden')
+        btn.textContent = 'Send Money'; btn.disabled = false; return
+      }
+
+      await supabase.from('profiles').update({ balance: currentProfile.balance - amount }).eq('id', currentUser.id)
+      await supabase.from('profiles').update({ balance: recipient.balance + amount }).eq('id', recipient.id)
+      await supabase.from('transactions').insert({
+        sender_id: currentUser.id, receiver_id: recipient.id, amount, note
+      })
+
+      okDiv.textContent = `✅ $${amount.toFixed(2)} sent to ${recipient.full_name}!`
+      okDiv.classList.remove('hidden')
+      document.getElementById('recipient-email').value = ''
+      document.getElementById('transfer-amount').value = ''
+      document.getElementById('transfer-note').value = ''
+      btn.textContent = 'Send Money'; btn.disabled = false
+      await loadProfile(); await loadTransactions()
+    })
+
+    // ── CRYPTO ────────────────────────────
+    function loadCryptoPortfolio() {
+      const coins = [
+        { symbol:'BTC', name:'Bitcoin', price:63420, icon:'bitcoin', color:'#f59e0b', bg:'#fffbeb' },
+        { symbol:'ETH', name:'Ethereum', price:3290, icon:'trending-up', color:'#6366f1', bg:'#eef2ff' },
+        { symbol:'SOL', name:'Solana', price:142, icon:'zap', color:'#8b5cf6', bg:'#f5f3ff' },
+        { symbol:'BNB', name:'BNB', price:580, icon:'coins', color:'#f59e0b', bg:'#fffbeb' },
+      ]
+      const saved = JSON.parse(localStorage.getItem('sc_crypto_' + currentUser?.id) || '{}')
+      cryptoHoldings = saved
+      document.getElementById('crypto-list').innerHTML = coins.map(c => {
+        const held = saved[c.symbol] || 0
+        const value = held * c.price
+        const change = (Math.random() * 6 - 2).toFixed(2)
+        const changeColor = change >= 0 ? '#22c55e' : '#ef4444'
+        return `
+          <div style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;background:#f8fafc;">
+            <div style="width:36px;height:36px;border-radius:50%;background:${c.bg};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i data-lucide="${c.icon}" style="width:16px;height:16px;color:${c.color};"></i>
+            </div>
+            <div style="flex:1;">
+              <p style="font-size:13px;font-weight:600;color:#1e293b;">${c.name}</p>
+              <p style="font-size:11px;color:#94a3b8;">${held.toFixed(6)} ${c.symbol}</p>
+            </div>
+            <div style="text-align:right;">
+              <p style="font-size:13px;font-weight:700;color:#1e293b;">$${value.toFixed(2)}</p>
+              <p style="font-size:11px;font-weight:600;color:${changeColor};">${change >= 0 ? '+' : ''}${change}%</p>
+            </div>
+          </div>`
+      }).join('')
+      lucide.createIcons()
     }
 
-    // Init icons
-    lucide.createIcons()
+    window.setCryptoAction = function(action) {
+      cryptoAction = action
+      const buyBtn = document.getElementById('btn-buy')
+      const sellBtn = document.getElementById('btn-sell')
+      const confirmBtn = document.getElementById('crypto-btn')
+      if (action === 'buy') {
+        buyBtn.style.cssText = 'background:#eef2ff;color:#4f46e5;border-color:#4f46e5;padding:10px;border-radius:12px;font-size:14px;font-weight:600;border-width:2px;cursor:pointer;width:100%;'
+        sellBtn.style.cssText = 'background:#f8fafc;color:#64748b;border-color:#e2e8f0;padding:10px;border-radius:12px;font-size:14px;font-weight:600;border-width:2px;cursor:pointer;width:100%;'
+        confirmBtn.textContent = 'Confirm Purchase'
+      } else {
+        sellBtn.style.cssText = 'background:#fff1f2;color:#ef4444;border-color:#ef4444;padding:10px;border-radius:12px;font-size:14px;font-weight:600;border-width:2px;cursor:pointer;width:100%;'
+        buyBtn.style.cssText = 'background:#f8fafc;color:#64748b;border-color:#e2e8f0;padding:10px;border-radius:12px;font-size:14px;font-weight:600;border-width:2px;cursor:pointer;width:100%;'
+        confirmBtn.textContent = 'Confirm Sale'
+      }
+    }
+
+    window.updateCryptoPreview = function() {
+      const select = document.getElementById('crypto-coin')
+      const price = parseFloat(select.options[select.selectedIndex].dataset.price)
+      const usd = parseFloat(document.getElementById('crypto-amount').value) || 0
+      document.getElementById('crypto-preview').textContent =
+        usd > 0 ? `You will ${cryptoAction === 'buy' ? 'receive' : 'sell'}: ${(usd/price).toFixed(6)} ${select.value}` : 'You will receive: —'
+    }
+
+    window.executeCryptoTrade = async function() {
+      const select = document.getElementById('crypto-coin')
+      const price = parseFloat(select.options[select.selectedIndex].dataset.price)
+      const usd = parseFloat(document.getElementById('crypto-amount').value)
+      const symbol = select.value
+      const errDiv = document.getElementById('crypto-error')
+      const okDiv = document.getElementById('crypto-success')
+      errDiv.classList.add('hidden'); okDiv.classList.add('hidden')
+      if (!usd || usd <= 0) { errDiv.textContent = 'Enter a valid amount.'; errDiv.classList.remove('hidden'); return }
+      if (cryptoAction === 'buy') {
+        if (usd > currentProfile.balance) { errDiv.textContent = 'Insufficient balance.'; errDiv.classList.remove('hidden'); return }
+        const coinsToAdd = usd / price
+        cryptoHoldings[symbol] = (cryptoHoldings[symbol] || 0) + coinsToAdd
+        await supabase.from('profiles').update({ balance: currentProfile.balance - usd }).eq('id', currentUser.id)
+        await supabase.from('transactions').insert({ sender_id: currentUser.id, receiver_id: currentUser.id, amount: usd, note: `Bought ${coinsToAdd.toFixed(6)} ${symbol}` })
+        okDiv.textContent = `✅ Bought ${coinsToAdd.toFixed(6)} ${symbol}!`
+      } else {
+        const coinsToSell = usd / price
+        if (coinsToSell > (cryptoHoldings[symbol] || 0)) { errDiv.textContent = `Not enough ${symbol}.`; errDiv.classList.remove('hidden'); return }
+        cryptoHoldings[symbol] -= coinsToSell
+        await supabase.from('profiles').update({ balance: currentProfile.balance + usd }).eq('id', currentUser.id)
+        await supabase.from('transactions').insert({ sender_id: currentUser.id, receiver_id: currentUser.id, amount: usd, note: `Sold ${coinsToSell.toFixed(6)} ${symbol}` })
+        okDiv.textContent = `✅ Sold ${coinsToSell.toFixed(6)} ${symbol}!`
+      }
+      localStorage.setItem('sc_crypto_' + currentUser.id, JSON.stringify(cryptoHoldings))
+      okDiv.classList.remove('hidden')
+      document.getElementById('crypto-amount').value = ''
+      await loadProfile(); loadCryptoPortfolio()
+    }
+
+    // ── CARDS ─────────────────────────────
+    window.selectCardType = function(type) {
+      selectedCardType = type
+      ;['virtual','debit','credit'].forEach(t => {
+        const el = document.getElementById('card-type-' + t)
+        el.style.borderColor = t === type ? '#4f46e5' : '#e2e8f0'
+        el.style.background = t === type ? '#eef2ff' : '#f8fafc'
+      })
+    }
+    window.requestCard = function() {
+      const labels = { virtual:'✅ Virtual card activated!', debit:'✅ Physical card requested! Arrives in 3–5 days.', credit:'✅ Application submitted! We will review within 24 hours.' }
+      const msg = document.getElementById('card-request-msg')
+      msg.textContent = labels[selectedCardType]
+      msg.classList.remove('hidden')
+    }
+    window.formatCardNumber = function(input) {
+      let val = input.value.replace(/\D/g,'').substring(0,16)
+      input.value = val.match(/.{1,4}/g)?.join(' ') || val
+    }
+    window.formatExpiry = function(input) {
+      let val = input.value.replace(/\D/g,'').substring(0,4)
+      if (val.length >= 2) val = val.substring(0,2) + '/' + val.substring(2)
+      input.value = val
+    }
+    window.addExternalCard = function() {
+      const number = document.getElementById('ext-card-number').value.trim()
+      const expiry = document.getElementById('ext-card-expiry').value.trim()
+      const cvv = document.getElementById('ext-card-cvv').value.trim()
+      const name = document.getElementById('ext-card-name').value.trim()
+      const msg = document.getElementById('ext-card-msg')
+      if (!number || !expiry || !cvv || !name) {
+        msg.style.cssText = 'background:#fff1f2;border:1px solid #fecaca;color:#ef4444;padding:12px 16px;border-radius:12px;font-size:14px;'
+        msg.textContent = '⚠️ Please fill in all card details.'
+        msg.classList.remove('hidden'); return
+      }
+      msg.style.cssText = 'background:#f0fdf4;border:1px solid #bbf7d0;color:#16a34a;padding:12px 16px;border-radius:12px;font-size:14px;'
+      msg.textContent = '✅ Card added successfully!'
+      msg.classList.remove('hidden')
+      document.getElementById('ext-card-number').value = ''
+      document.getElementById('ext-card-expiry').value = ''
+      document.getElementById('ext-card-cvv').value = ''
+      document.getElementById('ext-card-name').value = ''
+    }
+
+    // ── BILLS ─────────────────────────────
+    window.selectBill = function(type) {
+      selectedBillType = type
+      ;['electricity','water','internet','tv','phone','rent'].forEach(t => {
+        const el = document.getElementById('bill-' + t)
+        el.style.borderColor = t === type ? '#4f46e5' : '#e2e8f0'
+        el.style.background = t === type ? '#eef2ff' : '#f8fafc'
+      })
+    }
+    window.payBill = async function() {
+      const account = document.getElementById('bill-account').value.trim()
+      const amount = parseFloat(document.getElementById('bill-amount').value)
+      const errDiv = document.getElementById('bill-error')
+      const okDiv = document.getElementById('bill-success')
+      errDiv.classList.add('hidden'); okDiv.classList.add('hidden')
+      if (!account || !amount || amount <= 0) { errDiv.textContent = 'Please fill all fields.'; errDiv.classList.remove('hidden'); return }
+      if (amount > currentProfile.balance) { errDiv.textContent = 'Insufficient balance.'; errDiv.classList.remove('hidden'); return }
+      await supabase.from('profiles').update({ balance: currentProfile.balance - amount }).eq('id', currentUser.id)
+      await supabase.from('transactions').insert({ sender_id: currentUser.id, receiver_id: currentUser.id, amount, note: `${selectedBillType} bill payment` })
+      billPayments.unshift({ type: selectedBillType, account, amount })
+      okDiv.textContent = `✅ $${amount.toFixed(2)} paid for ${selectedBillType}!`
+      okDiv.classList.remove('hidden')
+      document.getElementById('bill-account').value = ''
+      document.getElementById('bill-amount').value = ''
+      renderBillHistory(); await loadProfile()
+    }
+    function renderBillHistory() {
+      const icons = { electricity:'zap', water:'droplets', internet:'wifi', tv:'tv', phone:'phone', rent:'home' }
+      const colors = { electricity:'#f97316', water:'#3b82f6', internet:'#6366f1', tv:'#8b5cf6', phone:'#22c55e', rent:'#ef4444' }
+      const container = document.getElementById('bill-history')
+      if (!billPayments.length) return
+      container.innerHTML = billPayments.map(b => `
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #f8fafc;">
+          <div style="width:36px;height:36px;border-radius:10px;background:#f8fafc;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i data-lucide="${icons[b.type]}" style="width:16px;height:16px;color:${colors[b.type]};"></i>
+          </div>
+          <div style="flex:1;"><p style="font-size:13px;font-weight:600;color:#1e293b;">${b.type} Bill</p><p style="font-size:11px;color:#94a3b8;">${b.account}</p></div>
+          <span style="font-size:13px;font-weight:700;color:#ef4444;">-$${b.amount.toFixed(2)}</span>
+        </div>`).join('')
+      lucide.createIcons()
+    }
+
+    // ── LOANS ─────────────────────────────
+    window.selectLoan = function(type) {
+      selectedLoanType = type
+      ;['personal','business','mortgage'].forEach(t => {
+        const el = document.getElementById('loan-' + t)
+        el.style.borderColor = t === type ? '#4f46e5' : '#e2e8f0'
+        el.style.background = t === type ? '#eef2ff' : '#f8fafc'
+      })
+      updateLoanPreview()
+    }
+    window.updateLoanPreview = function() {
+      const amount = parseFloat(document.getElementById('loan-amount').value)
+      const months = parseInt(document.getElementById('loan-period').value)
+      if (!amount || amount <= 0) { document.getElementById('loan-preview').classList.add('hidden'); return }
+      const rates = { personal:0.12, business:0.09, mortgage:0.065 }
+      const rate = rates[selectedLoanType] / 12
+      const monthly = (amount * rate * Math.pow(1+rate,months)) / (Math.pow(1+rate,months) - 1)
+      const total = monthly * months
+      document.getElementById('loan-monthly').textContent = '$' + monthly.toFixed(2)
+      document.getElementById('loan-total').textContent = '$' + total.toFixed(2)
+      document.getElementById('loan-interest').textContent = '$' + (total - amount).toFixed(2)
+      document.getElementById('loan-preview').classList.remove('hidden')
+    }
+    window.applyLoan = function() {
+      const amount = parseFloat(document.getElementById('loan-amount').value)
+      const okDiv = document.getElementById('loan-success')
+      if (!amount || amount <= 0) {
+        okDiv.style.cssText = 'background:#fff1f2;border:1px solid #fecaca;color:#ef4444;padding:12px 16px;border-radius:12px;font-size:14px;'
+        okDiv.textContent = '⚠️ Enter a loan amount.'; okDiv.classList.remove('hidden'); return
+      }
+      okDiv.style.cssText = 'background:#f0fdf4;border:1px solid #bbf7d0;color:#16a34a;padding:12px 16px;border-radius:12px;font-size:14px;'
+      okDiv.textContent = `✅ Application for $${amount.toFixed(2)} submitted!`
+      okDiv.classList.remove('hidden')
+    }
+
+    // ── HELPERS ───────────────────────────
+    window.copyAccountNumber = function() {
+      navigator.clipboard.writeText(window._acctNum || '')
+      alert('Account number copied!')
+    }
+
+    window.showSection = function(name) {
+      const sections = ['dashboard','transfer','transactions','crypto','cards','bills','loans','profile']
+      sections.forEach(s => document.getElementById('section-' + s)?.classList.add('hidden'))
+      document.getElementById('section-' + name)?.classList.remove('hidden')
+      const titles = { dashboard:'Dashboard', transfer:'Send Money', transactions:'Transactions', crypto:'Crypto', cards:'My Cards', bills:'Pay Bills', loans:'Loans', profile:'Profile' }
+      const titleEl = document.getElementById('page-title-desktop')
+      if (titleEl) titleEl.textContent = titles[name] || name
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'))
+      document.getElementById('nav-' + name)?.classList.add('active')
+      const mobileMap = { dashboard:'mob-dashboard', transfer:'mob-transfer', cards:'mob-cards', crypto:'mob-crypto', profile:'mob-profile' }
+      document.querySelectorAll('.mobile-nav-btn').forEach(el => el.classList.remove('active'))
+      if (mobileMap[name]) document.getElementById(mobileMap[name])?.classList.add('active')
+      closeSidebar()
+      window.scrollTo(0, 0)
+    }
+
+    window.handleLogout = async function() {
+      await supabase.auth.signOut()
+      window.location.href = 'index.html'
+    }
+
+    init()
   </script>
+  <script>lucide.createIcons();</script>
 </body>
 </html>
