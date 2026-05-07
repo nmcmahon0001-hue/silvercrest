@@ -9,51 +9,97 @@
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <style>
     * { font-family: 'Inter', sans-serif; }
-    .step { display: none; }
-    .step.active { display: block; }
-    .step-indicator {
-      width: 32px; height: 32px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 13px; font-weight: 700; transition: all 0.3s ease;
-    }
-    .step-line { height: 2px; flex: 1; transition: all 0.3s ease; }
-    .input-field {
-      width: 100%; background: #f8fafc; border: 1px solid #e2e8f0;
-      border-radius: 12px; padding: 12px 16px; font-size: 14px;
-      color: #1e293b; outline: none; transition: all 0.2s ease;
-      font-family: 'Inter', sans-serif; box-sizing: border-box;
-    }
-    .input-field:focus {
-      border-color: #4f46e5;
-      box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
-    }
-    .btn-primary {
-      background: #4f46e5; color: white; border: none;
-      border-radius: 12px; padding: 13px 20px; font-size: 14px;
-      font-weight: 600; cursor: pointer; transition: all 0.2s ease;
-      width: 100%; font-family: 'Inter', sans-serif;
-    }
-    .btn-primary:hover { background: #4338ca; }
-    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
     .orb {
       position: absolute; border-radius: 50%;
       filter: blur(80px); opacity: 0.2; pointer-events: none;
     }
-    .card-shine {
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.15);
+
+    /* Step indicators */
+    .step { display: none; }
+    .step.active { display: block; animation: fadeUp 0.3s ease; }
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(12px); }
+      to { opacity:1; transform:translateY(0); }
+    }
+    .step-dot {
+      width: 34px; height: 34px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; transition: all 0.3s ease;
+      flex-shrink: 0;
+    }
+    .step-line { height: 2px; flex: 1; transition: background 0.3s ease; }
+
+    /* Professional input styling */
+    .field-group { position: relative; }
+    .field-label {
+      display: block; font-size: 12px; font-weight: 600;
+      color: #64748b; text-transform: uppercase; letter-spacing: 0.06em;
+      margin-bottom: 6px;
+    }
+    .field-input {
+      width: 100%; background: white;
+      border: 1.5px solid #e2e8f0; border-radius: 12px;
+      padding: 13px 16px 13px 44px; font-size: 14px;
+      color: #1e293b; outline: none; transition: all 0.2s ease;
+      font-family: 'Inter', sans-serif; box-sizing: border-box;
+      appearance: none; -webkit-appearance: none;
+    }
+    .field-input:focus {
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 3px rgba(79,70,229,0.08);
+      background: white;
+    }
+    .field-input.no-icon { padding-left: 16px; }
+    .field-icon {
+      position: absolute; left: 14px; top: 50%;
+      transform: translateY(-50%); pointer-events: none;
+      color: #94a3b8; width: 16px; height: 16px;
+    }
+    .field-icon-bottom {
+      position: absolute; left: 14px;
+      top: calc(50% + 10px);
+      transform: translateY(-50%); pointer-events: none;
+      color: #94a3b8; width: 16px; height: 16px;
+    }
+    select.field-input {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px; cursor: pointer;
+    }
+
+    .btn-primary {
+      background: #4f46e5; color: white; border: none;
+      border-radius: 12px; padding: 14px 20px; font-size: 14px;
+      font-weight: 600; cursor: pointer; transition: all 0.2s ease;
+      width: 100%; font-family: 'Inter', sans-serif;
+      letter-spacing: 0.01em;
+    }
+    .btn-primary:hover { background: #4338ca; transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .btn-secondary {
+      background: #f8fafc; color: #475569; border: 1.5px solid #e2e8f0;
+      border-radius: 12px; padding: 14px 20px; font-size: 14px;
+      font-weight: 600; cursor: pointer; transition: all 0.2s ease;
+      width: 100%; font-family: 'Inter', sans-serif;
+    }
+    .btn-secondary:hover { background: #f1f5f9; }
+
+    /* Password strength */
+    .strength-bar {
+      height: 3px; border-radius: 2px; transition: all 0.3s ease;
     }
   </style>
 </head>
 <body class="bg-white min-h-screen flex m-0 p-0">
 
   <!-- LEFT PANEL -->
-  <div class="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 relative overflow-hidden"
+  <div class="hidden lg:flex lg:w-5/12 flex-col justify-between p-10 relative overflow-hidden"
     style="background:linear-gradient(135deg,#0f0c29 0%,#302b63 50%,#24243e 100%);min-height:100vh;">
 
-    <div class="orb w-96 h-96 bg-blue-600" style="top:-100px;left:-100px;"></div>
-    <div class="orb w-80 h-80 bg-indigo-700" style="bottom:100px;right:-80px;"></div>
-    <div class="orb w-64 h-64 bg-violet-700" style="top:50%;left:30%;"></div>
+    <div class="orb" style="width:380px;height:380px;background:#4f46e5;top:-120px;left:-120px;"></div>
+    <div class="orb" style="width:300px;height:300px;background:#7c3aed;bottom:80px;right:-80px;"></div>
     <div class="absolute inset-0" style="background-image:linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);background-size:40px 40px;"></div>
 
     <!-- Logo -->
@@ -61,89 +107,91 @@
       <div class="w-9 h-9 bg-white rounded-xl flex items-center justify-center shadow-lg">
         <span class="font-bold text-sm" style="color:#4f46e5;">S</span>
       </div>
-      <span class="text-white font-bold text-xl tracking-tight">SilverCrest</span>
+      <span class="text-white font-bold text-xl">SilverCrest</span>
     </div>
 
-    <!-- Content -->
-    <div class="relative z-10 flex-1 flex flex-col justify-center py-8">
-      <h2 class="text-3xl font-bold text-white mb-2 leading-snug">
-        Join SilverCrest<br/>in minutes.
+    <!-- Middle content -->
+    <div class="relative z-10 flex-1 flex flex-col justify-center py-10">
+      <h2 class="text-3xl font-bold text-white mb-3 leading-snug">
+        Open your account<br/>in minutes.
       </h2>
-      <p class="text-sm mb-10" style="color:rgba(180,200,255,0.75);">
-        A few details and you're ready to bank.
+      <p class="text-sm mb-10" style="color:rgba(180,200,255,0.7);">
+        Secure, fast, and completely free to start.
       </p>
 
-      <!-- Steps explanation -->
-      <div class="space-y-5">
-        <div class="flex items-center gap-4">
-          <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-            style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);">
-            <span class="text-white font-bold text-sm">1</span>
+      <div class="space-y-5" id="step-labels">
+        <div class="flex items-center gap-3" id="label-1">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+            style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.2);">
+            <span class="text-white text-xs font-bold">1</span>
           </div>
           <div>
-            <p class="text-white font-semibold text-sm">Account Credentials</p>
-            <p class="text-xs mt-0.5" style="color:rgba(180,200,255,0.6);">Name, email and password</p>
+            <p class="text-white text-sm font-semibold">Account Credentials</p>
+            <p class="text-xs" style="color:rgba(180,200,255,0.6);">Email and password</p>
           </div>
         </div>
-        <div class="flex items-center gap-4">
-          <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-            style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);">
-            <span class="text-white font-bold text-sm">2</span>
+        <div class="flex items-center gap-3" id="label-2">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+            style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);">
+            <span class="text-white text-xs font-bold">2</span>
           </div>
           <div>
-            <p class="text-white font-semibold text-sm">Personal Information</p>
-            <p class="text-xs mt-0.5" style="color:rgba(180,200,255,0.6);">Phone, date of birth, gender</p>
+            <p class="text-sm font-semibold" style="color:rgba(255,255,255,0.6);">Personal Information</p>
+            <p class="text-xs" style="color:rgba(180,200,255,0.4);">Phone, DOB, gender</p>
           </div>
         </div>
-        <div class="flex items-center gap-4">
-          <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-            style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);">
-            <span class="text-white font-bold text-sm">3</span>
+        <div class="flex items-center gap-3" id="label-3">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+            style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);">
+            <span class="text-white text-xs font-bold">3</span>
           </div>
           <div>
-            <p class="text-white font-semibold text-sm">Address Details</p>
-            <p class="text-xs mt-0.5" style="color:rgba(180,200,255,0.6);">Country and home address</p>
+            <p class="text-sm font-semibold" style="color:rgba(255,255,255,0.6);">Address Details</p>
+            <p class="text-xs" style="color:rgba(180,200,255,0.4);">Country and address</p>
           </div>
         </div>
-        <div class="flex items-center gap-4">
-          <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-            style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);">
-            <span class="text-white font-bold text-sm">4</span>
+        <div class="flex items-center gap-3" id="label-4">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+            style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);">
+            <span class="text-white text-xs font-bold">4</span>
           </div>
           <div>
-            <p class="text-white font-semibold text-sm">Verify Email</p>
-            <p class="text-xs mt-0.5" style="color:rgba(180,200,255,0.6);">Confirm your email address</p>
+            <p class="text-sm font-semibold" style="color:rgba(255,255,255,0.6);">Verify Email</p>
+            <p class="text-xs" style="color:rgba(180,200,255,0.4);">Confirm your email</p>
           </div>
         </div>
       </div>
 
-      <!-- Perks -->
-      <div class="mt-10 grid grid-cols-3 gap-3">
-        <div class="rounded-xl p-3 text-center" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);">
-          <p class="text-white font-bold text-lg">$1K</p>
-          <p class="text-xs" style="color:rgba(180,200,255,0.6);">Welcome bonus</p>
+      <!-- Perks row -->
+      <div class="grid grid-cols-3 gap-2 mt-10">
+        <div class="rounded-xl p-3 text-center"
+          style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);">
+          <p class="text-white font-bold">$1K</p>
+          <p class="text-xs" style="color:rgba(180,200,255,0.5);">Welcome</p>
         </div>
-        <div class="rounded-xl p-3 text-center" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);">
-          <p class="text-white font-bold text-lg">Free</p>
-          <p class="text-xs" style="color:rgba(180,200,255,0.6);">No monthly fees</p>
+        <div class="rounded-xl p-3 text-center"
+          style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);">
+          <p class="text-white font-bold">Free</p>
+          <p class="text-xs" style="color:rgba(180,200,255,0.5);">Forever</p>
         </div>
-        <div class="rounded-xl p-3 text-center" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);">
-          <p class="text-white font-bold text-lg">24/7</p>
-          <p class="text-xs" style="color:rgba(180,200,255,0.6);">Always available</p>
+        <div class="rounded-xl p-3 text-center"
+          style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);">
+          <p class="text-white font-bold">256</p>
+          <p class="text-xs" style="color:rgba(180,200,255,0.5);">Bit SSL</p>
         </div>
       </div>
     </div>
 
     <div class="relative z-10">
-      <p class="text-sm font-medium" style="color:rgba(180,200,255,0.6);">
-        Secure transfers · Live balances · Crypto ready
+      <p class="text-xs" style="color:rgba(180,200,255,0.5);">
+        🔒 Protected by bank-grade encryption
       </p>
     </div>
   </div>
 
   <!-- RIGHT PANEL -->
-  <div class="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-10 bg-white">
-    <div class="w-full max-w-md">
+  <div class="w-full lg:w-7/12 flex items-center justify-center px-6 py-10 lg:px-14 bg-white overflow-y-auto">
+    <div class="w-full max-w-lg">
 
       <!-- Mobile logo -->
       <div class="flex items-center gap-2 mb-8 lg:hidden">
@@ -153,171 +201,342 @@
         <span class="text-gray-900 font-bold text-xl">SilverCrest</span>
       </div>
 
-      <!-- Step Progress Indicator -->
-      <div class="flex items-center gap-2 mb-8">
-        <div class="step-indicator" id="ind-1" style="background:#4f46e5;color:white;">1</div>
+      <!-- Progress bar -->
+      <div class="flex items-center gap-2 mb-8" id="progress-bar">
+        <div class="step-dot" id="dot-1" style="background:#4f46e5;color:white;">1</div>
         <div class="step-line" id="line-1" style="background:#e2e8f0;"></div>
-        <div class="step-indicator" id="ind-2" style="background:#e2e8f0;color:#94a3b8;">2</div>
+        <div class="step-dot" id="dot-2" style="background:#f1f5f9;color:#94a3b8;">2</div>
         <div class="step-line" id="line-2" style="background:#e2e8f0;"></div>
-        <div class="step-indicator" id="ind-3" style="background:#e2e8f0;color:#94a3b8;">3</div>
+        <div class="step-dot" id="dot-3" style="background:#f1f5f9;color:#94a3b8;">3</div>
         <div class="step-line" id="line-3" style="background:#e2e8f0;"></div>
-        <div class="step-indicator" id="ind-4" style="background:#e2e8f0;color:#94a3b8;">4</div>
+        <div class="step-dot" id="dot-4" style="background:#f1f5f9;color:#94a3b8;">4</div>
       </div>
 
-      <!-- Error/Success -->
-      <div id="error-msg" class="hidden bg-red-50 border border-red-100 text-red-500 px-4 py-3 rounded-xl mb-5 text-sm"></div>
-      <div id="success-msg" class="hidden bg-green-50 border border-green-100 text-green-600 px-4 py-3 rounded-xl mb-5 text-sm"></div>
+      <!-- Alerts -->
+      <div id="error-msg" class="hidden bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl mb-5 text-sm flex items-center gap-2">
+        <i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i>
+        <span id="error-text"></span>
+      </div>
 
-      <!-- ── STEP 1: Account Credentials ── -->
+      <!-- ══ STEP 1: Credentials ══ -->
       <div class="step active" id="step-1">
-        <h2 class="text-2xl font-bold text-gray-900 mb-1">Create your account</h2>
-        <p class="text-gray-400 text-sm mb-6">Step 1 of 4 — Account credentials</p>
-        <div class="space-y-4">
-          <div>
-            <label class="text-sm font-medium text-gray-700 mb-1.5 block">Full Name</label>
-            <input type="text" id="s-fullname" placeholder="John Doe" class="input-field"/>
-          </div>
-          <div>
-            <label class="text-sm font-medium text-gray-700 mb-1.5 block">Email Address</label>
-            <input type="email" id="s-email" placeholder="you@example.com" class="input-field"/>
-          </div>
-          <div>
-            <label class="text-sm font-medium text-gray-700 mb-1.5 block">Password</label>
-            <input type="password" id="s-password" placeholder="Min. 8 characters" class="input-field"/>
-          </div>
-          <div>
-            <label class="text-sm font-medium text-gray-700 mb-1.5 block">Confirm Password</label>
-            <input type="password" id="s-confirm-password" placeholder="Repeat password" class="input-field"/>
-          </div>
-          <button onclick="goToStep(2)" class="btn-primary">Continue →</button>
+        <div class="mb-7">
+          <h2 class="text-2xl font-bold text-gray-900">Create your account</h2>
+          <p class="text-gray-400 text-sm mt-1">Step 1 of 3 — Start with your login details</p>
         </div>
+
+        <div class="space-y-5">
+          <!-- Full Name -->
+          <div class="field-group">
+            <label class="field-label">Full Legal Name</label>
+            <div class="relative">
+              <i data-lucide="user" class="field-icon" style="top:50%;transform:translateY(-50%);position:absolute;left:14px;"></i>
+              <input type="text" id="s-fullname" placeholder="As it appears on your ID"
+                class="field-input"/>
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="field-group">
+            <label class="field-label">Email Address</label>
+            <div class="relative">
+              <i data-lucide="mail" class="field-icon" style="top:50%;transform:translateY(-50%);position:absolute;left:14px;"></i>
+              <input type="email" id="s-email" placeholder="you@example.com"
+                class="field-input"/>
+            </div>
+          </div>
+
+          <!-- Password -->
+          <div class="field-group">
+            <label class="field-label">Password</label>
+            <div class="relative">
+              <i data-lucide="lock" class="field-icon" style="top:50%;transform:translateY(-50%);position:absolute;left:14px;"></i>
+              <input type="password" id="s-password" placeholder="Min. 8 characters"
+                class="field-input" oninput="checkPasswordStrength()"/>
+              <button type="button" onclick="togglePasswordVisibility('s-password', 'eye-1')"
+                style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#94a3b8;">
+                <i data-lucide="eye" id="eye-1" class="w-4 h-4"></i>
+              </button>
+            </div>
+            <!-- Password strength -->
+            <div class="flex gap-1 mt-2" id="strength-bars">
+              <div class="strength-bar flex-1 bg-gray-200" id="bar-1"></div>
+              <div class="strength-bar flex-1 bg-gray-200" id="bar-2"></div>
+              <div class="strength-bar flex-1 bg-gray-200" id="bar-3"></div>
+              <div class="strength-bar flex-1 bg-gray-200" id="bar-4"></div>
+            </div>
+            <p id="strength-label" class="text-xs text-gray-400 mt-1"></p>
+          </div>
+
+          <!-- Confirm Password -->
+          <div class="field-group">
+            <label class="field-label">Confirm Password</label>
+            <div class="relative">
+              <i data-lucide="lock" class="field-icon" style="top:50%;transform:translateY(-50%);position:absolute;left:14px;"></i>
+              <input type="password" id="s-confirm-password" placeholder="Repeat your password"
+                class="field-input"/>
+              <button type="button" onclick="togglePasswordVisibility('s-confirm-password', 'eye-2')"
+                style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#94a3b8;">
+                <i data-lucide="eye" id="eye-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Terms -->
+          <div class="flex items-start gap-3 pt-1">
+            <input type="checkbox" id="s-terms"
+              class="mt-0.5 w-4 h-4 text-indigo-600 rounded border-gray-300 cursor-pointer flex-shrink-0"/>
+            <label for="s-terms" class="text-xs text-gray-500 leading-relaxed cursor-pointer">
+              I agree to SilverCrest's
+              <span class="text-indigo-600 font-medium">Terms of Service</span>
+              and
+              <span class="text-indigo-600 font-medium">Privacy Policy</span>.
+              I confirm I am at least 18 years old.
+            </label>
+          </div>
+
+          <button onclick="goToStep(2)" class="btn-primary mt-2">
+            Continue to Personal Info →
+          </button>
+        </div>
+
+        <p class="text-center text-gray-400 text-sm mt-6">
+          Already have an account?
+          <a href="index.html" class="text-indigo-600 font-semibold hover:underline">Sign in</a>
+        </p>
       </div>
 
-      <!-- ── STEP 2: Personal Information ── -->
+      <!-- ══ STEP 2: Personal Info ══ -->
       <div class="step" id="step-2">
-        <h2 class="text-2xl font-bold text-gray-900 mb-1">Personal information</h2>
-        <p class="text-gray-400 text-sm mb-6">Step 2 of 4 — Tell us about yourself</p>
-        <div class="space-y-4">
-          <div>
-            <label class="text-sm font-medium text-gray-700 mb-1.5 block">Phone Number</label>
-            <input type="tel" id="s-phone" placeholder="+1 234 567 8900" class="input-field"/>
+        <div class="mb-7">
+          <h2 class="text-2xl font-bold text-gray-900">Personal information</h2>
+          <p class="text-gray-400 text-sm mt-1">Step 2 of 3 — Required by banking regulations</p>
+        </div>
+
+        <div class="space-y-5">
+          <!-- Phone -->
+          <div class="field-group">
+            <label class="field-label">Phone Number</label>
+            <div class="relative">
+              <i data-lucide="phone" class="field-icon" style="top:50%;transform:translateY(-50%);position:absolute;left:14px;"></i>
+              <input type="tel" id="s-phone" placeholder="+1 (234) 567-8900"
+                class="field-input"/>
+            </div>
+            <p class="text-xs text-gray-400 mt-1.5">Include country code e.g. +234 for Nigeria</p>
           </div>
-          <div>
-            <label class="text-sm font-medium text-gray-700 mb-1.5 block">Date of Birth</label>
-            <input type="date" id="s-dob" class="input-field"/>
+
+          <!-- Date of Birth -->
+          <div class="field-group">
+            <label class="field-label">Date of Birth</label>
+            <div class="relative">
+              <i data-lucide="calendar" class="field-icon" style="top:50%;transform:translateY(-50%);position:absolute;left:14px;"></i>
+              <input type="date" id="s-dob"
+                class="field-input"
+                max=""
+                style="color-scheme:light;"/>
+            </div>
+            <p class="text-xs text-gray-400 mt-1.5">You must be 18 or older to open an account</p>
           </div>
-          <div>
-            <label class="text-sm font-medium text-gray-700 mb-1.5 block">Gender</label>
-            <select id="s-gender" class="input-field">
-              <option value="">Select gender</option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-              <option value="other">Other</option>
-              <option value="prefer_not">Prefer not to say</option>
-            </select>
+
+          <!-- Gender -->
+          <div class="field-group">
+            <label class="field-label">Gender</label>
+            <div class="relative">
+              <i data-lucide="users" class="field-icon" style="top:50%;transform:translateY(-50%);position:absolute;left:14px;"></i>
+              <select id="s-gender" class="field-input">
+                <option value="">Select your gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="non_binary">Non-binary</option>
+                <option value="prefer_not">Prefer not to say</option>
+              </select>
+            </div>
           </div>
+
+          <!-- Occupation -->
+          <div class="field-group">
+            <label class="field-label">Occupation</label>
+            <div class="relative">
+              <i data-lucide="briefcase" class="field-icon" style="top:50%;transform:translateY(-50%);position:absolute;left:14px;"></i>
+              <select id="s-occupation" class="field-input">
+                <option value="">Select occupation</option>
+                <option value="employed">Employed (Full-time)</option>
+                <option value="self_employed">Self-employed / Business owner</option>
+                <option value="student">Student</option>
+                <option value="retired">Retired</option>
+                <option value="unemployed">Unemployed</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+
           <div class="flex gap-3 pt-2">
-            <button onclick="goToStep(1)"
-              class="flex-1 bg-gray-50 border border-gray-200 text-gray-700 font-semibold
-              py-3 rounded-xl transition text-sm hover:bg-gray-100">
-              ← Back
-            </button>
-            <button onclick="goToStep(3)" class="flex-1 btn-primary">Continue →</button>
+            <button onclick="goToStep(1)" class="btn-secondary" style="flex:1;">← Back</button>
+            <button onclick="goToStep(3)" class="btn-primary" style="flex:2;">Continue to Address →</button>
           </div>
         </div>
       </div>
 
-      <!-- ── STEP 3: Address ── -->
+      <!-- ══ STEP 3: Address ══ -->
       <div class="step" id="step-3">
-        <h2 class="text-2xl font-bold text-gray-900 mb-1">Address details</h2>
-        <p class="text-gray-400 text-sm mb-6">Step 3 of 4 — Where are you located?</p>
-        <div class="space-y-4">
-          <div>
-            <label class="text-sm font-medium text-gray-700 mb-1.5 block">Country</label>
-            <select id="s-country" class="input-field">
-              <option value="">Select country</option>
-              <option value="NG">Nigeria</option>
-              <option value="US">United States</option>
-              <option value="GB">United Kingdom</option>
-              <option value="CA">Canada</option>
-              <option value="AU">Australia</option>
-              <option value="GH">Ghana</option>
-              <option value="KE">Kenya</option>
-              <option value="ZA">South Africa</option>
-              <option value="DE">Germany</option>
-              <option value="FR">France</option>
-              <option value="AE">UAE</option>
-              <option value="SG">Singapore</option>
-              <option value="other">Other</option>
-            </select>
+        <div class="mb-7">
+          <h2 class="text-2xl font-bold text-gray-900">Address details</h2>
+          <p class="text-gray-400 text-sm mt-1">Step 3 of 3 — Your residential information</p>
+        </div>
+
+        <div class="space-y-5">
+          <!-- Country -->
+          <div class="field-group">
+            <label class="field-label">Country of Residence</label>
+            <div class="relative">
+              <i data-lucide="globe" class="field-icon" style="top:50%;transform:translateY(-50%);position:absolute;left:14px;"></i>
+              <select id="s-country" class="field-input">
+                <option value="">Select your country</option>
+                <option value="NG">🇳🇬 Nigeria</option>
+                <option value="US">🇺🇸 United States</option>
+                <option value="GB">🇬🇧 United Kingdom</option>
+                <option value="CA">🇨🇦 Canada</option>
+                <option value="AU">🇦🇺 Australia</option>
+                <option value="GH">🇬🇭 Ghana</option>
+                <option value="KE">🇰🇪 Kenya</option>
+                <option value="ZA">🇿🇦 South Africa</option>
+                <option value="DE">🇩🇪 Germany</option>
+                <option value="FR">🇫🇷 France</option>
+                <option value="AE">🇦🇪 UAE</option>
+                <option value="SG">🇸🇬 Singapore</option>
+                <option value="IN">🇮🇳 India</option>
+                <option value="BR">🇧🇷 Brazil</option>
+                <option value="other">🌍 Other</option>
+              </select>
+            </div>
           </div>
-          <div>
-            <label class="text-sm font-medium text-gray-700 mb-1.5 block">Home Address</label>
-            <input type="text" id="s-address" placeholder="123 Main Street, City" class="input-field"/>
+
+          <!-- Street Address -->
+          <div class="field-group">
+            <label class="field-label">Street Address</label>
+            <div class="relative">
+              <i data-lucide="map-pin" class="field-icon" style="top:50%;transform:translateY(-50%);position:absolute;left:14px;"></i>
+              <input type="text" id="s-address"
+                placeholder="123 Main Street, Apartment 4B"
+                class="field-input"/>
+            </div>
           </div>
-          <div>
-            <label class="text-sm font-medium text-gray-700 mb-1.5 block">
-              State / Province
-            </label>
-            <input type="text" id="s-state" placeholder="State or Province" class="input-field"/>
+
+          <!-- City + State row -->
+          <div class="grid grid-cols-2 gap-4">
+            <div class="field-group">
+              <label class="field-label">City</label>
+              <div class="relative">
+                <i data-lucide="building" class="field-icon" style="top:50%;transform:translateY(-50%);position:absolute;left:14px;"></i>
+                <input type="text" id="s-city" placeholder="City"
+                  class="field-input"/>
+              </div>
+            </div>
+            <div class="field-group">
+              <label class="field-label">State / Province</label>
+              <div class="relative">
+                <i data-lucide="map" class="field-icon" style="top:50%;transform:translateY(-50%);position:absolute;left:14px;"></i>
+                <input type="text" id="s-state" placeholder="State"
+                  class="field-input"/>
+              </div>
+            </div>
           </div>
-          <div>
-            <label class="text-sm font-medium text-gray-700 mb-1.5 block">
-              Zip / Postal Code
-            </label>
-            <input type="text" id="s-zip" placeholder="10001" class="input-field"/>
+
+          <!-- Zip code -->
+          <div class="field-group">
+            <label class="field-label">ZIP / Postal Code</label>
+            <div class="relative">
+              <i data-lucide="hash" class="field-icon" style="top:50%;transform:translateY(-50%);position:absolute;left:14px;"></i>
+              <input type="text" id="s-zip" placeholder="10001"
+                class="field-input"/>
+            </div>
           </div>
+
+          <!-- Source of funds -->
+          <div class="field-group">
+            <label class="field-label">Primary Source of Funds</label>
+            <div class="relative">
+              <i data-lucide="dollar-sign" class="field-icon" style="top:50%;transform:translateY(-50%);position:absolute;left:14px;"></i>
+              <select id="s-funds" class="field-input">
+                <option value="">Select source of funds</option>
+                <option value="salary">Salary / Employment income</option>
+                <option value="business">Business income</option>
+                <option value="savings">Personal savings</option>
+                <option value="investment">Investment returns</option>
+                <option value="family">Family support</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+
           <div class="flex gap-3 pt-2">
-            <button onclick="goToStep(2)"
-              class="flex-1 bg-gray-50 border border-gray-200 text-gray-700 font-semibold
-              py-3 rounded-xl transition text-sm hover:bg-gray-100">
-              ← Back
-            </button>
-            <button onclick="submitSignup()" id="signup-btn" class="flex-1 btn-primary">
-              Create Account
+            <button onclick="goToStep(2)" class="btn-secondary" style="flex:1;">← Back</button>
+            <button onclick="submitSignup()" id="signup-btn" class="btn-primary" style="flex:2;">
+              Create My Account →
             </button>
           </div>
+
+          <p class="text-xs text-center text-gray-400 mt-3">
+            🔒 Your information is encrypted and never shared with third parties.
+          </p>
         </div>
       </div>
 
-      <!-- ── STEP 4: Email Verification ── -->
+      <!-- ══ STEP 4: Email Verification ══ -->
       <div class="step" id="step-4">
         <div class="text-center">
-          <div class="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
-            <i data-lucide="mail-check" class="w-8 h-8 text-indigo-600"></i>
+          <div class="w-20 h-20 bg-indigo-100 rounded-3xl flex items-center justify-center mx-auto mb-6">
+            <i data-lucide="mail-check" class="w-10 h-10 text-indigo-600"></i>
           </div>
-          <h2 class="text-2xl font-bold text-gray-900 mb-2">Check your email</h2>
-          <p class="text-gray-400 text-sm mb-2">
-            We've sent a verification link to:
-          </p>
-          <p id="verify-email-display" class="text-indigo-600 font-semibold text-sm mb-6">...</p>
-          <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6 text-left">
-            <p class="text-sm text-blue-700 font-semibold mb-1">📧 Next steps:</p>
-            <ol class="text-xs text-blue-600 space-y-1 list-decimal list-inside">
-              <li>Open your email inbox</li>
-              <li>Click the verification link from SilverCrest</li>
-              <li>You'll be redirected to your dashboard</li>
-            </ol>
+          <h2 class="text-2xl font-bold text-gray-900 mb-2">Check your inbox</h2>
+          <p class="text-gray-400 text-sm mb-1">We've sent a verification link to:</p>
+          <p id="verify-email-display" class="text-indigo-600 font-bold text-base mb-6">...</p>
+
+          <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-5 mb-6 text-left">
+            <p class="text-sm font-bold text-indigo-700 mb-3 flex items-center gap-2">
+              <i data-lucide="info" class="w-4 h-4"></i>
+              What to do next:
+            </p>
+            <div class="space-y-2">
+              <div class="flex items-center gap-2">
+                <div class="w-5 h-5 bg-indigo-600 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span class="text-white text-xs font-bold">1</span>
+                </div>
+                <p class="text-sm text-indigo-700">Open your email inbox</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="w-5 h-5 bg-indigo-600 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span class="text-white text-xs font-bold">2</span>
+                </div>
+                <p class="text-sm text-indigo-700">Click the verification link from SilverCrest</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="w-5 h-5 bg-indigo-600 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span class="text-white text-xs font-bold">3</span>
+                </div>
+                <p class="text-sm text-indigo-700">You'll be taken straight to your dashboard</p>
+              </div>
+            </div>
           </div>
-          <p class="text-xs text-gray-400 mb-4">
-            Didn't receive it? Check your spam folder.
-          </p>
-          <button onclick="resendVerification()" id="resend-btn"
-            class="w-full bg-gray-50 border border-gray-200 text-gray-700 font-semibold
-            py-3 rounded-xl hover:bg-gray-100 transition text-sm mb-3">
+
+          <div class="bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 mb-6 text-left">
+            <p class="text-xs text-amber-700 flex items-center gap-1.5">
+              <i data-lucide="alert-triangle" class="w-3.5 h-3.5 flex-shrink-0"></i>
+              Check your <strong>spam/junk folder</strong> if you don't see it within 2 minutes.
+            </p>
+          </div>
+
+          <button onclick="resendVerification()" id="resend-btn" class="btn-secondary mb-3">
             Resend verification email
           </button>
-          <a href="index.html" class="text-sm text-indigo-600 font-medium hover:underline">
-            Back to Sign in
-          </a>
+          <p class="text-xs text-gray-400">
+            Having trouble?
+            <a href="mailto:support@silvercrestfin.com" class="text-indigo-600 font-medium">
+              Contact support
+            </a>
+          </p>
         </div>
       </div>
-
-      <!-- Sign in link -->
-      <p id="signin-link" class="text-center text-gray-500 text-sm mt-6">
-        Already have an account?
-        <a href="index.html" class="text-indigo-600 font-medium hover:underline">Sign in</a>
-      </p>
 
     </div>
   </div>
@@ -327,30 +546,82 @@
 
     let formData = {}
 
+    // Set max date for DOB (18 years ago)
+    const maxDob = new Date()
+    maxDob.setFullYear(maxDob.getFullYear() - 18)
+    const maxDobStr = maxDob.toISOString().split('T')[0]
+    document.getElementById('s-dob').setAttribute('max', maxDobStr)
+
+    // ── PASSWORD STRENGTH ─────────────────
+    window.checkPasswordStrength = function() {
+      const password = document.getElementById('s-password').value
+      const bars = ['bar-1','bar-2','bar-3','bar-4']
+      const label = document.getElementById('strength-label')
+      let strength = 0
+      if (password.length >= 8) strength++
+      if (/[A-Z]/.test(password)) strength++
+      if (/[0-9]/.test(password)) strength++
+      if (/[^A-Za-z0-9]/.test(password)) strength++
+
+      const colors = ['#ef4444','#f97316','#eab308','#22c55e']
+      const labels = ['Weak','Fair','Good','Strong']
+      const labelColors = ['text-red-500','text-orange-500','text-yellow-500','text-green-500']
+
+      bars.forEach((bar, i) => {
+        const el = document.getElementById(bar)
+        el.style.background = i < strength ? colors[strength - 1] : '#e2e8f0'
+      })
+
+      if (password.length > 0) {
+        label.textContent = labels[strength - 1] || 'Too short'
+        label.className = 'text-xs mt-1 ' + (labelColors[strength - 1] || 'text-red-500')
+      } else {
+        label.textContent = ''
+      }
+    }
+
+    // ── TOGGLE PASSWORD VISIBILITY ────────
+    window.togglePasswordVisibility = function(inputId, iconId) {
+      const input = document.getElementById(inputId)
+      const icon = document.getElementById(iconId)
+      if (input.type === 'password') {
+        input.type = 'text'
+        icon.setAttribute('data-lucide', 'eye-off')
+      } else {
+        input.type = 'password'
+        icon.setAttribute('data-lucide', 'eye')
+      }
+      lucide.createIcons()
+    }
+
+    // ── SHOW ERROR ────────────────────────
+    function showError(msg) {
+      const box = document.getElementById('error-msg')
+      document.getElementById('error-text').textContent = msg
+      box.classList.remove('hidden')
+      box.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    }
+    function hideError() {
+      document.getElementById('error-msg').classList.add('hidden')
+    }
+
     // ── STEP NAVIGATION ───────────────────
     window.goToStep = function(step) {
-      const errorMsg = document.getElementById('error-msg')
-      errorMsg.classList.add('hidden')
+      hideError()
 
-      // Validate current step before moving forward
       if (step === 2) {
         const fullname = document.getElementById('s-fullname').value.trim()
         const email = document.getElementById('s-email').value.trim()
         const password = document.getElementById('s-password').value
         const confirm = document.getElementById('s-confirm-password').value
+        const terms = document.getElementById('s-terms').checked
 
-        if (!fullname || !email || !password || !confirm) {
-          errorMsg.textContent = 'Please fill in all fields.'
-          errorMsg.classList.remove('hidden'); return
-        }
-        if (password.length < 8) {
-          errorMsg.textContent = 'Password must be at least 8 characters.'
-          errorMsg.classList.remove('hidden'); return
-        }
-        if (password !== confirm) {
-          errorMsg.textContent = 'Passwords do not match.'
-          errorMsg.classList.remove('hidden'); return
-        }
+        if (!fullname) { showError('Please enter your full legal name.'); return }
+        if (!email || !email.includes('@')) { showError('Please enter a valid email address.'); return }
+        if (password.length < 8) { showError('Password must be at least 8 characters long.'); return }
+        if (password !== confirm) { showError('Passwords do not match. Please try again.'); return }
+        if (!terms) { showError('Please accept the Terms of Service to continue.'); return }
+
         formData.fullname = fullname
         formData.email = email
         formData.password = password
@@ -360,74 +631,97 @@
         const phone = document.getElementById('s-phone').value.trim()
         const dob = document.getElementById('s-dob').value
         const gender = document.getElementById('s-gender').value
+        const occupation = document.getElementById('s-occupation').value
 
-        if (!phone || !dob || !gender) {
-          errorMsg.textContent = 'Please fill in all fields.'
-          errorMsg.classList.remove('hidden'); return
-        }
+        if (!phone) { showError('Please enter your phone number.'); return }
+        if (!dob) { showError('Please enter your date of birth.'); return }
+        if (!gender) { showError('Please select your gender.'); return }
+        if (!occupation) { showError('Please select your occupation.'); return }
 
-        // Age check — must be 18+
+        // Verify age
         const birthDate = new Date(dob)
         const today = new Date()
-        const age = today.getFullYear() - birthDate.getFullYear()
+        let age = today.getFullYear() - birthDate.getFullYear()
+        const m = today.getMonth() - birthDate.getMonth()
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--
+
         if (age < 18) {
-          errorMsg.textContent = 'You must be at least 18 years old to open an account.'
-          errorMsg.classList.remove('hidden'); return
+          showError('You must be at least 18 years old to open a SilverCrest account.')
+          return
         }
 
         formData.phone = phone
         formData.dob = dob
         formData.gender = gender
+        formData.occupation = occupation
       }
 
-      // Update UI
+      // Update steps UI
       document.querySelectorAll('.step').forEach(s => s.classList.remove('active'))
       document.getElementById('step-' + step).classList.add('active')
-      updateStepIndicators(step)
+      updateProgress(step)
       window.scrollTo(0, 0)
     }
 
-    function updateStepIndicators(currentStep) {
+    function updateProgress(currentStep) {
       for (let i = 1; i <= 4; i++) {
-        const ind = document.getElementById('ind-' + i)
+        const dot = document.getElementById('dot-' + i)
         if (i < currentStep) {
-          ind.style.background = '#4f46e5'
-          ind.style.color = 'white'
-          ind.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>'
+          dot.style.background = '#4f46e5'
+          dot.style.color = 'white'
+          dot.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`
         } else if (i === currentStep) {
-          ind.style.background = '#4f46e5'
-          ind.style.color = 'white'
-          ind.textContent = i
+          dot.style.background = '#4f46e5'
+          dot.style.color = 'white'
+          dot.textContent = i
         } else {
-          ind.style.background = '#e2e8f0'
-          ind.style.color = '#94a3b8'
-          ind.textContent = i
+          dot.style.background = '#f1f5f9'
+          dot.style.color = '#94a3b8'
+          dot.textContent = i
         }
         if (i < 4) {
-          const line = document.getElementById('line-' + i)
-          line.style.background = i < currentStep ? '#4f46e5' : '#e2e8f0'
+          document.getElementById('line-' + i).style.background =
+            i < currentStep ? '#4f46e5' : '#e2e8f0'
+        }
+      }
+
+      // Update left panel labels
+      for (let i = 1; i <= 4; i++) {
+        const label = document.getElementById('label-' + i)
+        if (!label) continue
+        const numEl = label.querySelector('span')
+        const textEls = label.querySelectorAll('p')
+        if (i < currentStep) {
+          label.querySelector('div').style.background = 'rgba(79,70,229,0.3)'
+          label.querySelector('div').style.borderColor = 'rgba(79,70,229,0.5)'
+          textEls[0].style.color = 'white'
+        } else if (i === currentStep) {
+          label.querySelector('div').style.background = 'rgba(255,255,255,0.2)'
+          label.querySelector('div').style.borderColor = 'rgba(255,255,255,0.3)'
+          textEls[0].style.color = 'white'
         }
       }
     }
 
-    // ── SUBMIT SIGNUP ─────────────────────
+    // ── SUBMIT ────────────────────────────
     window.submitSignup = async function() {
+      hideError()
       const country = document.getElementById('s-country').value
       const address = document.getElementById('s-address').value.trim()
+      const city = document.getElementById('s-city').value.trim()
       const state = document.getElementById('s-state').value.trim()
       const zip = document.getElementById('s-zip').value.trim()
-      const errorMsg = document.getElementById('error-msg')
+      const funds = document.getElementById('s-funds').value
       const btn = document.getElementById('signup-btn')
 
-      errorMsg.classList.add('hidden')
-
-      if (!country || !address) {
-        errorMsg.textContent = 'Please fill in your country and address.'
-        errorMsg.classList.remove('hidden'); return
-      }
+      if (!country) { showError('Please select your country of residence.'); return }
+      if (!address) { showError('Please enter your street address.'); return }
+      if (!city) { showError('Please enter your city.'); return }
+      if (!funds) { showError('Please select your primary source of funds.'); return }
 
       formData.country = country
-      formData.address = `${address}, ${state} ${zip}`.trim()
+      formData.address = `${address}, ${city}${state ? ', ' + state : ''} ${zip}`.trim()
+      formData.funds = funds
 
       btn.textContent = 'Creating account...'
       btn.disabled = true
@@ -436,35 +730,37 @@
         email: formData.email,
         password: formData.password,
         options: {
+          emailRedirectTo: 'https://silvercrest-ten.vercel.app/dashboard.html',
           data: {
             full_name: formData.fullname,
             phone: formData.phone,
             date_of_birth: formData.dob,
             gender: formData.gender,
             country: formData.country,
-            address: formData.address
+            address: formData.address,
+            occupation: formData.occupation,
+            source_of_funds: formData.funds
           }
         }
       })
 
       if (error) {
-        errorMsg.textContent = error.message
-        errorMsg.classList.remove('hidden')
-        btn.textContent = 'Create Account'
+        showError(error.message)
+        btn.textContent = 'Create My Account →'
         btn.disabled = false
         return
       }
 
-      // Go to verification step
+      // Show verification step
       document.getElementById('verify-email-display').textContent = formData.email
       document.querySelectorAll('.step').forEach(s => s.classList.remove('active'))
       document.getElementById('step-4').classList.add('active')
-      document.getElementById('signin-link').classList.add('hidden')
-      updateStepIndicators(4)
+      updateProgress(4)
       lucide.createIcons()
+      window.scrollTo(0, 0)
     }
 
-    // ── RESEND VERIFICATION ───────────────
+    // ── RESEND ────────────────────────────
     window.resendVerification = async function() {
       const btn = document.getElementById('resend-btn')
       btn.textContent = 'Sending...'
@@ -479,11 +775,11 @@
         btn.textContent = 'Failed — try again'
         btn.disabled = false
       } else {
-        btn.textContent = '✅ Sent! Check your inbox'
+        btn.textContent = '✅ Email sent! Check your inbox'
         setTimeout(() => {
           btn.textContent = 'Resend verification email'
           btn.disabled = false
-        }, 5000)
+        }, 6000)
       }
     }
   </script>
