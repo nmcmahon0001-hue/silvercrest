@@ -9,39 +9,51 @@
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <style>
     * { font-family: 'Inter', sans-serif; }
-    .step-item { animation: fadeUp 0.5s ease forwards; opacity: 0; }
-    .step-item:nth-child(1) { animation-delay: 0.1s; }
-    .step-item:nth-child(2) { animation-delay: 0.3s; }
-    .step-item:nth-child(3) { animation-delay: 0.5s; }
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+    .step { display: none; }
+    .step.active { display: block; }
+    .step-indicator {
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; transition: all 0.3s ease;
+    }
+    .step-line { height: 2px; flex: 1; transition: all 0.3s ease; }
+    .input-field {
+      width: 100%; background: #f8fafc; border: 1px solid #e2e8f0;
+      border-radius: 12px; padding: 12px 16px; font-size: 14px;
+      color: #1e293b; outline: none; transition: all 0.2s ease;
+      font-family: 'Inter', sans-serif; box-sizing: border-box;
+    }
+    .input-field:focus {
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
+    }
+    .btn-primary {
+      background: #4f46e5; color: white; border: none;
+      border-radius: 12px; padding: 13px 20px; font-size: 14px;
+      font-weight: 600; cursor: pointer; transition: all 0.2s ease;
+      width: 100%; font-family: 'Inter', sans-serif;
+    }
+    .btn-primary:hover { background: #4338ca; }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+    .orb {
+      position: absolute; border-radius: 50%;
+      filter: blur(80px); opacity: 0.2; pointer-events: none;
     }
     .card-shine {
       background: rgba(255,255,255,0.08);
       border: 1px solid rgba(255,255,255,0.15);
     }
-    .orb {
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(80px);
-      opacity: 0.2;
-      pointer-events: none;
-    }
   </style>
 </head>
 <body class="bg-white min-h-screen flex m-0 p-0">
 
-  <!-- LEFT PANEL — fixed with inline style -->
+  <!-- LEFT PANEL -->
   <div class="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 relative overflow-hidden"
-    style="background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); min-height: 100vh;">
+    style="background:linear-gradient(135deg,#0f0c29 0%,#302b63 50%,#24243e 100%);min-height:100vh;">
 
-    <!-- Background orbs -->
     <div class="orb w-96 h-96 bg-blue-600" style="top:-100px;left:-100px;"></div>
     <div class="orb w-80 h-80 bg-indigo-700" style="bottom:100px;right:-80px;"></div>
     <div class="orb w-64 h-64 bg-violet-700" style="top:50%;left:30%;"></div>
-
-    <!-- Grid overlay -->
     <div class="absolute inset-0" style="background-image:linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);background-size:40px 40px;"></div>
 
     <!-- Logo -->
@@ -52,45 +64,55 @@
       <span class="text-white font-bold text-xl tracking-tight">SilverCrest</span>
     </div>
 
-    <!-- Center content -->
+    <!-- Content -->
     <div class="relative z-10 flex-1 flex flex-col justify-center py-8">
       <h2 class="text-3xl font-bold text-white mb-2 leading-snug">
-        Your account,<br/>ready in minutes.
+        Join SilverCrest<br/>in minutes.
       </h2>
       <p class="text-sm mb-10" style="color:rgba(180,200,255,0.75);">
-        No paperwork. No hidden fees. Just banking.
+        A few details and you're ready to bank.
       </p>
 
-      <!-- Steps -->
+      <!-- Steps explanation -->
       <div class="space-y-5">
-        <div class="step-item flex items-center gap-4">
+        <div class="flex items-center gap-4">
           <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
             style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);">
             <span class="text-white font-bold text-sm">1</span>
           </div>
           <div>
-            <p class="text-white font-semibold text-sm">Create your account</p>
-            <p class="text-xs mt-0.5" style="color:rgba(180,200,255,0.6);">Just your name, email and password</p>
+            <p class="text-white font-semibold text-sm">Account Credentials</p>
+            <p class="text-xs mt-0.5" style="color:rgba(180,200,255,0.6);">Name, email and password</p>
           </div>
         </div>
-        <div class="step-item flex items-center gap-4">
+        <div class="flex items-center gap-4">
           <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
             style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);">
             <span class="text-white font-bold text-sm">2</span>
           </div>
           <div>
-            <p class="text-white font-semibold text-sm">Get your account number</p>
-            <p class="text-xs mt-0.5" style="color:rgba(180,200,255,0.6);">Instantly generated, no waiting</p>
+            <p class="text-white font-semibold text-sm">Personal Information</p>
+            <p class="text-xs mt-0.5" style="color:rgba(180,200,255,0.6);">Phone, date of birth, gender</p>
           </div>
         </div>
-        <div class="step-item flex items-center gap-4">
+        <div class="flex items-center gap-4">
           <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
             style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);">
             <span class="text-white font-bold text-sm">3</span>
           </div>
           <div>
-            <p class="text-white font-semibold text-sm">Start sending & receiving</p>
-            <p class="text-xs mt-0.5" style="color:rgba(180,200,255,0.6);">Money and crypto, instantly</p>
+            <p class="text-white font-semibold text-sm">Address Details</p>
+            <p class="text-xs mt-0.5" style="color:rgba(180,200,255,0.6);">Country and home address</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-4">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+            style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);">
+            <span class="text-white font-bold text-sm">4</span>
+          </div>
+          <div>
+            <p class="text-white font-semibold text-sm">Verify Email</p>
+            <p class="text-xs mt-0.5" style="color:rgba(180,200,255,0.6);">Confirm your email address</p>
           </div>
         </div>
       </div>
@@ -112,7 +134,6 @@
       </div>
     </div>
 
-    <!-- Bottom -->
     <div class="relative z-10">
       <p class="text-sm font-medium" style="color:rgba(180,200,255,0.6);">
         Secure transfers · Live balances · Crypto ready
@@ -121,99 +142,350 @@
   </div>
 
   <!-- RIGHT PANEL -->
-  <div class="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white">
+  <div class="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-10 bg-white">
     <div class="w-full max-w-md">
 
       <!-- Mobile logo -->
-      <div class="flex items-center gap-2 mb-10 lg:hidden">
+      <div class="flex items-center gap-2 mb-8 lg:hidden">
         <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
           <span class="text-white font-bold text-sm">S</span>
         </div>
         <span class="text-gray-900 font-bold text-xl">SilverCrest</span>
       </div>
 
-      <h2 class="text-2xl font-bold text-gray-900 mb-1">Create your account</h2>
-      <p class="text-gray-400 text-sm mb-8">Start banking in minutes — completely free</p>
+      <!-- Step Progress Indicator -->
+      <div class="flex items-center gap-2 mb-8">
+        <div class="step-indicator" id="ind-1" style="background:#4f46e5;color:white;">1</div>
+        <div class="step-line" id="line-1" style="background:#e2e8f0;"></div>
+        <div class="step-indicator" id="ind-2" style="background:#e2e8f0;color:#94a3b8;">2</div>
+        <div class="step-line" id="line-2" style="background:#e2e8f0;"></div>
+        <div class="step-indicator" id="ind-3" style="background:#e2e8f0;color:#94a3b8;">3</div>
+        <div class="step-line" id="line-3" style="background:#e2e8f0;"></div>
+        <div class="step-indicator" id="ind-4" style="background:#e2e8f0;color:#94a3b8;">4</div>
+      </div>
 
+      <!-- Error/Success -->
       <div id="error-msg" class="hidden bg-red-50 border border-red-100 text-red-500 px-4 py-3 rounded-xl mb-5 text-sm"></div>
       <div id="success-msg" class="hidden bg-green-50 border border-green-100 text-green-600 px-4 py-3 rounded-xl mb-5 text-sm"></div>
 
-      <form id="signup-form" class="space-y-4">
-        <div>
-          <label class="text-sm font-medium text-gray-700 mb-1.5 block">Full name</label>
-          <input type="text" id="fullname" placeholder="John Doe"
-            class="w-full bg-gray-50 text-gray-900 border border-gray-200 rounded-xl 
-            px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 
-            focus:border-transparent transition text-sm placeholder-gray-400"/>
+      <!-- ── STEP 1: Account Credentials ── -->
+      <div class="step active" id="step-1">
+        <h2 class="text-2xl font-bold text-gray-900 mb-1">Create your account</h2>
+        <p class="text-gray-400 text-sm mb-6">Step 1 of 4 — Account credentials</p>
+        <div class="space-y-4">
+          <div>
+            <label class="text-sm font-medium text-gray-700 mb-1.5 block">Full Name</label>
+            <input type="text" id="s-fullname" placeholder="John Doe" class="input-field"/>
+          </div>
+          <div>
+            <label class="text-sm font-medium text-gray-700 mb-1.5 block">Email Address</label>
+            <input type="email" id="s-email" placeholder="you@example.com" class="input-field"/>
+          </div>
+          <div>
+            <label class="text-sm font-medium text-gray-700 mb-1.5 block">Password</label>
+            <input type="password" id="s-password" placeholder="Min. 8 characters" class="input-field"/>
+          </div>
+          <div>
+            <label class="text-sm font-medium text-gray-700 mb-1.5 block">Confirm Password</label>
+            <input type="password" id="s-confirm-password" placeholder="Repeat password" class="input-field"/>
+          </div>
+          <button onclick="goToStep(2)" class="btn-primary">Continue →</button>
         </div>
-        <div>
-          <label class="text-sm font-medium text-gray-700 mb-1.5 block">Email address</label>
-          <input type="email" id="email" placeholder="you@example.com"
-            class="w-full bg-gray-50 text-gray-900 border border-gray-200 rounded-xl 
-            px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 
-            focus:border-transparent transition text-sm placeholder-gray-400"/>
-        </div>
-        <div>
-          <label class="text-sm font-medium text-gray-700 mb-1.5 block">Password</label>
-          <input type="password" id="password" placeholder="Min. 6 characters"
-            class="w-full bg-gray-50 text-gray-900 border border-gray-200 rounded-xl 
-            px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 
-            focus:border-transparent transition text-sm placeholder-gray-400"/>
-        </div>
-        <button type="submit" id="signup-btn"
-          class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold 
-          py-3 rounded-xl transition duration-200 text-sm">
-          Create free account
-        </button>
-      </form>
-
-      <div class="flex items-center gap-3 my-6">
-        <div class="flex-1 h-px bg-gray-100"></div>
-        <span class="text-gray-400 text-xs font-medium">HAVE AN ACCOUNT?</span>
-        <div class="flex-1 h-px bg-gray-100"></div>
       </div>
 
-      <a href="index.html"
-        class="w-full flex items-center justify-center border border-gray-200 
-        text-gray-700 font-medium py-3 rounded-xl hover:bg-gray-50 transition text-sm">
-        Sign in instead
-      </a>
+      <!-- ── STEP 2: Personal Information ── -->
+      <div class="step" id="step-2">
+        <h2 class="text-2xl font-bold text-gray-900 mb-1">Personal information</h2>
+        <p class="text-gray-400 text-sm mb-6">Step 2 of 4 — Tell us about yourself</p>
+        <div class="space-y-4">
+          <div>
+            <label class="text-sm font-medium text-gray-700 mb-1.5 block">Phone Number</label>
+            <input type="tel" id="s-phone" placeholder="+1 234 567 8900" class="input-field"/>
+          </div>
+          <div>
+            <label class="text-sm font-medium text-gray-700 mb-1.5 block">Date of Birth</label>
+            <input type="date" id="s-dob" class="input-field"/>
+          </div>
+          <div>
+            <label class="text-sm font-medium text-gray-700 mb-1.5 block">Gender</label>
+            <select id="s-gender" class="input-field">
+              <option value="">Select gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+              <option value="prefer_not">Prefer not to say</option>
+            </select>
+          </div>
+          <div class="flex gap-3 pt-2">
+            <button onclick="goToStep(1)"
+              class="flex-1 bg-gray-50 border border-gray-200 text-gray-700 font-semibold
+              py-3 rounded-xl transition text-sm hover:bg-gray-100">
+              ← Back
+            </button>
+            <button onclick="goToStep(3)" class="flex-1 btn-primary">Continue →</button>
+          </div>
+        </div>
+      </div>
 
-      <p class="text-center text-gray-400 text-xs mt-8">
-        🔒 Protected by 256-bit SSL encryption
+      <!-- ── STEP 3: Address ── -->
+      <div class="step" id="step-3">
+        <h2 class="text-2xl font-bold text-gray-900 mb-1">Address details</h2>
+        <p class="text-gray-400 text-sm mb-6">Step 3 of 4 — Where are you located?</p>
+        <div class="space-y-4">
+          <div>
+            <label class="text-sm font-medium text-gray-700 mb-1.5 block">Country</label>
+            <select id="s-country" class="input-field">
+              <option value="">Select country</option>
+              <option value="NG">Nigeria</option>
+              <option value="US">United States</option>
+              <option value="GB">United Kingdom</option>
+              <option value="CA">Canada</option>
+              <option value="AU">Australia</option>
+              <option value="GH">Ghana</option>
+              <option value="KE">Kenya</option>
+              <option value="ZA">South Africa</option>
+              <option value="DE">Germany</option>
+              <option value="FR">France</option>
+              <option value="AE">UAE</option>
+              <option value="SG">Singapore</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-sm font-medium text-gray-700 mb-1.5 block">Home Address</label>
+            <input type="text" id="s-address" placeholder="123 Main Street, City" class="input-field"/>
+          </div>
+          <div>
+            <label class="text-sm font-medium text-gray-700 mb-1.5 block">
+              State / Province
+            </label>
+            <input type="text" id="s-state" placeholder="State or Province" class="input-field"/>
+          </div>
+          <div>
+            <label class="text-sm font-medium text-gray-700 mb-1.5 block">
+              Zip / Postal Code
+            </label>
+            <input type="text" id="s-zip" placeholder="10001" class="input-field"/>
+          </div>
+          <div class="flex gap-3 pt-2">
+            <button onclick="goToStep(2)"
+              class="flex-1 bg-gray-50 border border-gray-200 text-gray-700 font-semibold
+              py-3 rounded-xl transition text-sm hover:bg-gray-100">
+              ← Back
+            </button>
+            <button onclick="submitSignup()" id="signup-btn" class="flex-1 btn-primary">
+              Create Account
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── STEP 4: Email Verification ── -->
+      <div class="step" id="step-4">
+        <div class="text-center">
+          <div class="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
+            <i data-lucide="mail-check" class="w-8 h-8 text-indigo-600"></i>
+          </div>
+          <h2 class="text-2xl font-bold text-gray-900 mb-2">Check your email</h2>
+          <p class="text-gray-400 text-sm mb-2">
+            We've sent a verification link to:
+          </p>
+          <p id="verify-email-display" class="text-indigo-600 font-semibold text-sm mb-6">...</p>
+          <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6 text-left">
+            <p class="text-sm text-blue-700 font-semibold mb-1">📧 Next steps:</p>
+            <ol class="text-xs text-blue-600 space-y-1 list-decimal list-inside">
+              <li>Open your email inbox</li>
+              <li>Click the verification link from SilverCrest</li>
+              <li>You'll be redirected to your dashboard</li>
+            </ol>
+          </div>
+          <p class="text-xs text-gray-400 mb-4">
+            Didn't receive it? Check your spam folder.
+          </p>
+          <button onclick="resendVerification()" id="resend-btn"
+            class="w-full bg-gray-50 border border-gray-200 text-gray-700 font-semibold
+            py-3 rounded-xl hover:bg-gray-100 transition text-sm mb-3">
+            Resend verification email
+          </button>
+          <a href="index.html" class="text-sm text-indigo-600 font-medium hover:underline">
+            Back to Sign in
+          </a>
+        </div>
+      </div>
+
+      <!-- Sign in link -->
+      <p id="signin-link" class="text-center text-gray-500 text-sm mt-6">
+        Already have an account?
+        <a href="index.html" class="text-indigo-600 font-medium hover:underline">Sign in</a>
       </p>
+
     </div>
   </div>
 
   <script type="module">
     import { supabase } from './supabase.js'
-    document.getElementById('signup-form').addEventListener('submit', async (e) => {
-      e.preventDefault()
-      const fullname = document.getElementById('fullname').value
-      const email = document.getElementById('email').value
-      const password = document.getElementById('password').value
+
+    let formData = {}
+
+    // ── STEP NAVIGATION ───────────────────
+    window.goToStep = function(step) {
       const errorMsg = document.getElementById('error-msg')
-      const successMsg = document.getElementById('success-msg')
-      const btn = document.getElementById('signup-btn')
       errorMsg.classList.add('hidden')
-      successMsg.classList.add('hidden')
+
+      // Validate current step before moving forward
+      if (step === 2) {
+        const fullname = document.getElementById('s-fullname').value.trim()
+        const email = document.getElementById('s-email').value.trim()
+        const password = document.getElementById('s-password').value
+        const confirm = document.getElementById('s-confirm-password').value
+
+        if (!fullname || !email || !password || !confirm) {
+          errorMsg.textContent = 'Please fill in all fields.'
+          errorMsg.classList.remove('hidden'); return
+        }
+        if (password.length < 8) {
+          errorMsg.textContent = 'Password must be at least 8 characters.'
+          errorMsg.classList.remove('hidden'); return
+        }
+        if (password !== confirm) {
+          errorMsg.textContent = 'Passwords do not match.'
+          errorMsg.classList.remove('hidden'); return
+        }
+        formData.fullname = fullname
+        formData.email = email
+        formData.password = password
+      }
+
+      if (step === 3) {
+        const phone = document.getElementById('s-phone').value.trim()
+        const dob = document.getElementById('s-dob').value
+        const gender = document.getElementById('s-gender').value
+
+        if (!phone || !dob || !gender) {
+          errorMsg.textContent = 'Please fill in all fields.'
+          errorMsg.classList.remove('hidden'); return
+        }
+
+        // Age check — must be 18+
+        const birthDate = new Date(dob)
+        const today = new Date()
+        const age = today.getFullYear() - birthDate.getFullYear()
+        if (age < 18) {
+          errorMsg.textContent = 'You must be at least 18 years old to open an account.'
+          errorMsg.classList.remove('hidden'); return
+        }
+
+        formData.phone = phone
+        formData.dob = dob
+        formData.gender = gender
+      }
+
+      // Update UI
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'))
+      document.getElementById('step-' + step).classList.add('active')
+      updateStepIndicators(step)
+      window.scrollTo(0, 0)
+    }
+
+    function updateStepIndicators(currentStep) {
+      for (let i = 1; i <= 4; i++) {
+        const ind = document.getElementById('ind-' + i)
+        if (i < currentStep) {
+          ind.style.background = '#4f46e5'
+          ind.style.color = 'white'
+          ind.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>'
+        } else if (i === currentStep) {
+          ind.style.background = '#4f46e5'
+          ind.style.color = 'white'
+          ind.textContent = i
+        } else {
+          ind.style.background = '#e2e8f0'
+          ind.style.color = '#94a3b8'
+          ind.textContent = i
+        }
+        if (i < 4) {
+          const line = document.getElementById('line-' + i)
+          line.style.background = i < currentStep ? '#4f46e5' : '#e2e8f0'
+        }
+      }
+    }
+
+    // ── SUBMIT SIGNUP ─────────────────────
+    window.submitSignup = async function() {
+      const country = document.getElementById('s-country').value
+      const address = document.getElementById('s-address').value.trim()
+      const state = document.getElementById('s-state').value.trim()
+      const zip = document.getElementById('s-zip').value.trim()
+      const errorMsg = document.getElementById('error-msg')
+      const btn = document.getElementById('signup-btn')
+
+      errorMsg.classList.add('hidden')
+
+      if (!country || !address) {
+        errorMsg.textContent = 'Please fill in your country and address.'
+        errorMsg.classList.remove('hidden'); return
+      }
+
+      formData.country = country
+      formData.address = `${address}, ${state} ${zip}`.trim()
+
       btn.textContent = 'Creating account...'
       btn.disabled = true
+
       const { error } = await supabase.auth.signUp({
-        email, password,
-        options: { data: { full_name: fullname } }
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            full_name: formData.fullname,
+            phone: formData.phone,
+            date_of_birth: formData.dob,
+            gender: formData.gender,
+            country: formData.country,
+            address: formData.address
+          }
+        }
       })
+
       if (error) {
         errorMsg.textContent = error.message
         errorMsg.classList.remove('hidden')
-        btn.textContent = 'Create free account'
+        btn.textContent = 'Create Account'
         btn.disabled = false
         return
       }
-      successMsg.textContent = '🎉 Account created! Taking you to your dashboard...'
-      successMsg.classList.remove('hidden')
-      setTimeout(() => window.location.href = 'dashboard.html', 1500)
-    })
+
+      // Go to verification step
+      document.getElementById('verify-email-display').textContent = formData.email
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'))
+      document.getElementById('step-4').classList.add('active')
+      document.getElementById('signin-link').classList.add('hidden')
+      updateStepIndicators(4)
+      lucide.createIcons()
+    }
+
+    // ── RESEND VERIFICATION ───────────────
+    window.resendVerification = async function() {
+      const btn = document.getElementById('resend-btn')
+      btn.textContent = 'Sending...'
+      btn.disabled = true
+
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: formData.email
+      })
+
+      if (error) {
+        btn.textContent = 'Failed — try again'
+        btn.disabled = false
+      } else {
+        btn.textContent = '✅ Sent! Check your inbox'
+        setTimeout(() => {
+          btn.textContent = 'Resend verification email'
+          btn.disabled = false
+        }, 5000)
+      }
+    }
   </script>
   <script>lucide.createIcons();</script>
 </body>
