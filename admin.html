@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SilverCrest — Admin Panel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    .sidebar { width: 260px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 14px; border-radius: 12px;
+      color: #64748b; font-size: 14px; font-weight: 500;
+      cursor: pointer; transition: all 0.2s ease;
+      border: none; background: none; width: 100%; text-align: left;
+    }
+    .nav-item:hover { background: #f1f5f9; color: #1e293b; }
+    .nav-item.active { background: #fff1f2; color: #ef4444; }
+    .stat-card {
+      background: white; border-radius: 16px;
+      padding: 20px; border: 1px solid #f1f5f9;
+      transition: box-shadow 0.2s ease;
+    }
+    .stat-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+    .section-card {
+      background: white; border-radius: 20px;
+      padding: 24px; border: 1px solid #f1f5f9;
+    }
+    .input-field {
+      width: 100%; background: #f8fafc; border: 1px solid #e2e8f0;
+      border-radius: 12px; padding: 11px 16px; font-size: 14px;
+      color: #1e293b; outline: none; transition: all 0.2s ease;
+      font-family: 'Inter', sans-serif; box-sizing: border-box;
+    }
+    .input-field:focus { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,0.1); }
+    .btn-primary {
+      background: #ef4444; color: white; border: none;
+      border-radius: 10px; padding: 10px 18px; font-size: 13px;
+      font-weight: 600; cursor: pointer; transition: all 0.2s ease;
+      font-family: 'Inter', sans-serif;
+    }
+    .btn-primary:hover { background: #dc2626; }
+    .btn-secondary {
+      background: #f8fafc; color: #374151; border: 1px solid #e2e8f0;
+      border-radius: 10px; padding: 10px 18px; font-size: 13px;
+      font-weight: 600; cursor: pointer; transition: all 0.2s ease;
+      font-family: 'Inter', sans-serif;
+    }
+    .btn-secondary:hover { background: #f1f5f9; }
+    .btn-indigo {
+      background: #4f46e5; color: white; border: none;
+      border-radius: 10px; padding: 10px 18px; font-size: 13px;
+      font-weight: 600; cursor: pointer; transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+    .btn-indigo:hover { background: #4338ca; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
+    }
+    .shimmer {
+      background: linear-gradient(90deg,#f8fafc 25%,#f1f5f9 50%,#f8fafc 75%);
+      background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px;
+    }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+      z-index: 100; display: flex; align-items: center; justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+    .modal-box {
+      background: white; border-radius: 24px; padding: 32px;
+      width: 100%; max-width: 420px; margin: 20px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.15);
+    }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      text-align: left; padding: 10px 14px;
+      font-size: 11px; font-weight: 700; color: #94a3b8;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    td {
+      padding: 14px; font-size: 13px; color: #374151;
+      border-bottom: 1px solid #f8fafc; vertical-align: middle;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafafa; }
+    @media (max-width: 1024px) {
+      .sidebar { display: none; }
+      .main-content { margin-left: 0 !important; }
+    }
+  </style>
+</head>
+<body style="background:#f8fafc;" class="flex">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar bg-white border-r border-gray-100 flex flex-col p-5 fixed top-0 left-0 bottom-0 z-40">
+    <div class="flex items-center gap-2.5 px-2 mb-2 mt-1">
+      <div class="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center">
+        <span class="text-white font-bold text-sm">S</span>
+      </div>
+      <span class="text-gray-900 font-bold text-lg">SilverCrest</span>
+    </div>
+    <div class="px-2 mb-6">
+      <span class="badge" style="background:#fff1f2;color:#ef4444;">
+        <i data-lucide="shield-alert" style="width:10px;height:10px;"></i>
+        Admin Panel
+      </span>
+    </div>
+
+    <nav class="flex flex-col gap-1 flex-1">
+      <button class="nav-item active" id="nav-overview" onclick="showSection('overview')">
+        <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Overview
+      </button>
+      <button class="nav-item" id="nav-users" onclick="showSection('users')">
+        <i data-lucide="users" class="w-4 h-4"></i> Manage Users
+      </button>
+      <button class="nav-item" id="nav-transactions" onclick="showSection('transactions')">
+        <i data-lucide="list" class="w-4 h-4"></i> All Transactions
+      </button>
+      <button class="nav-item" id="nav-activity" onclick="showSection('activity')">
+        <i data-lucide="activity" class="w-4 h-4"></i> Activity Log
+      </button>
+    </nav>
+
+    <div class="border-t border-gray-100 pt-4 mt-4">
+      <div class="flex items-center gap-3 px-2 mb-3">
+        <div class="w-9 h-9 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+          <i data-lucide="shield-check" class="w-4 h-4 text-red-500"></i>
+        </div>
+        <div>
+          <p class="text-sm font-semibold text-gray-900">Administrator</p>
+          <p class="text-xs text-gray-400">Full access</p>
+        </div>
+      </div>
+      <button onclick="handleLogout()" class="nav-item text-red-500 hover:bg-red-50 hover:text-red-600">
+        <i data-lucide="log-out" class="w-4 h-4"></i> Sign out
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content flex-1" style="margin-left:260px;min-height:100vh;background:#f8fafc;">
+
+    <!-- TOP BAR -->
+    <div class="bg-white border-b border-gray-100 px-8 py-4 flex justify-between items-center sticky top-0 z-30">
+      <div>
+        <h1 id="page-title" class="text-lg font-bold text-gray-900">Overview</h1>
+        <p class="text-xs text-gray-400 mt-0.5">SilverCrest Admin Dashboard</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="badge" style="background:#fff1f2;color:#ef4444;">
+          <i data-lucide="shield-alert" style="width:10px;height:10px;"></i>
+          Admin Mode
+        </span>
+        <a href="dashboard.html"
+          class="flex items-center gap-2 text-xs text-gray-500 font-medium
+          hover:text-gray-900 bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl transition">
+          <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+          Back to App
+        </a>
+      </div>
+    </div>
+
+    <div class="p-8">
+
+      <!-- ══════════════ OVERVIEW ══════════════ -->
+      <div id="section-overview">
+
+        <!-- Stat Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+          <div class="stat-card">
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                <i data-lucide="users" class="w-5 h-5 text-blue-600"></i>
+              </div>
+              <span class="badge" style="background:#eff6ff;color:#2563eb;">Total</span>
+            </div>
+            <p id="stat-users" class="text-3xl font-bold text-gray-900">0</p>
+            <p class="text-xs text-gray-400 mt-1">Registered Users</p>
+          </div>
+          <div class="stat-card">
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                <i data-lucide="arrow-left-right" class="w-5 h-5 text-green-600"></i>
+              </div>
+              <span class="badge" style="background:#f0fdf4;color:#16a34a;">Total</span>
+            </div>
+            <p id="stat-transactions" class="text-3xl font-bold text-gray-900">0</p>
+            <p class="text-xs text-gray-400 mt-1">Total Transactions</p>
+          </div>
+          <div class="stat-card">
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
+                <i data-lucide="dollar-sign" class="w-5 h-5 text-indigo-600"></i>
+              </div>
+              <span class="badge" style="background:#eef2ff;color:#4f46e5;">Live</span>
+            </div>
+            <p id="stat-money" class="text-3xl font-bold text-gray-900">$0</p>
+            <p class="text-xs text-gray-400 mt-1">Total Money in System</p>
+          </div>
+          <div class="stat-card">
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
+                <i data-lucide="trending-up" class="w-5 h-5 text-purple-600"></i>
+              </div>
+              <span class="badge" style="background:#faf5ff;color:#7c3aed;">Avg</span>
+            </div>
+            <p id="stat-avg" class="text-3xl font-bold text-gray-900">$0</p>
+            <p class="text-xs text-gray-400 mt-1">Avg Balance Per User</p>
+          </div>
+        </div>
+
+        <!-- Recent Users + Recent Transactions -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <div class="section-card">
+            <div class="flex justify-between items-center mb-5">
+              <h3 class="text-sm font-bold text-gray-900">Recent Users</h3>
+              <button onclick="showSection('users')"
+                class="text-xs text-red-500 font-medium hover:underline">
+                View all →
+              </button>
+            </div>
+            <div id="overview-users">
+              <div class="shimmer h-12 mb-3"></div>
+              <div class="shimmer h-12 mb-3"></div>
+              <div class="shimmer h-12"></div>
+            </div>
+          </div>
+          <div class="section-card">
+            <div class="flex justify-between items-center mb-5">
+              <h3 class="text-sm font-bold text-gray-900">Recent Transactions</h3>
+              <button onclick="showSection('transactions')"
+                class="text-xs text-red-500 font-medium hover:underline">
+                View all →
+              </button>
+            </div>
+            <div id="overview-transactions">
+              <div class="shimmer h-12 mb-3"></div>
+              <div class="shimmer h-12 mb-3"></div>
+              <div class="shimmer h-12"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════ MANAGE USERS ══════════════ -->
+      <div id="section-users" class="hidden">
+        <div class="section-card">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-base font-bold text-gray-900">All Users</h3>
+            <div class="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2">
+              <i data-lucide="search" class="w-3.5 h-3.5 text-gray-400"></i>
+              <input type="text" id="user-search" placeholder="Search users..."
+                class="bg-transparent text-sm outline-none w-40" oninput="filterUsers()"/>
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Account No.</th>
+                  <th>Balance</th>
+                  <th>Role</th>
+                  <th>Joined</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="users-tbody">
+                <tr><td colspan="6">
+                  <div class="shimmer h-10 mb-2"></div>
+                  <div class="shimmer h-10 mb-2"></div>
+                  <div class="shimmer h-10"></div>
+                </td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════ ALL TRANSACTIONS ══════════════ -->
+      <div id="section-transactions" class="hidden">
+        <div class="section-card">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-base font-bold text-gray-900">All Transactions</h3>
+            <div class="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2">
+              <i data-lucide="search" class="w-3.5 h-3.5 text-gray-400"></i>
+              <input type="text" id="tx-search" placeholder="Search..."
+                class="bg-transparent text-sm outline-none w-36" oninput="filterTransactions()"/>
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>From</th>
+                  <th>To</th>
+                  <th>Amount</th>
+                  <th>Note</th>
+                  <th>Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="transactions-tbody">
+                <tr><td colspan="6">
+                  <div class="shimmer h-10 mb-2"></div>
+                  <div class="shimmer h-10 mb-2"></div>
+                  <div class="shimmer h-10"></div>
+                </td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════ ACTIVITY LOG ══════════════ -->
+      <div id="section-activity" class="hidden">
+        <div class="section-card">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
+              <i data-lucide="activity" class="w-5 h-5 text-indigo-600"></i>
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-gray-900">Activity Log</h3>
+              <p class="text-xs text-gray-400">All platform activity in real time</p>
+            </div>
+          </div>
+          <div id="activity-log" class="space-y-3">
+            <div class="shimmer h-12"></div>
+            <div class="shimmer h-12"></div>
+            <div class="shimmer h-12"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- EDIT BALANCE MODAL -->
+  <div id="edit-modal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
+          <i data-lucide="edit" class="w-5 h-5 text-indigo-600"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-gray-900">Edit Balance</h3>
+          <p id="edit-modal-name" class="text-xs text-gray-400">User</p>
+        </div>
+      </div>
+      <input type="hidden" id="edit-user-id"/>
+      <div class="mb-5">
+        <label class="text-sm font-medium text-gray-700 mb-1.5 block">New Balance ($)</label>
+        <div class="relative">
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+          <input type="number" id="edit-balance-input" class="input-field" style="padding-left:28px;"/>
+        </div>
+      </div>
+      <div class="flex gap-3">
+        <button onclick="saveBalance()" class="btn-indigo flex-1">Save Changes</button>
+        <button onclick="closeModal()" class="btn-secondary flex-1">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEW USER MODAL -->
+  <div id="view-modal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="flex justify-between items-start mb-6">
+        <h3 class="text-base font-bold text-gray-900">User Details</h3>
+        <button onclick="closeViewModal()"
+          class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-gray-200 transition">
+          <i data-lucide="x" class="w-4 h-4 text-gray-500"></i>
+        </button>
+      </div>
+      <div id="view-modal-content" class="space-y-3"></div>
+      <button onclick="closeViewModal()" class="btn-secondary w-full mt-6">Close</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { supabase } from './supabase.js'
+
+    let allUsers = []
+    let allTransactions = []
+
+    // ── INIT ──────────────────────────────
+    async function init() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { window.location.href = 'index.html'; return }
+
+      const { data: profile } = await supabase
+        .from('profiles').select('is_admin').eq('id', user.id).single()
+      if (!profile?.is_admin) {
+        alert('Access denied!')
+        window.location.href = 'dashboard.html'; return
+      }
+
+      await loadStats()
+      await loadUsers()
+      await loadTransactions()
+      renderActivityLog()
+    }
+
+    // ── STATS ─────────────────────────────
+    async function loadStats() {
+      const { data: users } = await supabase.from('profiles').select('balance')
+      const { data: txs } = await supabase.from('transactions').select('id')
+
+      const totalMoney = users?.reduce((s, u) => s + parseFloat(u.balance), 0) || 0
+      const avgBalance = users?.length ? totalMoney / users.length : 0
+
+      document.getElementById('stat-users').textContent = users?.length || 0
+      document.getElementById('stat-transactions').textContent = txs?.length || 0
+      document.getElementById('stat-money').textContent = '$' + totalMoney.toFixed(2)
+      document.getElementById('stat-avg').textContent = '$' + avgBalance.toFixed(2)
+    }
+
+    // ── LOAD USERS ────────────────────────
+    async function loadUsers() {
+      const { data: users } = await supabase
+        .from('profiles').select('*').order('created_at', { ascending: false })
+      allUsers = users || []
+      renderUsers(allUsers)
+      renderOverviewUsers(allUsers.slice(0, 5))
+    }
+
+    function renderUsers(users) {
+      const tbody = document.getElementById('users-tbody')
+      if (!users.length) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-gray-400">No users found</td></tr>`
+        return
+      }
+      tbody.innerHTML = users.map(u => {
+        const acctNum = 'SC' + u.id.replace(/-/g,'').substring(0,10).toUpperCase()
+        const formatted = acctNum.match(/.{1,4}/g).join(' ')
+        const initial = (u.full_name || 'U').charAt(0).toUpperCase()
+        const date = new Date(u.created_at).toLocaleDateString('en-US',
+          { month:'short', day:'numeric', year:'numeric' })
+        return `
+          <tr>
+            <td>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:34px;height:34px;background:#eef2ff;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <span style="font-size:13px;font-weight:700;color:#4f46e5;">${initial}</span>
+                </div>
+                <div>
+                  <p style="font-size:13px;font-weight:600;color:#1e293b;">${u.full_name}</p>
+                  <p style="font-size:11px;color:#94a3b8;">${u.email}</p>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span style="font-family:monospace;font-size:12px;color:#64748b;">${formatted}</span>
+            </td>
+            <td>
+              <span style="font-size:13px;font-weight:700;color:#4f46e5;">$${parseFloat(u.balance).toFixed(2)}</span>
+            </td>
+            <td>
+              <span class="badge" style="${u.is_admin
+                ? 'background:#fff1f2;color:#ef4444;'
+                : 'background:#f0fdf4;color:#16a34a;'}">
+                ${u.is_admin ? 'Admin' : 'User'}
+              </span>
+            </td>
+            <td style="color:#94a3b8;font-size:12px;">${date}</td>
+            <td>
+              <div style="display:flex;gap:6px;">
+                <button onclick="openViewModal('${u.id}')"
+                  style="background:#eef2ff;color:#4f46e5;border:none;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:600;cursor:pointer;">
+                  View
+                </button>
+                <button onclick="openEditModal('${u.id}', ${u.balance}, '${u.full_name}')"
+                  style="background:#f0fdf4;color:#16a34a;border:none;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:600;cursor:pointer;">
+                  Edit
+                </button>
+                <button onclick="deleteUser('${u.id}', '${u.full_name}')"
+                  style="background:#fff1f2;color:#ef4444;border:none;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:600;cursor:pointer;">
+                  Delete
+                </button>
+              </div>
+            </td>
+          </tr>`
+      }).join('')
+    }
+
+    function renderOverviewUsers(users) {
+      const container = document.getElementById('overview-users')
+      if (!users.length) {
+        container.innerHTML = `<p style="color:#94a3b8;font-size:14px;text-align:center;padding:20px;">No users yet</p>`
+        return
+      }
+      container.innerHTML = users.map(u => {
+        const initial = (u.full_name || 'U').charAt(0).toUpperCase()
+        return `
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #f8fafc;">
+            <div style="width:36px;height:36px;background:#eef2ff;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <span style="font-size:13px;font-weight:700;color:#4f46e5;">${initial}</span>
+            </div>
+            <div style="flex:1;">
+              <p style="font-size:13px;font-weight:600;color:#1e293b;">${u.full_name}</p>
+              <p style="font-size:11px;color:#94a3b8;">${u.email}</p>
+            </div>
+            <span style="font-size:13px;font-weight:700;color:#4f46e5;">$${parseFloat(u.balance).toFixed(2)}</span>
+          </div>`
+      }).join('')
+    }
+
+    window.filterUsers = function() {
+      const q = document.getElementById('user-search').value.toLowerCase()
+      const filtered = allUsers.filter(u =>
+        u.full_name?.toLowerCase().includes(q) ||
+        u.email?.toLowerCase().includes(q)
+      )
+      renderUsers(filtered)
+    }
+
+    // ── LOAD TRANSACTIONS ─────────────────
+    async function loadTransactions() {
+      const { data: txs } = await supabase
+        .from('transactions')
+        .select('*, sender:sender_id(full_name,email), receiver:receiver_id(full_name,email)')
+        .order('created_at', { ascending: false })
+      allTransactions = txs || []
+      renderTransactions(allTransactions)
+      renderOverviewTransactions(allTransactions.slice(0, 5))
+    }
+
+    function renderTransactions(txs) {
+      const tbody = document.getElementById('transactions-tbody')
+      if (!txs.length) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-gray-400">No transactions yet</td></tr>`
+        return
+      }
+      tbody.innerHTML = txs.map(tx => {
+        const isSelf = tx.sender_id === tx.receiver_id
+        const date = new Date(tx.created_at).toLocaleDateString('en-US',
+          { month:'short', day:'numeric', year:'numeric' })
+        return `
+          <tr>
+            <td>
+              <p style="font-size:13px;font-weight:600;color:#1e293b;">
+                ${tx.sender?.full_name || 'Unknown'}
+              </p>
+              <p style="font-size:11px;color:#94a3b8;">${tx.sender?.email || ''}</p>
+            </td>
+            <td>
+              <p style="font-size:13px;font-weight:600;color:#1e293b;">
+                ${isSelf ? 'Self (Crypto/Bill)' : (tx.receiver?.full_name || 'Unknown')}
+              </p>
+              <p style="font-size:11px;color:#94a3b8;">${isSelf ? '' : (tx.receiver?.email || '')}</p>
+            </td>
+            <td>
+              <span style="font-size:13px;font-weight:700;color:#4f46e5;">
+                $${parseFloat(tx.amount).toFixed(2)}
+              </span>
+            </td>
+            <td style="color:#64748b;font-size:12px;max-width:150px;">
+              <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;">
+                ${tx.note || '—'}
+              </span>
+            </td>
+            <td style="color:#94a3b8;font-size:12px;">${date}</td>
+            <td>
+              <button onclick="deleteTransaction('${tx.id}')"
+                style="background:#fff1f2;color:#ef4444;border:none;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:600;cursor:pointer;">
+                Delete
+              </button>
+            </td>
+          </tr>`
+      }).join('')
+    }
+
+    function renderOverviewTransactions(txs) {
+      const container = document.getElementById('overview-transactions')
+      if (!txs.length) {
+        container.innerHTML = `<p style="color:#94a3b8;font-size:14px;text-align:center;padding:20px;">No transactions yet</p>`
+        return
+      }
+      container.innerHTML = txs.map(tx => {
+        const isSelf = tx.sender_id === tx.receiver_id
+        const label = isSelf
+          ? `${tx.sender?.full_name} → Self`
+          : `${tx.sender?.full_name || '?'} → ${tx.receiver?.full_name || '?'}`
+        const date = new Date(tx.created_at).toLocaleDateString('en-US',
+          { month:'short', day:'numeric' })
+        return `
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #f8fafc;">
+            <div style="width:36px;height:36px;background:#eef2ff;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i data-lucide="arrow-left-right" style="width:16px;height:16px;color:#4f46e5;"></i>
+            </div>
+            <div style="flex:1;min-width:0;">
+              <p style="font-size:13px;font-weight:600;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${label}</p>
+              <p style="font-size:11px;color:#94a3b8;">${date}</p>
+            </div>
+            <span style="font-size:13px;font-weight:700;color:#4f46e5;flex-shrink:0;">
+              $${parseFloat(tx.amount).toFixed(2)}
+            </span>
+          </div>`
+      }).join('')
+      lucide.createIcons()
+    }
+
+    window.filterTransactions = function() {
+      const q = document.getElementById('tx-search').value.toLowerCase()
+      const filtered = allTransactions.filter(tx =>
+        (tx.sender?.full_name || '').toLowerCase().includes(q) ||
+        (tx.receiver?.full_name || '').toLowerCase().includes(q) ||
+        (tx.note || '').toLowerCase().includes(q)
+      )
+      renderTransactions(filtered)
+    }
+
+    // ── ACTIVITY LOG ──────────────────────
+    function renderActivityLog() {
+      const container = document.getElementById('activity-log')
+      const activities = []
+
+      allTransactions.slice(0, 20).forEach(tx => {
+        const isSelf = tx.sender_id === tx.receiver_id
+        activities.push({
+          icon: isSelf ? 'refresh-cw' : 'send',
+          iconBg: isSelf ? '#eef2ff' : '#f0fdf4',
+          iconColor: isSelf ? '#4f46e5' : '#16a34a',
+          text: isSelf
+            ? `${tx.sender?.full_name} performed a crypto/bill transaction of $${parseFloat(tx.amount).toFixed(2)}`
+            : `${tx.sender?.full_name} sent $${parseFloat(tx.amount).toFixed(2)} to ${tx.receiver?.full_name}`,
+          time: new Date(tx.created_at).toLocaleString('en-US',
+            { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' })
+        })
+      })
+
+      allUsers.slice(0, 5).forEach(u => {
+        activities.push({
+          icon: 'user-plus',
+          iconBg: '#faf5ff',
+          iconColor: '#7c3aed',
+          text: `${u.full_name} joined SilverCrest`,
+          time: new Date(u.created_at).toLocaleString('en-US',
+            { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' })
+        })
+      })
+
+      activities.sort((a, b) => new Date(b.time) - new Date(a.time))
+
+      if (!activities.length) {
+        container.innerHTML = `
+          <div style="text-align:center;padding:40px;">
+            <p style="color:#94a3b8;font-size:14px;">No activity yet</p>
+          </div>`
+        return
+      }
+
+      container.innerHTML = activities.map(a => `
+        <div style="display:flex;align-items:center;gap:12px;padding:14px;background:#f8fafc;border-radius:12px;">
+          <div style="width:38px;height:38px;background:${a.iconBg};border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i data-lucide="${a.icon}" style="width:16px;height:16px;color:${a.iconColor};"></i>
+          </div>
+          <div style="flex:1;">
+            <p style="font-size:13px;color:#374151;">${a.text}</p>
+            <p style="font-size:11px;color:#94a3b8;margin-top:2px;">${a.time}</p>
+          </div>
+        </div>`).join('')
+      lucide.createIcons()
+    }
+
+    // ── EDIT BALANCE ──────────────────────
+    window.openEditModal = function(userId, balance, name) {
+      document.getElementById('edit-user-id').value = userId
+      document.getElementById('edit-balance-input').value = balance
+      document.getElementById('edit-modal-name').textContent = name
+      document.getElementById('edit-modal').classList.remove('hidden')
+    }
+
+    window.closeModal = function() {
+      document.getElementById('edit-modal').classList.add('hidden')
+    }
+
+    window.saveBalance = async function() {
+      const userId = document.getElementById('edit-user-id').value
+      const newBalance = parseFloat(document.getElementById('edit-balance-input').value)
+      if (isNaN(newBalance) || newBalance < 0) {
+        alert('Please enter a valid balance.'); return
+      }
+      const { error } = await supabase
+        .from('profiles').update({ balance: newBalance }).eq('id', userId)
+      if (error) { alert('Error: ' + error.message); return }
+      closeModal()
+      await loadUsers()
+      await loadStats()
+    }
+
+    // ── VIEW USER ─────────────────────────
+    window.openViewModal = function(userId) {
+      const user = allUsers.find(u => u.id === userId)
+      if (!user) return
+      const acctNum = 'SC' + user.id.replace(/-/g,'').substring(0,10).toUpperCase()
+      const txCount = allTransactions.filter(t =>
+        t.sender_id === userId || t.receiver_id === userId).length
+      document.getElementById('view-modal-content').innerHTML = `
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div style="display:flex;align-items:center;gap:12px;padding-bottom:16px;border-bottom:1px solid #f1f5f9;">
+            <div style="width:48px;height:48px;background:#eef2ff;border-radius:14px;display:flex;align-items:center;justify-content:center;">
+              <span style="font-size:20px;font-weight:700;color:#4f46e5;">${user.full_name.charAt(0)}</span>
+            </div>
+            <div>
+              <p style="font-size:15px;font-weight:700;color:#1e293b;">${user.full_name}</p>
+              <p style="font-size:12px;color:#94a3b8;">${user.email}</p>
+            </div>
+          </div>
+          ${[
+            ['Account Number', acctNum],
+            ['Balance', '$' + parseFloat(user.balance).toFixed(2)],
+            ['Role', user.is_admin ? 'Administrator' : 'Regular User'],
+            ['Total Transactions', txCount],
+            ['Member Since', new Date(user.created_at).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' })]
+          ].map(([label, value]) => `
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#f8fafc;border-radius:10px;">
+              <span style="font-size:12px;color:#64748b;font-weight:500;">${label}</span>
+              <span style="font-size:13px;color:#1e293b;font-weight:600;">${value}</span>
+            </div>`).join('')}
+        </div>`
+      document.getElementById('view-modal').classList.remove('hidden')
+    }
+
+    window.closeViewModal = function() {
+      document.getElementById('view-modal').classList.add('hidden')
+    }
+
+    // ── DELETE USER ───────────────────────
+    window.deleteUser = async function(userId, name) {
+      if (!confirm(`Delete ${name}? This cannot be undone.`)) return
+      await supabase.from('profiles').delete().eq('id', userId)
+      await loadUsers()
+      await loadStats()
+    }
+
+    // ── DELETE TRANSACTION ────────────────
+    window.deleteTransaction = async function(txId) {
+      if (!confirm('Delete this transaction?')) return
+      await supabase.from('transactions').delete().eq('id', txId)
+      await loadTransactions()
+      await loadStats()
+    }
+
+    // ── SECTION SWITCHER ──────────────────
+    window.showSection = function(name) {
+      ;['overview','users','transactions','activity'].forEach(s => {
+        document.getElementById('section-' + s)?.classList.add('hidden')
+      })
+      document.getElementById('section-' + name)?.classList.remove('hidden')
+      const titles = {
+        overview: 'Overview',
+        users: 'Manage Users',
+        transactions: 'All Transactions',
+        activity: 'Activity Log'
+      }
+      document.getElementById('page-title').textContent = titles[name]
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'))
+      document.getElementById('nav-' + name)?.classList.add('active')
+      if (name === 'activity') renderActivityLog()
+    }
+
+    // ── LOGOUT ────────────────────────────
+    window.handleLogout = async function() {
+      await supabase.auth.signOut()
+      window.location.href = 'index.html'
+    }
+
+    init()
+  </script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>
