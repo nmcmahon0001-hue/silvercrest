@@ -9,87 +9,64 @@
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <style>
     * { font-family: 'Inter', sans-serif; }
-
-    .orb {
-      position: absolute; border-radius: 50%;
-      filter: blur(80px); opacity: 0.2; pointer-events: none;
-    }
-
-    /* Step indicators */
-    .step { display: none; }
-    .step.active { display: block; animation: fadeUp 0.3s ease; }
-    @keyframes fadeUp {
-      from { opacity:0; transform:translateY(12px); }
-      to { opacity:1; transform:translateY(0); }
-    }
+    .orb { position:absolute;border-radius:50%;filter:blur(80px);opacity:0.2;pointer-events:none; }
+    .step { display:none; }
+    .step.active { display:block;animation:fadeUp 0.3s ease; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);} }
     .step-dot {
-      width: 34px; height: 34px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 13px; font-weight: 700; transition: all 0.3s ease;
-      flex-shrink: 0;
+      width:34px;height:34px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      font-size:13px;font-weight:700;transition:all 0.3s ease;flex-shrink:0;
     }
-    .step-line { height: 2px; flex: 1; transition: background 0.3s ease; }
-
-    /* Professional input styling */
-    .field-group { position: relative; }
+    .step-line { height:2px;flex:1;transition:background 0.3s ease; }
     .field-label {
-      display: block; font-size: 12px; font-weight: 600;
-      color: #64748b; text-transform: uppercase; letter-spacing: 0.06em;
-      margin-bottom: 6px;
+      display:block;font-size:12px;font-weight:600;
+      color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;
+    }
+    .field-wrap { position:relative; }
+    .field-icon {
+      position:absolute;left:14px;top:50%;transform:translateY(-50%);
+      pointer-events:none;color:#94a3b8;width:16px;height:16px;
     }
     .field-input {
-      width: 100%; background: white;
-      border: 1.5px solid #e2e8f0; border-radius: 12px;
-      padding: 13px 16px 13px 44px; font-size: 14px;
-      color: #1e293b; outline: none; transition: all 0.2s ease;
-      font-family: 'Inter', sans-serif; box-sizing: border-box;
-      appearance: none; -webkit-appearance: none;
+      width:100%;background:white;border:1.5px solid #e2e8f0;
+      border-radius:12px;padding:13px 16px 13px 44px;font-size:14px;
+      color:#1e293b;outline:none;transition:all 0.2s ease;
+      font-family:'Inter',sans-serif;box-sizing:border-box;
+      appearance:none;-webkit-appearance:none;
     }
     .field-input:focus {
-      border-color: #4f46e5;
-      box-shadow: 0 0 0 3px rgba(79,70,229,0.08);
-      background: white;
+      border-color:#4f46e5;
+      box-shadow:0 0 0 3px rgba(79,70,229,0.08);
     }
-    .field-input.no-icon { padding-left: 16px; }
-    .field-icon {
-      position: absolute; left: 14px; top: 50%;
-      transform: translateY(-50%); pointer-events: none;
-      color: #94a3b8; width: 16px; height: 16px;
-    }
-    .field-icon-bottom {
-      position: absolute; left: 14px;
-      top: calc(50% + 10px);
-      transform: translateY(-50%); pointer-events: none;
-      color: #94a3b8; width: 16px; height: 16px;
-    }
+    .field-input.no-icon { padding-left:16px; }
     select.field-input {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 14px center;
-      padding-right: 36px; cursor: pointer;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat:no-repeat;background-position:right 14px center;
+      padding-right:36px;cursor:pointer;
     }
-
+    .eye-btn {
+      position:absolute;right:14px;top:50%;transform:translateY(-50%);
+      background:none;border:none;cursor:pointer;color:#94a3b8;
+      display:flex;align-items:center;padding:4px;
+    }
+    .eye-btn:hover { color:#4f46e5; }
     .btn-primary {
-      background: #4f46e5; color: white; border: none;
-      border-radius: 12px; padding: 14px 20px; font-size: 14px;
-      font-weight: 600; cursor: pointer; transition: all 0.2s ease;
-      width: 100%; font-family: 'Inter', sans-serif;
-      letter-spacing: 0.01em;
+      background:#4f46e5;color:white;border:none;
+      border-radius:12px;padding:14px 20px;font-size:14px;
+      font-weight:600;cursor:pointer;transition:all 0.2s ease;
+      width:100%;font-family:'Inter',sans-serif;
     }
-    .btn-primary:hover { background: #4338ca; transform: translateY(-1px); }
-    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .btn-primary:hover { background:#4338ca;transform:translateY(-1px); }
+    .btn-primary:disabled { opacity:0.6;cursor:not-allowed;transform:none; }
     .btn-secondary {
-      background: #f8fafc; color: #475569; border: 1.5px solid #e2e8f0;
-      border-radius: 12px; padding: 14px 20px; font-size: 14px;
-      font-weight: 600; cursor: pointer; transition: all 0.2s ease;
-      width: 100%; font-family: 'Inter', sans-serif;
+      background:#f8fafc;color:#475569;border:1.5px solid #e2e8f0;
+      border-radius:12px;padding:14px 20px;font-size:14px;
+      font-weight:600;cursor:pointer;transition:all 0.2s ease;
+      font-family:'Inter',sans-serif;
     }
-    .btn-secondary:hover { background: #f1f5f9; }
-
-    /* Password strength */
-    .strength-bar {
-      height: 3px; border-radius: 2px; transition: all 0.3s ease;
-    }
+    .btn-secondary:hover { background:#f1f5f9; }
+    .strength-bar { height:3px;border-radius:2px;transition:all 0.3s ease; }
   </style>
 </head>
 <body class="bg-white min-h-screen flex m-0 p-0">
@@ -97,12 +74,10 @@
   <!-- LEFT PANEL -->
   <div class="hidden lg:flex lg:w-5/12 flex-col justify-between p-10 relative overflow-hidden"
     style="background:linear-gradient(135deg,#0f0c29 0%,#302b63 50%,#24243e 100%);min-height:100vh;">
-
     <div class="orb" style="width:380px;height:380px;background:#4f46e5;top:-120px;left:-120px;"></div>
     <div class="orb" style="width:300px;height:300px;background:#7c3aed;bottom:80px;right:-80px;"></div>
     <div class="absolute inset-0" style="background-image:linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);background-size:40px 40px;"></div>
 
-    <!-- Logo -->
     <div class="relative z-10 flex items-center gap-2.5">
       <div class="w-9 h-9 bg-white rounded-xl flex items-center justify-center shadow-lg">
         <span class="font-bold text-sm" style="color:#4f46e5;">S</span>
@@ -110,7 +85,6 @@
       <span class="text-white font-bold text-xl">SilverCrest</span>
     </div>
 
-    <!-- Middle content -->
     <div class="relative z-10 flex-1 flex flex-col justify-center py-10">
       <h2 class="text-3xl font-bold text-white mb-3 leading-snug">
         Open your account<br/>in minutes.
@@ -118,11 +92,10 @@
       <p class="text-sm mb-10" style="color:rgba(180,200,255,0.7);">
         Secure, fast, and completely free to start.
       </p>
-
-      <div class="space-y-5" id="step-labels">
+      <div class="space-y-5">
         <div class="flex items-center gap-3" id="label-1">
           <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-            style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.2);">
+            style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);">
             <span class="text-white text-xs font-bold">1</span>
           </div>
           <div>
@@ -132,37 +105,25 @@
         </div>
         <div class="flex items-center gap-3" id="label-2">
           <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-            style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);">
-            <span class="text-white text-xs font-bold">2</span>
+            style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);">
+            <span style="color:rgba(255,255,255,0.5);" class="text-xs font-bold">2</span>
           </div>
           <div>
-            <p class="text-sm font-semibold" style="color:rgba(255,255,255,0.6);">Personal Information</p>
-            <p class="text-xs" style="color:rgba(180,200,255,0.4);">Phone, DOB, gender</p>
+            <p class="text-sm font-semibold" style="color:rgba(255,255,255,0.55);">Personal Information</p>
+            <p class="text-xs" style="color:rgba(180,200,255,0.35);">Phone, DOB, gender</p>
           </div>
         </div>
         <div class="flex items-center gap-3" id="label-3">
           <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-            style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);">
-            <span class="text-white text-xs font-bold">3</span>
+            style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);">
+            <span style="color:rgba(255,255,255,0.5);" class="text-xs font-bold">3</span>
           </div>
           <div>
-            <p class="text-sm font-semibold" style="color:rgba(255,255,255,0.6);">Address Details</p>
-            <p class="text-xs" style="color:rgba(180,200,255,0.4);">Country and address</p>
-          </div>
-        </div>
-        <div class="flex items-center gap-3" id="label-4">
-          <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-            style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);">
-            <span class="text-white text-xs font-bold">4</span>
-          </div>
-          <div>
-            <p class="text-sm font-semibold" style="color:rgba(255,255,255,0.6);">Verify Email</p>
-            <p class="text-xs" style="color:rgba(180,200,255,0.4);">Confirm your email</p>
+            <p class="text-sm font-semibold" style="color:rgba(255,255,255,0.55);">Address Details</p>
+            <p class="text-xs" style="color:rgba(180,200,255,0.35);">Country and address</p>
           </div>
         </div>
       </div>
-
-      <!-- Perks row -->
       <div class="grid grid-cols-3 gap-2 mt-10">
         <div class="rounded-xl p-3 text-center"
           style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);">
@@ -183,9 +144,7 @@
     </div>
 
     <div class="relative z-10">
-      <p class="text-xs" style="color:rgba(180,200,255,0.5);">
-        🔒 Protected by bank-grade encryption
-      </p>
+      <p class="text-xs" style="color:rgba(180,200,255,0.5);">🔒 Protected by bank-grade encryption</p>
     </div>
   </div>
 
@@ -201,8 +160,8 @@
         <span class="text-gray-900 font-bold text-xl">SilverCrest</span>
       </div>
 
-      <!-- Progress bar -->
-      <div class="flex items-center gap-2 mb-8" id="progress-bar">
+      <!-- Progress dots -->
+      <div class="flex items-center gap-2 mb-8">
         <div class="step-dot" id="dot-1" style="background:#4f46e5;color:white;">1</div>
         <div class="step-line" id="line-1" style="background:#e2e8f0;"></div>
         <div class="step-dot" id="dot-2" style="background:#f1f5f9;color:#94a3b8;">2</div>
@@ -212,85 +171,77 @@
         <div class="step-dot" id="dot-4" style="background:#f1f5f9;color:#94a3b8;">4</div>
       </div>
 
-      <!-- Alerts -->
-      <div id="error-msg" class="hidden bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl mb-5 text-sm flex items-center gap-2">
-        <i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i>
-        <span id="error-text"></span>
+      <!-- Error -->
+      <div id="error-msg" class="hidden bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl mb-5 text-sm">
+        <div class="flex items-center gap-2">
+          <i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i>
+          <span id="error-text"></span>
+        </div>
       </div>
 
-      <!-- ══ STEP 1: Credentials ══ -->
+      <!-- ══ STEP 1 ══ -->
       <div class="step active" id="step-1">
         <div class="mb-7">
           <h2 class="text-2xl font-bold text-gray-900">Create your account</h2>
           <p class="text-gray-400 text-sm mt-1">Step 1 of 3 — Start with your login details</p>
         </div>
-
         <div class="space-y-5">
-          <!-- Full Name -->
-          <div class="field-group">
+
+          <div>
             <label class="field-label">Full Legal Name</label>
-            <div class="relative">
-              <i data-lucide="user" class="field-icon" style="top:50%;transform:translateY(-50%);position:absolute;left:14px;"></i>
-              <input type="text" id="s-fullname" placeholder="As it appears on your ID"
-                class="field-input"/>
+            <div class="field-wrap">
+              <i data-lucide="user" class="field-icon"></i>
+              <input type="text" id="s-fullname" placeholder="As it appears on your ID" class="field-input"/>
             </div>
           </div>
 
-          <!-- Email -->
-          <div class="field-group">
+          <div>
             <label class="field-label">Email Address</label>
-            <div class="relative">
-              <i data-lucide="mail" class="field-icon" style="top:50%;transform:translateY(-50%);position:absolute;left:14px;"></i>
-              <input type="email" id="s-email" placeholder="you@example.com"
-                class="field-input"/>
+            <div class="field-wrap">
+              <i data-lucide="mail" class="field-icon"></i>
+              <input type="email" id="s-email" placeholder="you@example.com" class="field-input"/>
             </div>
           </div>
 
-          <!-- Password -->
-          <div class="field-group">
+          <div>
             <label class="field-label">Password</label>
-            <div class="relative">
-              <i data-lucide="lock" class="field-icon" style="top:50%;transform:translateY(-50%);position:absolute;left:14px;"></i>
+            <div class="field-wrap">
+              <i data-lucide="lock" class="field-icon"></i>
               <input type="password" id="s-password" placeholder="Min. 8 characters"
-                class="field-input" oninput="checkPasswordStrength()"/>
-              <button type="button" onclick="togglePasswordVisibility('s-password', 'eye-1')"
-                style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#94a3b8;">
-                <i data-lucide="eye" id="eye-1" class="w-4 h-4"></i>
+                class="field-input" style="padding-right:44px;" oninput="checkPasswordStrength()"/>
+              <button type="button" class="eye-btn" onclick="togglePwd('s-password','eye-icon-1')">
+                <i data-lucide="eye" id="eye-icon-1" class="w-4 h-4"></i>
               </button>
             </div>
-            <!-- Password strength -->
-            <div class="flex gap-1 mt-2" id="strength-bars">
+            <div class="flex gap-1 mt-2">
               <div class="strength-bar flex-1 bg-gray-200" id="bar-1"></div>
               <div class="strength-bar flex-1 bg-gray-200" id="bar-2"></div>
               <div class="strength-bar flex-1 bg-gray-200" id="bar-3"></div>
               <div class="strength-bar flex-1 bg-gray-200" id="bar-4"></div>
             </div>
-            <p id="strength-label" class="text-xs text-gray-400 mt-1"></p>
+            <p id="strength-label" class="text-xs text-gray-400 mt-1 h-4"></p>
           </div>
 
-          <!-- Confirm Password -->
-          <div class="field-group">
+          <div>
             <label class="field-label">Confirm Password</label>
-            <div class="relative">
-              <i data-lucide="lock" class="field-icon" style="top:50%;transform:translateY(-50%);position:absolute;left:14px;"></i>
+            <div class="field-wrap">
+              <i data-lucide="lock" class="field-icon"></i>
               <input type="password" id="s-confirm-password" placeholder="Repeat your password"
-                class="field-input"/>
-              <button type="button" onclick="togglePasswordVisibility('s-confirm-password', 'eye-2')"
-                style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#94a3b8;">
-                <i data-lucide="eye" id="eye-2" class="w-4 h-4"></i>
+                class="field-input" style="padding-right:44px;"/>
+              <button type="button" class="eye-btn" onclick="togglePwd('s-confirm-password','eye-icon-2')">
+                <i data-lucide="eye" id="eye-icon-2" class="w-4 h-4"></i>
               </button>
             </div>
           </div>
 
-          <!-- Terms -->
           <div class="flex items-start gap-3 pt-1">
             <input type="checkbox" id="s-terms"
-              class="mt-0.5 w-4 h-4 text-indigo-600 rounded border-gray-300 cursor-pointer flex-shrink-0"/>
+              class="mt-0.5 w-4 h-4 rounded border-gray-300 cursor-pointer flex-shrink-0"
+              style="accent-color:#4f46e5;"/>
             <label for="s-terms" class="text-xs text-gray-500 leading-relaxed cursor-pointer">
               I agree to SilverCrest's
-              <span class="text-indigo-600 font-medium">Terms of Service</span>
-              and
-              <span class="text-indigo-600 font-medium">Privacy Policy</span>.
+              <span class="text-indigo-600 font-semibold">Terms of Service</span> and
+              <span class="text-indigo-600 font-semibold">Privacy Policy</span>.
               I confirm I am at least 18 years old.
             </label>
           </div>
@@ -299,50 +250,42 @@
             Continue to Personal Info →
           </button>
         </div>
-
         <p class="text-center text-gray-400 text-sm mt-6">
           Already have an account?
           <a href="index.html" class="text-indigo-600 font-semibold hover:underline">Sign in</a>
         </p>
       </div>
 
-      <!-- ══ STEP 2: Personal Info ══ -->
+      <!-- ══ STEP 2 ══ -->
       <div class="step" id="step-2">
         <div class="mb-7">
           <h2 class="text-2xl font-bold text-gray-900">Personal information</h2>
           <p class="text-gray-400 text-sm mt-1">Step 2 of 3 — Required by banking regulations</p>
         </div>
-
         <div class="space-y-5">
-          <!-- Phone -->
-          <div class="field-group">
+
+          <div>
             <label class="field-label">Phone Number</label>
-            <div class="relative">
-              <i data-lucide="phone" class="field-icon" style="top:50%;transform:translateY(-50%);position:absolute;left:14px;"></i>
-              <input type="tel" id="s-phone" placeholder="+1 (234) 567-8900"
-                class="field-input"/>
+            <div class="field-wrap">
+              <i data-lucide="phone" class="field-icon"></i>
+              <input type="tel" id="s-phone" placeholder="+1 (234) 567-8900" class="field-input"/>
             </div>
             <p class="text-xs text-gray-400 mt-1.5">Include country code e.g. +234 for Nigeria</p>
           </div>
 
-          <!-- Date of Birth -->
-          <div class="field-group">
+          <div>
             <label class="field-label">Date of Birth</label>
-            <div class="relative">
-              <i data-lucide="calendar" class="field-icon" style="top:50%;transform:translateY(-50%);position:absolute;left:14px;"></i>
-              <input type="date" id="s-dob"
-                class="field-input"
-                max=""
-                style="color-scheme:light;"/>
+            <div class="field-wrap">
+              <i data-lucide="calendar" class="field-icon"></i>
+              <input type="date" id="s-dob" class="field-input" style="color-scheme:light;"/>
             </div>
             <p class="text-xs text-gray-400 mt-1.5">You must be 18 or older to open an account</p>
           </div>
 
-          <!-- Gender -->
-          <div class="field-group">
+          <div>
             <label class="field-label">Gender</label>
-            <div class="relative">
-              <i data-lucide="users" class="field-icon" style="top:50%;transform:translateY(-50%);position:absolute;left:14px;"></i>
+            <div class="field-wrap">
+              <i data-lucide="users" class="field-icon"></i>
               <select id="s-gender" class="field-input">
                 <option value="">Select your gender</option>
                 <option value="male">Male</option>
@@ -353,11 +296,10 @@
             </div>
           </div>
 
-          <!-- Occupation -->
-          <div class="field-group">
+          <div>
             <label class="field-label">Occupation</label>
-            <div class="relative">
-              <i data-lucide="briefcase" class="field-icon" style="top:50%;transform:translateY(-50%);position:absolute;left:14px;"></i>
+            <div class="field-wrap">
+              <i data-lucide="briefcase" class="field-icon"></i>
               <select id="s-occupation" class="field-input">
                 <option value="">Select occupation</option>
                 <option value="employed">Employed (Full-time)</option>
@@ -372,91 +314,259 @@
 
           <div class="flex gap-3 pt-2">
             <button onclick="goToStep(1)" class="btn-secondary" style="flex:1;">← Back</button>
-            <button onclick="goToStep(3)" class="btn-primary" style="flex:2;">Continue to Address →</button>
+            <button onclick="goToStep(3)" class="btn-primary" style="flex:2;">
+              Continue to Address →
+            </button>
           </div>
         </div>
       </div>
 
-      <!-- ══ STEP 3: Address ══ -->
+      <!-- ══ STEP 3 ══ -->
       <div class="step" id="step-3">
         <div class="mb-7">
           <h2 class="text-2xl font-bold text-gray-900">Address details</h2>
           <p class="text-gray-400 text-sm mt-1">Step 3 of 3 — Your residential information</p>
         </div>
-
         <div class="space-y-5">
-          <!-- Country -->
-          <div class="field-group">
+
+          <div>
             <label class="field-label">Country of Residence</label>
-            <div class="relative">
-              <i data-lucide="globe" class="field-icon" style="top:50%;transform:translateY(-50%);position:absolute;left:14px;"></i>
+            <div class="field-wrap">
+              <i data-lucide="globe" class="field-icon"></i>
               <select id="s-country" class="field-input">
                 <option value="">Select your country</option>
-                <option value="NG">🇳🇬 Nigeria</option>
-                <option value="US">🇺🇸 United States</option>
-                <option value="GB">🇬🇧 United Kingdom</option>
-                <option value="CA">🇨🇦 Canada</option>
-                <option value="AU">🇦🇺 Australia</option>
-                <option value="GH">🇬🇭 Ghana</option>
-                <option value="KE">🇰🇪 Kenya</option>
-                <option value="ZA">🇿🇦 South Africa</option>
-                <option value="DE">🇩🇪 Germany</option>
-                <option value="FR">🇫🇷 France</option>
-                <option value="AE">🇦🇪 UAE</option>
-                <option value="SG">🇸🇬 Singapore</option>
-                <option value="IN">🇮🇳 India</option>
-                <option value="BR">🇧🇷 Brazil</option>
-                <option value="other">🌍 Other</option>
+                <option value="AF">Afghanistan</option>
+                <option value="AL">Albania</option>
+                <option value="DZ">Algeria</option>
+                <option value="AD">Andorra</option>
+                <option value="AO">Angola</option>
+                <option value="AG">Antigua and Barbuda</option>
+                <option value="AR">Argentina</option>
+                <option value="AM">Armenia</option>
+                <option value="AU">Australia</option>
+                <option value="AT">Austria</option>
+                <option value="AZ">Azerbaijan</option>
+                <option value="BS">Bahamas</option>
+                <option value="BH">Bahrain</option>
+                <option value="BD">Bangladesh</option>
+                <option value="BB">Barbados</option>
+                <option value="BY">Belarus</option>
+                <option value="BE">Belgium</option>
+                <option value="BZ">Belize</option>
+                <option value="BJ">Benin</option>
+                <option value="BT">Bhutan</option>
+                <option value="BO">Bolivia</option>
+                <option value="BA">Bosnia and Herzegovina</option>
+                <option value="BW">Botswana</option>
+                <option value="BR">Brazil</option>
+                <option value="BN">Brunei</option>
+                <option value="BG">Bulgaria</option>
+                <option value="BF">Burkina Faso</option>
+                <option value="BI">Burundi</option>
+                <option value="CV">Cabo Verde</option>
+                <option value="KH">Cambodia</option>
+                <option value="CM">Cameroon</option>
+                <option value="CA">Canada</option>
+                <option value="CF">Central African Republic</option>
+                <option value="TD">Chad</option>
+                <option value="CL">Chile</option>
+                <option value="CN">China</option>
+                <option value="CO">Colombia</option>
+                <option value="KM">Comoros</option>
+                <option value="CG">Congo</option>
+                <option value="CD">Congo (DRC)</option>
+                <option value="CR">Costa Rica</option>
+                <option value="HR">Croatia</option>
+                <option value="CU">Cuba</option>
+                <option value="CY">Cyprus</option>
+                <option value="CZ">Czech Republic</option>
+                <option value="DK">Denmark</option>
+                <option value="DJ">Djibouti</option>
+                <option value="DM">Dominica</option>
+                <option value="DO">Dominican Republic</option>
+                <option value="EC">Ecuador</option>
+                <option value="EG">Egypt</option>
+                <option value="SV">El Salvador</option>
+                <option value="GQ">Equatorial Guinea</option>
+                <option value="ER">Eritrea</option>
+                <option value="EE">Estonia</option>
+                <option value="SZ">Eswatini</option>
+                <option value="ET">Ethiopia</option>
+                <option value="FJ">Fiji</option>
+                <option value="FI">Finland</option>
+                <option value="FR">France</option>
+                <option value="GA">Gabon</option>
+                <option value="GM">Gambia</option>
+                <option value="GE">Georgia</option>
+                <option value="DE">Germany</option>
+                <option value="GH">Ghana</option>
+                <option value="GR">Greece</option>
+                <option value="GD">Grenada</option>
+                <option value="GT">Guatemala</option>
+                <option value="GN">Guinea</option>
+                <option value="GW">Guinea-Bissau</option>
+                <option value="GY">Guyana</option>
+                <option value="HT">Haiti</option>
+                <option value="HN">Honduras</option>
+                <option value="HU">Hungary</option>
+                <option value="IS">Iceland</option>
+                <option value="IN">India</option>
+                <option value="ID">Indonesia</option>
+                <option value="IR">Iran</option>
+                <option value="IQ">Iraq</option>
+                <option value="IE">Ireland</option>
+                <option value="IL">Israel</option>
+                <option value="IT">Italy</option>
+                <option value="JM">Jamaica</option>
+                <option value="JP">Japan</option>
+                <option value="JO">Jordan</option>
+                <option value="KZ">Kazakhstan</option>
+                <option value="KE">Kenya</option>
+                <option value="KI">Kiribati</option>
+                <option value="KW">Kuwait</option>
+                <option value="KG">Kyrgyzstan</option>
+                <option value="LA">Laos</option>
+                <option value="LV">Latvia</option>
+                <option value="LB">Lebanon</option>
+                <option value="LS">Lesotho</option>
+                <option value="LR">Liberia</option>
+                <option value="LY">Libya</option>
+                <option value="LI">Liechtenstein</option>
+                <option value="LT">Lithuania</option>
+                <option value="LU">Luxembourg</option>
+                <option value="MG">Madagascar</option>
+                <option value="MW">Malawi</option>
+                <option value="MY">Malaysia</option>
+                <option value="MV">Maldives</option>
+                <option value="ML">Mali</option>
+                <option value="MT">Malta</option>
+                <option value="MH">Marshall Islands</option>
+                <option value="MR">Mauritania</option>
+                <option value="MU">Mauritius</option>
+                <option value="MX">Mexico</option>
+                <option value="FM">Micronesia</option>
+                <option value="MD">Moldova</option>
+                <option value="MC">Monaco</option>
+                <option value="MN">Mongolia</option>
+                <option value="ME">Montenegro</option>
+                <option value="MA">Morocco</option>
+                <option value="MZ">Mozambique</option>
+                <option value="MM">Myanmar</option>
+                <option value="NA">Namibia</option>
+                <option value="NR">Nauru</option>
+                <option value="NP">Nepal</option>
+                <option value="NL">Netherlands</option>
+                <option value="NZ">New Zealand</option>
+                <option value="NI">Nicaragua</option>
+                <option value="NE">Niger</option>
+                <option value="NG">Nigeria</option>
+                <option value="NO">Norway</option>
+                <option value="OM">Oman</option>
+                <option value="PK">Pakistan</option>
+                <option value="PW">Palau</option>
+                <option value="PA">Panama</option>
+                <option value="PG">Papua New Guinea</option>
+                <option value="PY">Paraguay</option>
+                <option value="PE">Peru</option>
+                <option value="PH">Philippines</option>
+                <option value="PL">Poland</option>
+                <option value="PT">Portugal</option>
+                <option value="QA">Qatar</option>
+                <option value="RO">Romania</option>
+                <option value="RU">Russia</option>
+                <option value="RW">Rwanda</option>
+                <option value="KN">Saint Kitts and Nevis</option>
+                <option value="LC">Saint Lucia</option>
+                <option value="VC">Saint Vincent and the Grenadines</option>
+                <option value="WS">Samoa</option>
+                <option value="SM">San Marino</option>
+                <option value="ST">São Tomé and Príncipe</option>
+                <option value="SA">Saudi Arabia</option>
+                <option value="SN">Senegal</option>
+                <option value="RS">Serbia</option>
+                <option value="SC">Seychelles</option>
+                <option value="SL">Sierra Leone</option>
+                <option value="SG">Singapore</option>
+                <option value="SK">Slovakia</option>
+                <option value="SI">Slovenia</option>
+                <option value="SB">Solomon Islands</option>
+                <option value="SO">Somalia</option>
+                <option value="ZA">South Africa</option>
+                <option value="SS">South Sudan</option>
+                <option value="ES">Spain</option>
+                <option value="LK">Sri Lanka</option>
+                <option value="SD">Sudan</option>
+                <option value="SR">Suriname</option>
+                <option value="SE">Sweden</option>
+                <option value="CH">Switzerland</option>
+                <option value="SY">Syria</option>
+                <option value="TW">Taiwan</option>
+                <option value="TJ">Tajikistan</option>
+                <option value="TZ">Tanzania</option>
+                <option value="TH">Thailand</option>
+                <option value="TL">Timor-Leste</option>
+                <option value="TG">Togo</option>
+                <option value="TO">Tonga</option>
+                <option value="TT">Trinidad and Tobago</option>
+                <option value="TN">Tunisia</option>
+                <option value="TR">Turkey</option>
+                <option value="TM">Turkmenistan</option>
+                <option value="TV">Tuvalu</option>
+                <option value="UG">Uganda</option>
+                <option value="UA">Ukraine</option>
+                <option value="AE">United Arab Emirates</option>
+                <option value="GB">United Kingdom</option>
+                <option value="US">United States</option>
+                <option value="UY">Uruguay</option>
+                <option value="UZ">Uzbekistan</option>
+                <option value="VU">Vanuatu</option>
+                <option value="VE">Venezuela</option>
+                <option value="VN">Vietnam</option>
+                <option value="YE">Yemen</option>
+                <option value="ZM">Zambia</option>
+                <option value="ZW">Zimbabwe</option>
               </select>
             </div>
           </div>
 
-          <!-- Street Address -->
-          <div class="field-group">
+          <div>
             <label class="field-label">Street Address</label>
-            <div class="relative">
-              <i data-lucide="map-pin" class="field-icon" style="top:50%;transform:translateY(-50%);position:absolute;left:14px;"></i>
-              <input type="text" id="s-address"
-                placeholder="123 Main Street, Apartment 4B"
+            <div class="field-wrap">
+              <i data-lucide="map-pin" class="field-icon"></i>
+              <input type="text" id="s-address" placeholder="123 Main Street, Apartment 4B"
                 class="field-input"/>
             </div>
           </div>
 
-          <!-- City + State row -->
           <div class="grid grid-cols-2 gap-4">
-            <div class="field-group">
+            <div>
               <label class="field-label">City</label>
-              <div class="relative">
-                <i data-lucide="building" class="field-icon" style="top:50%;transform:translateY(-50%);position:absolute;left:14px;"></i>
-                <input type="text" id="s-city" placeholder="City"
-                  class="field-input"/>
+              <div class="field-wrap">
+                <i data-lucide="building" class="field-icon"></i>
+                <input type="text" id="s-city" placeholder="City" class="field-input"/>
               </div>
             </div>
-            <div class="field-group">
+            <div>
               <label class="field-label">State / Province</label>
-              <div class="relative">
-                <i data-lucide="map" class="field-icon" style="top:50%;transform:translateY(-50%);position:absolute;left:14px;"></i>
-                <input type="text" id="s-state" placeholder="State"
-                  class="field-input"/>
+              <div class="field-wrap">
+                <i data-lucide="map" class="field-icon"></i>
+                <input type="text" id="s-state" placeholder="State" class="field-input"/>
               </div>
             </div>
           </div>
 
-          <!-- Zip code -->
-          <div class="field-group">
+          <div>
             <label class="field-label">ZIP / Postal Code</label>
-            <div class="relative">
-              <i data-lucide="hash" class="field-icon" style="top:50%;transform:translateY(-50%);position:absolute;left:14px;"></i>
-              <input type="text" id="s-zip" placeholder="10001"
-                class="field-input"/>
+            <div class="field-wrap">
+              <i data-lucide="hash" class="field-icon"></i>
+              <input type="text" id="s-zip" placeholder="10001" class="field-input"/>
             </div>
           </div>
 
-          <!-- Source of funds -->
-          <div class="field-group">
+          <div>
             <label class="field-label">Primary Source of Funds</label>
-            <div class="relative">
-              <i data-lucide="dollar-sign" class="field-icon" style="top:50%;transform:translateY(-50%);position:absolute;left:14px;"></i>
+            <div class="field-wrap">
+              <i data-lucide="dollar-sign" class="field-icon"></i>
               <select id="s-funds" class="field-input">
                 <option value="">Select source of funds</option>
                 <option value="salary">Salary / Employment income</option>
@@ -476,7 +586,7 @@
             </button>
           </div>
 
-          <p class="text-xs text-center text-gray-400 mt-3">
+          <p class="text-xs text-center text-gray-400 mt-2">
             🔒 Your information is encrypted and never shared with third parties.
           </p>
         </div>
@@ -492,46 +602,47 @@
           <p class="text-gray-400 text-sm mb-1">We've sent a verification link to:</p>
           <p id="verify-email-display" class="text-indigo-600 font-bold text-base mb-6">...</p>
 
-          <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-5 mb-6 text-left">
+          <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-5 mb-5 text-left">
             <p class="text-sm font-bold text-indigo-700 mb-3 flex items-center gap-2">
               <i data-lucide="info" class="w-4 h-4"></i>
               What to do next:
             </p>
             <div class="space-y-2">
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-3">
                 <div class="w-5 h-5 bg-indigo-600 rounded-full flex items-center justify-center flex-shrink-0">
                   <span class="text-white text-xs font-bold">1</span>
                 </div>
                 <p class="text-sm text-indigo-700">Open your email inbox</p>
               </div>
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-3">
                 <div class="w-5 h-5 bg-indigo-600 rounded-full flex items-center justify-center flex-shrink-0">
                   <span class="text-white text-xs font-bold">2</span>
                 </div>
-                <p class="text-sm text-indigo-700">Click the verification link from SilverCrest</p>
+                <p class="text-sm text-indigo-700">Click the link from <strong>SilverCrest</strong></p>
               </div>
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-3">
                 <div class="w-5 h-5 bg-indigo-600 rounded-full flex items-center justify-center flex-shrink-0">
                   <span class="text-white text-xs font-bold">3</span>
                 </div>
-                <p class="text-sm text-indigo-700">You'll be taken straight to your dashboard</p>
+                <p class="text-sm text-indigo-700">You'll be taken to your dashboard</p>
               </div>
             </div>
           </div>
 
-          <div class="bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 mb-6 text-left">
-            <p class="text-xs text-amber-700 flex items-center gap-1.5">
+          <div class="bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 mb-5 text-left">
+            <p class="text-xs text-amber-700 flex items-center gap-2">
               <i data-lucide="alert-triangle" class="w-3.5 h-3.5 flex-shrink-0"></i>
               Check your <strong>spam/junk folder</strong> if you don't see it within 2 minutes.
             </p>
           </div>
 
-          <button onclick="resendVerification()" id="resend-btn" class="btn-secondary mb-3">
+          <button onclick="resendVerification()" id="resend-btn"
+            class="btn-secondary w-full mb-3">
             Resend verification email
           </button>
           <p class="text-xs text-gray-400">
             Having trouble?
-            <a href="mailto:support@silvercrestfin.com" class="text-indigo-600 font-medium">
+            <a href="mailto:support@silvercrestfin.com" class="text-indigo-600 font-semibold">
               Contact support
             </a>
           </p>
@@ -543,45 +654,15 @@
 
   <script type="module">
     import { supabase } from './supabase.js'
-
     let formData = {}
 
-    // Set max date for DOB (18 years ago)
+    // Set max DOB date
     const maxDob = new Date()
     maxDob.setFullYear(maxDob.getFullYear() - 18)
-    const maxDobStr = maxDob.toISOString().split('T')[0]
-    document.getElementById('s-dob').setAttribute('max', maxDobStr)
+    document.getElementById('s-dob').setAttribute('max', maxDob.toISOString().split('T')[0])
 
-    // ── PASSWORD STRENGTH ─────────────────
-    window.checkPasswordStrength = function() {
-      const password = document.getElementById('s-password').value
-      const bars = ['bar-1','bar-2','bar-3','bar-4']
-      const label = document.getElementById('strength-label')
-      let strength = 0
-      if (password.length >= 8) strength++
-      if (/[A-Z]/.test(password)) strength++
-      if (/[0-9]/.test(password)) strength++
-      if (/[^A-Za-z0-9]/.test(password)) strength++
-
-      const colors = ['#ef4444','#f97316','#eab308','#22c55e']
-      const labels = ['Weak','Fair','Good','Strong']
-      const labelColors = ['text-red-500','text-orange-500','text-yellow-500','text-green-500']
-
-      bars.forEach((bar, i) => {
-        const el = document.getElementById(bar)
-        el.style.background = i < strength ? colors[strength - 1] : '#e2e8f0'
-      })
-
-      if (password.length > 0) {
-        label.textContent = labels[strength - 1] || 'Too short'
-        label.className = 'text-xs mt-1 ' + (labelColors[strength - 1] || 'text-red-500')
-      } else {
-        label.textContent = ''
-      }
-    }
-
-    // ── TOGGLE PASSWORD VISIBILITY ────────
-    window.togglePasswordVisibility = function(inputId, iconId) {
+    // ── PASSWORD VISIBILITY ───────────────
+    window.togglePwd = function(inputId, iconId) {
       const input = document.getElementById(inputId)
       const icon = document.getElementById(iconId)
       if (input.type === 'password') {
@@ -594,12 +675,32 @@
       lucide.createIcons()
     }
 
-    // ── SHOW ERROR ────────────────────────
+    // ── PASSWORD STRENGTH ─────────────────
+    window.checkPasswordStrength = function() {
+      const pwd = document.getElementById('s-password').value
+      let strength = 0
+      if (pwd.length >= 8) strength++
+      if (/[A-Z]/.test(pwd)) strength++
+      if (/[0-9]/.test(pwd)) strength++
+      if (/[^A-Za-z0-9]/.test(pwd)) strength++
+      const colors = ['#ef4444','#f97316','#eab308','#22c55e']
+      const labels = ['Weak','Fair','Good','Strong']
+      const labelColors = ['text-red-500','text-orange-500','text-yellow-500','text-green-600']
+      for (let i = 1; i <= 4; i++) {
+        const bar = document.getElementById('bar-' + i)
+        bar.style.background = i <= strength ? colors[strength - 1] : '#e2e8f0'
+      }
+      const lbl = document.getElementById('strength-label')
+      lbl.textContent = pwd.length > 0 ? (labels[strength - 1] || 'Too short') : ''
+      lbl.className = 'text-xs mt-1 h-4 ' + (labelColors[strength - 1] || 'text-red-500')
+    }
+
+    // ── ERROR HELPERS ─────────────────────
     function showError(msg) {
-      const box = document.getElementById('error-msg')
       document.getElementById('error-text').textContent = msg
+      const box = document.getElementById('error-msg')
       box.classList.remove('hidden')
-      box.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      box.scrollIntoView({ behavior:'smooth', block:'nearest' })
     }
     function hideError() {
       document.getElementById('error-msg').classList.add('hidden')
@@ -608,69 +709,55 @@
     // ── STEP NAVIGATION ───────────────────
     window.goToStep = function(step) {
       hideError()
-
       if (step === 2) {
         const fullname = document.getElementById('s-fullname').value.trim()
         const email = document.getElementById('s-email').value.trim()
         const password = document.getElementById('s-password').value
         const confirm = document.getElementById('s-confirm-password').value
         const terms = document.getElementById('s-terms').checked
-
         if (!fullname) { showError('Please enter your full legal name.'); return }
         if (!email || !email.includes('@')) { showError('Please enter a valid email address.'); return }
-        if (password.length < 8) { showError('Password must be at least 8 characters long.'); return }
-        if (password !== confirm) { showError('Passwords do not match. Please try again.'); return }
+        if (password.length < 8) { showError('Password must be at least 8 characters.'); return }
+        if (password !== confirm) { showError('Passwords do not match.'); return }
         if (!terms) { showError('Please accept the Terms of Service to continue.'); return }
-
         formData.fullname = fullname
         formData.email = email
         formData.password = password
       }
-
       if (step === 3) {
         const phone = document.getElementById('s-phone').value.trim()
         const dob = document.getElementById('s-dob').value
         const gender = document.getElementById('s-gender').value
         const occupation = document.getElementById('s-occupation').value
-
         if (!phone) { showError('Please enter your phone number.'); return }
         if (!dob) { showError('Please enter your date of birth.'); return }
         if (!gender) { showError('Please select your gender.'); return }
         if (!occupation) { showError('Please select your occupation.'); return }
-
-        // Verify age
         const birthDate = new Date(dob)
         const today = new Date()
         let age = today.getFullYear() - birthDate.getFullYear()
         const m = today.getMonth() - birthDate.getMonth()
         if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--
-
-        if (age < 18) {
-          showError('You must be at least 18 years old to open a SilverCrest account.')
-          return
-        }
-
+        if (age < 18) { showError('You must be at least 18 years old to open an account.'); return }
         formData.phone = phone
         formData.dob = dob
         formData.gender = gender
         formData.occupation = occupation
       }
-
-      // Update steps UI
       document.querySelectorAll('.step').forEach(s => s.classList.remove('active'))
       document.getElementById('step-' + step).classList.add('active')
       updateProgress(step)
       window.scrollTo(0, 0)
     }
 
-    function updateProgress(currentStep) {
+    function updateProgress(cur) {
       for (let i = 1; i <= 4; i++) {
         const dot = document.getElementById('dot-' + i)
-        if (i < currentStep) {
+        if (i < cur) {
           dot.style.background = '#4f46e5'
           dot.style.color = 'white'
           dot.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`
-        } else if (i === currentStep) {
+        } else if (i === cur) {
           dot.style.background = '#4f46e5'
           dot.style.color = 'white'
           dot.textContent = i
@@ -680,25 +767,7 @@
           dot.textContent = i
         }
         if (i < 4) {
-          document.getElementById('line-' + i).style.background =
-            i < currentStep ? '#4f46e5' : '#e2e8f0'
-        }
-      }
-
-      // Update left panel labels
-      for (let i = 1; i <= 4; i++) {
-        const label = document.getElementById('label-' + i)
-        if (!label) continue
-        const numEl = label.querySelector('span')
-        const textEls = label.querySelectorAll('p')
-        if (i < currentStep) {
-          label.querySelector('div').style.background = 'rgba(79,70,229,0.3)'
-          label.querySelector('div').style.borderColor = 'rgba(79,70,229,0.5)'
-          textEls[0].style.color = 'white'
-        } else if (i === currentStep) {
-          label.querySelector('div').style.background = 'rgba(255,255,255,0.2)'
-          label.querySelector('div').style.borderColor = 'rgba(255,255,255,0.3)'
-          textEls[0].style.color = 'white'
+          document.getElementById('line-' + i).style.background = i < cur ? '#4f46e5' : '#e2e8f0'
         }
       }
     }
@@ -721,7 +790,6 @@
 
       formData.country = country
       formData.address = `${address}, ${city}${state ? ', ' + state : ''} ${zip}`.trim()
-      formData.funds = funds
 
       btn.textContent = 'Creating account...'
       btn.disabled = true
@@ -739,7 +807,7 @@
             country: formData.country,
             address: formData.address,
             occupation: formData.occupation,
-            source_of_funds: formData.funds
+            source_of_funds: funds
           }
         }
       })
@@ -751,7 +819,6 @@
         return
       }
 
-      // Show verification step
       document.getElementById('verify-email-display').textContent = formData.email
       document.querySelectorAll('.step').forEach(s => s.classList.remove('active'))
       document.getElementById('step-4').classList.add('active')
@@ -765,17 +832,14 @@
       const btn = document.getElementById('resend-btn')
       btn.textContent = 'Sending...'
       btn.disabled = true
-
       const { error } = await supabase.auth.resend({
-        type: 'signup',
-        email: formData.email
+        type: 'signup', email: formData.email
       })
-
       if (error) {
         btn.textContent = 'Failed — try again'
         btn.disabled = false
       } else {
-        btn.textContent = '✅ Email sent! Check your inbox'
+        btn.textContent = '✅ Sent! Check your inbox'
         setTimeout(() => {
           btn.textContent = 'Resend verification email'
           btn.disabled = false
