@@ -22,9 +22,9 @@ serve(async (req: Request) => {
     const actionType = emailData.email_action_type
     const tokenHash = emailData.token_hash
     const redirectTo = emailData.redirect_to || "https://silvercrestfin.com/verify.html"
-    const siteUrl = emailData.site_url || "https://pxlaghpewiewiezsimpl.supabase.co"
+    const siteUrl = "https://pxlaghpewiewiezsimpl.supabase.co/auth/v1"
 
-    const confirmUrl = `${siteUrl}/auth/v1/verify?token=${tokenHash}&type=${actionType}&redirect_to=${redirectTo}`
+    const confirmUrl = `${siteUrl}/verify?token=${tokenHash}&type=${actionType}&redirect_to=${encodeURIComponent(redirectTo)}`
 
     let subject = "SilverCrest — Action Required"
     let html = ""
