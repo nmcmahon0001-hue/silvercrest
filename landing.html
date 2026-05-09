@@ -438,5 +438,29 @@
     window.location.href = 'dashboard.html'
   }
 </script>
+<script type="module">
+  import { supabase } from './supabase.js'
+
+  async function checkSession() {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session) {
+      // Already logged in — check if admin
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', session.user.id)
+        .single()
+
+      if (profile?.is_admin) {
+        window.location.href = 'admin.html'
+      } else {
+        window.location.href = 'dashboard.html'
+      }
+    }
+    // Not logged in — stay on landing page
+  }
+
+  checkSession()
+</script>
 </body>
 </html>
