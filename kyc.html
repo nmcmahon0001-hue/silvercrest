@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SilverCrest — Identity Verification</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    .upload-zone {
+      border: 2px dashed #e2e8f0; border-radius: 16px;
+      padding: 32px; text-align: center; cursor: pointer;
+      transition: all 0.2s ease; background: #f8fafc;
+    }
+    .upload-zone:hover { border-color: #4f46e5; background: #eef2ff; }
+    .upload-zone.active { border-color: #4f46e5; background: #eef2ff; }
+    .upload-zone.uploaded { border-color: #22c55e; background: #f0fdf4; }
+    .doc-option {
+      border: 2px solid #e2e8f0; border-radius: 16px;
+      padding: 16px; cursor: pointer; transition: all 0.2s ease;
+      background: white;
+    }
+    .doc-option:hover { border-color: #4f46e5; background: #eef2ff; }
+    .doc-option.selected { border-color: #4f46e5; background: #eef2ff; }
+    .step-line { height: 2px; flex: 1; }
+    .step-dot {
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; flex-shrink: 0;
+    }
+    .btn-primary {
+      background: #4f46e5; color: white; border: none;
+      border-radius: 12px; padding: 14px 20px; font-size: 14px;
+      font-weight: 600; cursor: pointer; width: 100%;
+      font-family: 'Inter', sans-serif; transition: all 0.2s;
+    }
+    .btn-primary:hover { background: #4338ca; }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+    .kyc-step { display: none; }
+    .kyc-step.active { display: block; animation: fadeUp 0.3s ease; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);} }
+  </style>
+</head>
+<body style="background:#f8fafc;min-height:100vh;">
+
+  <!-- Top Bar -->
+  <div class="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between sticky top-0 z-30">
+    <div class="flex items-center gap-2.5">
+      <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+        <span class="text-white font-bold text-sm">S</span>
+      </div>
+      <span class="text-gray-900 font-bold text-lg">SilverCrest</span>
+    </div>
+    <a href="dashboard.html" class="text-sm text-gray-400 hover:text-gray-600 transition">
+      Skip for now →
+    </a>
+  </div>
+
+  <div class="max-w-2xl mx-auto px-4 py-8">
+
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <div class="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <i data-lucide="shield-check" class="w-8 h-8 text-indigo-600"></i>
+      </div>
+      <h1 class="text-2xl font-bold text-gray-900 mb-2">Verify Your Identity</h1>
+      <p class="text-gray-400 text-sm max-w-md mx-auto">
+        To comply with financial regulations and keep your account secure,
+        we need to verify your identity. This takes less than 2 minutes.
+      </p>
+    </div>
+
+    <!-- Progress -->
+    <div class="flex items-center gap-2 mb-8 max-w-xs mx-auto">
+      <div class="step-dot" id="dot-1" style="background:#4f46e5;color:white;">1</div>
+      <div class="step-line" id="line-1" style="background:#e2e8f0;"></div>
+      <div class="step-dot" id="dot-2" style="background:#f1f5f9;color:#94a3b8;">2</div>
+      <div class="step-line" id="line-2" style="background:#e2e8f0;"></div>
+      <div class="step-dot" id="dot-3" style="background:#f1f5f9;color:#94a3b8;">3</div>
+    </div>
+
+    <!-- Error/Success -->
+    <div id="error-msg" class="hidden bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl mb-5 text-sm flex items-center gap-2">
+      <i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i>
+      <span id="error-text"></span>
+    </div>
+
+    <!-- ══ STEP 1: Choose Document Type ══ -->
+    <div class="kyc-step active" id="kyc-step-1">
+      <div class="bg-white rounded-2xl border border-gray-100 p-6 mb-5">
+        <h2 class="text-base font-bold text-gray-900 mb-1">Select ID type</h2>
+        <p class="text-sm text-gray-400 mb-5">Choose the government-issued ID you'll be uploading</p>
+
+        <div class="space-y-3">
+          <div class="doc-option" id="doc-passport" onclick="selectDoc('passport')">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                <i data-lucide="book-open" class="w-5 h-5 text-blue-600"></i>
+              </div>
+              <div class="flex-1">
+                <p class="text-sm font-semibold text-gray-900">International Passport</p>
+                <p class="text-xs text-gray-400">Valid passport with photo page</p>
+              </div>
+              <div class="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center" id="check-passport">
+              </div>
+            </div>
+          </div>
+
+          <div class="doc-option" id="doc-national_id" onclick="selectDoc('national_id')">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                <i data-lucide="credit-card" class="w-5 h-5 text-green-600"></i>
+              </div>
+              <div class="flex-1">
+                <p class="text-sm font-semibold text-gray-900">National ID Card</p>
+                <p class="text-xs text-gray-400">Government-issued national identity card</p>
+              </div>
+              <div class="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center" id="check-national_id">
+              </div>
+            </div>
+          </div>
+
+          <div class="doc-option" id="doc-drivers_license" onclick="selectDoc('drivers_license')">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                <i data-lucide="car" class="w-5 h-5 text-purple-600"></i>
+              </div>
+              <div class="flex-1">
+                <p class="text-sm font-semibold text-gray-900">Driver's License</p>
+                <p class="text-xs text-gray-400">Valid driver's license with photo</p>
+              </div>
+              <div class="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center" id="check-drivers_license">
+              </div>
+            </div>
+          </div>
+
+          <div class="doc-option" id="doc-voters_card" onclick="selectDoc('voters_card')">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                <i data-lucide="vote" class="w-5 h-5 text-orange-500"></i>
+              </div>
+              <div class="flex-1">
+                <p class="text-sm font-semibold text-gray-900">Voter's Card</p>
+                <p class="text-xs text-gray-400">Government-issued voter registration card</p>
+              </div>
+              <div class="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center" id="check-voters_card">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button onclick="goToKycStep(2)" class="btn-primary">
+        Continue →
+      </button>
+    </div>
+
+    <!-- ══ STEP 2: Upload Document ══ -->
+    <div class="kyc-step" id="kyc-step-2">
+      <div class="bg-white rounded-2xl border border-gray-100 p-6 mb-5">
+        <h2 class="text-base font-bold text-gray-900 mb-1">Upload your document</h2>
+        <p class="text-sm text-gray-400 mb-5">
+          Take a clear photo of your <span id="doc-type-label" class="font-semibold text-indigo-600">document</span>
+        </p>
+
+        <!-- Requirements -->
+        <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-5">
+          <p class="text-xs font-bold text-blue-700 mb-2 flex items-center gap-1.5">
+            <i data-lucide="info" class="w-3.5 h-3.5"></i>
+            Photo requirements:
+          </p>
+          <div class="grid grid-cols-2 gap-1.5">
+            <div class="flex items-center gap-1.5">
+              <i data-lucide="check" class="w-3 h-3 text-blue-600 flex-shrink-0"></i>
+              <span class="text-xs text-blue-700">Clear and readable</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <i data-lucide="check" class="w-3 h-3 text-blue-600 flex-shrink-0"></i>
+              <span class="text-xs text-blue-700">All corners visible</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <i data-lucide="check" class="w-3 h-3 text-blue-600 flex-shrink-0"></i>
+              <span class="text-xs text-blue-700">Good lighting</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <i data-lucide="check" class="w-3 h-3 text-blue-600 flex-shrink-0"></i>
+              <span class="text-xs text-blue-700">No blur or glare</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Front upload -->
+        <div class="mb-4">
+          <label class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">
+            Front of Document *
+          </label>
+          <div class="upload-zone" id="front-zone" onclick="document.getElementById('front-input').click()">
+            <input type="file" id="front-input" accept="image/*,.pdf" class="hidden"
+              onchange="handleFileUpload('front', this)"/>
+            <div id="front-placeholder">
+              <i data-lucide="upload-cloud" class="w-8 h-8 text-gray-400 mx-auto mb-2"></i>
+              <p class="text-sm font-semibold text-gray-600">Click to upload front</p>
+              <p class="text-xs text-gray-400 mt-1">JPG, PNG or PDF — max 5MB</p>
+            </div>
+            <div id="front-preview" class="hidden">
+              <i data-lucide="check-circle" class="w-8 h-8 text-green-500 mx-auto mb-2"></i>
+              <p class="text-sm font-semibold text-green-600" id="front-filename">File uploaded</p>
+              <p class="text-xs text-gray-400 mt-1">Click to change</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Back upload (not for passport) -->
+        <div id="back-upload-section">
+          <label class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">
+            Back of Document <span class="text-gray-400 font-normal normal-case">(if applicable)</span>
+          </label>
+          <div class="upload-zone" id="back-zone" onclick="document.getElementById('back-input').click()">
+            <input type="file" id="back-input" accept="image/*,.pdf" class="hidden"
+              onchange="handleFileUpload('back', this)"/>
+            <div id="back-placeholder">
+              <i data-lucide="upload-cloud" class="w-8 h-8 text-gray-400 mx-auto mb-2"></i>
+              <p class="text-sm font-semibold text-gray-600">Click to upload back</p>
+              <p class="text-xs text-gray-400 mt-1">JPG, PNG or PDF — max 5MB</p>
+            </div>
+            <div id="back-preview" class="hidden">
+              <i data-lucide="check-circle" class="w-8 h-8 text-green-500 mx-auto mb-2"></i>
+              <p class="text-sm font-semibold text-green-600" id="back-filename">File uploaded</p>
+              <p class="text-xs text-gray-400 mt-1">Click to change</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-3">
+        <button onclick="goToKycStep(1)"
+          class="flex-1 bg-gray-50 border border-gray-200 text-gray-700 font-semibold
+          py-3 rounded-xl hover:bg-gray-100 transition text-sm">
+          ← Back
+        </button>
+        <button onclick="goToKycStep(3)" id="upload-continue-btn"
+          class="btn-primary" style="flex:2;">
+          Continue →
+        </button>
+      </div>
+    </div>
+
+    <!-- ══ STEP 3: Review & Submit ══ -->
+    <div class="kyc-step" id="kyc-step-3">
+      <div class="bg-white rounded-2xl border border-gray-100 p-6 mb-5">
+        <h2 class="text-base font-bold text-gray-900 mb-1">Review & Submit</h2>
+        <p class="text-sm text-gray-400 mb-5">
+          Confirm your submission details before sending
+        </p>
+
+        <!-- Summary -->
+        <div class="space-y-3 mb-5">
+          <div class="flex justify-between items-center py-3 border-b border-gray-50">
+            <span class="text-sm text-gray-500">Document Type</span>
+            <span id="summary-doc-type" class="text-sm font-semibold text-gray-900">—</span>
+          </div>
+          <div class="flex justify-between items-center py-3 border-b border-gray-50">
+            <span class="text-sm text-gray-500">Front Image</span>
+            <span id="summary-front" class="text-sm font-semibold text-green-600">—</span>
+          </div>
+          <div class="flex justify-between items-center py-3 border-b border-gray-50">
+            <span class="text-sm text-gray-500">Back Image</span>
+            <span id="summary-back" class="text-sm font-semibold text-gray-900">—</span>
+          </div>
+          <div class="flex justify-between items-center py-3">
+            <span class="text-sm text-gray-500">Review Time</span>
+            <span class="text-sm font-semibold text-gray-900">Within 24 hours</span>
+          </div>
+        </div>
+
+        <!-- Privacy note -->
+        <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4 mb-2">
+          <p class="text-xs text-indigo-700 leading-relaxed flex items-start gap-2">
+            <i data-lucide="lock" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5"></i>
+            Your documents are encrypted and stored securely. They are only used for identity
+            verification and will never be shared with third parties.
+          </p>
+        </div>
+      </div>
+
+      <div class="flex gap-3">
+        <button onclick="goToKycStep(2)"
+          class="flex-1 bg-gray-50 border border-gray-200 text-gray-700 font-semibold
+          py-3 rounded-xl hover:bg-gray-100 transition text-sm">
+          ← Back
+        </button>
+        <button onclick="submitKYC()" id="submit-btn"
+          class="btn-primary" style="flex:2;">
+          Submit for Verification →
+        </button>
+      </div>
+    </div>
+
+    <!-- ══ SUCCESS STATE ══ -->
+    <div class="kyc-step" id="kyc-step-success">
+      <div class="bg-white rounded-2xl border border-gray-100 p-8 text-center">
+        <div class="w-20 h-20 bg-green-100 rounded-3xl flex items-center justify-center mx-auto mb-5">
+          <i data-lucide="check-circle" class="w-10 h-10 text-green-500"></i>
+        </div>
+        <h2 class="text-xl font-bold text-gray-900 mb-2">Documents Submitted! 🎉</h2>
+        <p class="text-gray-400 text-sm mb-6 max-w-sm mx-auto">
+          Your identity documents have been submitted for review. We'll verify your account within 24 hours and notify you by email.
+        </p>
+
+        <div class="bg-amber-50 border border-amber-100 rounded-xl p-4 mb-6 text-left">
+          <p class="text-xs font-bold text-amber-700 mb-2">While you wait:</p>
+          <div class="space-y-1.5">
+            <p class="text-xs text-amber-700 flex items-center gap-2">
+              <i data-lucide="check" class="w-3 h-3 flex-shrink-0"></i>
+              You can still use basic features
+            </p>
+            <p class="text-xs text-amber-700 flex items-center gap-2">
+              <i data-lucide="check" class="w-3 h-3 flex-shrink-0"></i>
+              Full access unlocks after verification
+            </p>
+            <p class="text-xs text-amber-700 flex items-center gap-2">
+              <i data-lucide="check" class="w-3 h-3 flex-shrink-0"></i>
+              We'll email you at <span id="success-email" class="font-semibold"></span>
+            </p>
+          </div>
+        </div>
+
+        <a href="dashboard.html"
+          class="block w-full bg-indigo-600 text-white font-semibold py-3 rounded-xl
+          hover:bg-indigo-700 transition text-sm text-center">
+          Go to Dashboard →
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <script type="module">
+    import { supabase } from './supabase.js'
+
+    let currentUser = null
+    let selectedDocType = null
+    let frontFile = null
+    let backFile = null
+
+    const docLabels = {
+      passport: 'International Passport',
+      national_id: 'National ID Card',
+      drivers_license: "Driver's License",
+      voters_card: "Voter's Card"
+    }
+
+    // ── INIT ─────────────────────────────
+    async function init() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { window.location.href = 'index.html'; return }
+      currentUser = user
+      document.getElementById('success-email').textContent = user.email
+
+      // Check if already submitted
+      const { data: profile } = await supabase
+        .from('profiles').select('kyc_status').eq('id', user.id).single()
+
+      if (profile?.kyc_status === 'pending') {
+        showAlreadySubmitted()
+      } else if (profile?.kyc_status === 'verified') {
+        window.location.href = 'dashboard.html'
+      }
+    }
+
+    function showAlreadySubmitted() {
+      document.querySelectorAll('.kyc-step').forEach(s => s.classList.remove('active'))
+      document.getElementById('kyc-step-success').classList.add('active')
+    }
+
+    // ── SELECT DOCUMENT TYPE ──────────────
+    window.selectDoc = function(type) {
+      selectedDocType = type
+      ;['passport','national_id','drivers_license','voters_card'].forEach(t => {
+        const el = document.getElementById('doc-' + t)
+        const check = document.getElementById('check-' + t)
+        if (t === type) {
+          el.classList.add('selected')
+          check.style.background = '#4f46e5'
+          check.style.borderColor = '#4f46e5'
+          check.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>`
+        } else {
+          el.classList.remove('selected')
+          check.style.background = 'white'
+          check.style.borderColor = '#d1d5db'
+          check.innerHTML = ''
+        }
+      })
+      // Hide back upload for passport
+      const backSection = document.getElementById('back-upload-section')
+      backSection.style.display = type === 'passport' ? 'none' : 'block'
+    }
+
+    // ── FILE UPLOAD HANDLER ───────────────
+    window.handleFileUpload = function(side, input) {
+      const file = input.files[0]
+      if (!file) return
+
+      if (file.size > 5 * 1024 * 1024) {
+        showError('File size must be under 5MB.')
+        input.value = ''
+        return
+      }
+
+      if (side === 'front') {
+        frontFile = file
+        document.getElementById('front-placeholder').classList.add('hidden')
+        document.getElementById('front-preview').classList.remove('hidden')
+        document.getElementById('front-filename').textContent = file.name
+        document.getElementById('front-zone').classList.add('uploaded')
+      } else {
+        backFile = file
+        document.getElementById('back-placeholder').classList.add('hidden')
+        document.getElementById('back-preview').classList.remove('hidden')
+        document.getElementById('back-filename').textContent = file.name
+        document.getElementById('back-zone').classList.add('uploaded')
+      }
+    }
+
+    // ── STEP NAVIGATION ───────────────────
+    window.goToKycStep = function(step) {
+      hideError()
+
+      if (step === 2 && !selectedDocType) {
+        showError('Please select a document type to continue.')
+        return
+      }
+
+      if (step === 3) {
+        if (!frontFile) {
+          showError('Please upload the front of your document.')
+          return
+        }
+        // Update summary
+        document.getElementById('summary-doc-type').textContent = docLabels[selectedDocType]
+        document.getElementById('summary-front').textContent = '✅ ' + frontFile.name
+        document.getElementById('summary-back').textContent = backFile ? '✅ ' + backFile.name : 'Not provided'
+        document.getElementById('doc-type-label').textContent = docLabels[selectedDocType]
+      }
+
+      document.querySelectorAll('.kyc-step').forEach(s => s.classList.remove('active'))
+      document.getElementById('kyc-step-' + step).classList.add('active')
+      updateProgress(step)
+      window.scrollTo(0, 0)
+    }
+
+    function updateProgress(step) {
+      for (let i = 1; i <= 3; i++) {
+        const dot = document.getElementById('dot-' + i)
+        if (!dot) continue
+        if (i < step) {
+          dot.style.background = '#4f46e5'
+          dot.style.color = 'white'
+          dot.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>`
+        } else if (i === step) {
+          dot.style.background = '#4f46e5'
+          dot.style.color = 'white'
+          dot.textContent = i
+        } else {
+          dot.style.background = '#f1f5f9'
+          dot.style.color = '#94a3b8'
+          dot.textContent = i
+        }
+        if (i < 3) {
+          const line = document.getElementById('line-' + i)
+          if (line) line.style.background = i < step ? '#4f46e5' : '#e2e8f0'
+        }
+      }
+    }
+
+    // ── SUBMIT KYC ────────────────────────
+    window.submitKYC = async function() {
+      const btn = document.getElementById('submit-btn')
+      btn.textContent = 'Uploading...'
+      btn.disabled = true
+      hideError()
+
+      try {
+        // Upload front document
+        const frontPath = `${currentUser.id}/front_${Date.now()}_${frontFile.name}`
+        const { error: frontError } = await supabase.storage
+          .from('kyc-documents')
+          .upload(frontPath, frontFile, { upsert: true })
+
+        if (frontError) throw frontError
+
+        // Upload back document if provided
+        let backPath = null
+        if (backFile) {
+          backPath = `${currentUser.id}/back_${Date.now()}_${backFile.name}`
+          const { error: backError } = await supabase.storage
+            .from('kyc-documents')
+            .upload(backPath, backFile, { upsert: true })
+          if (backError) throw backError
+        }
+
+        // Update profile with KYC info
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({
+            kyc_status: 'pending',
+            kyc_document_type: selectedDocType,
+            kyc_document_url: frontPath,
+            kyc_submitted_at: new Date().toISOString()
+          })
+          .eq('id', currentUser.id)
+
+        if (profileError) throw profileError
+
+        // Show success
+        document.querySelectorAll('.kyc-step').forEach(s => s.classList.remove('active'))
+        document.getElementById('kyc-step-success').classList.add('active')
+        window.scrollTo(0, 0)
+
+      } catch (err) {
+        console.error('KYC submission error:', err)
+        showError('Upload failed: ' + (err.message || 'Please try again.'))
+        btn.textContent = 'Submit for Verification →'
+        btn.disabled = false
+      }
+    }
+
+    // ── HELPERS ───────────────────────────
+    function showError(msg) {
+      document.getElementById('error-text').textContent = msg
+      document.getElementById('error-msg').classList.remove('hidden')
+      window.scrollTo(0, 0)
+    }
+    function hideError() {
+      document.getElementById('error-msg').classList.add('hidden')
+    }
+
+    init()
+  </script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>
