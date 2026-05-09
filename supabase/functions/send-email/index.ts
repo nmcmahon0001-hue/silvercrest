@@ -21,7 +21,7 @@ serve(async (req: Request) => {
     const userName = user.user_metadata?.full_name || "Valued Customer"
     const actionType = emailData.email_action_type
     const tokenHash = emailData.token_hash
-    const redirectTo = emailData.redirect_to || "https://silvercrestfin.com/dashboard.html"
+    const redirectTo = emailData.redirect_to || "https://silvercrestfin.com/verify.html"
     const siteUrl = emailData.site_url || "https://pxlaghpewiewiezsimpl.supabase.co"
 
     const confirmUrl = `${siteUrl}/auth/v1/verify?token=${tokenHash}&type=${actionType}&redirect_to=${redirectTo}`

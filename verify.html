@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SilverCrest — Verifying...</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>* { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center">
+  <div class="text-center max-w-md mx-auto px-6">
+
+    <!-- Loading state -->
+    <div id="state-loading">
+      <div class="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
+        <svg class="animate-spin w-8 h-8 text-indigo-600" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+        </svg>
+      </div>
+      <h2 class="text-xl font-bold text-gray-900 mb-2">Verifying your email...</h2>
+      <p class="text-gray-400 text-sm">Please wait a moment</p>
+    </div>
+
+    <!-- Success state -->
+    <div id="state-success" class="hidden">
+      <div class="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
+        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+        </svg>
+      </div>
+      <h2 class="text-xl font-bold text-gray-900 mb-2">Email verified! 🎉</h2>
+      <p class="text-gray-400 text-sm mb-6">Taking you to your dashboard...</p>
+      <div class="flex items-center justify-center gap-2">
+        <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+          <span class="text-white font-bold text-xs">S</span>
+        </div>
+        <span class="font-bold text-gray-900">SilverCrest</span>
+      </div>
+    </div>
+
+    <!-- Error state -->
+    <div id="state-error" class="hidden">
+      <div class="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
+        <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </div>
+      <h2 class="text-xl font-bold text-gray-900 mb-2">Verification failed</h2>
+      <p id="error-message" class="text-gray-400 text-sm mb-6">The link may have expired or already been used.</p>
+      <a href="signup.html"
+        class="inline-block bg-indigo-600 text-white font-semibold px-6 py-3 rounded-xl hover:bg-indigo-700 transition text-sm">
+        Sign up again
+      </a>
+    </div>
+
+  </div>
+
+  <script type="module">
+    import { supabase } from './supabase.js'
+
+    async function handleVerification() {
+      try {
+        // Get the URL hash or query params
+        const hashParams = new URLSearchParams(window.location.hash.substring(1))
+        const queryParams = new URLSearchParams(window.location.search)
+
+        // Check for error in URL
+        const error = hashParams.get('error') || queryParams.get('error')
+        const errorDescription = hashParams.get('error_description') || queryParams.get('error_description')
+
+        if (error) {
+          showError(errorDescription || error)
+          return
+        }
+
+        // Get tokens from URL hash (Supabase puts them here)
+        const accessToken = hashParams.get('access_token')
+        const refreshToken = hashParams.get('refresh_token')
+        const type = hashParams.get('type')
+
+        if (accessToken && refreshToken) {
+          // Set the session manually
+          const { data, error: sessionError } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken
+          })
+
+          if (sessionError) {
+            showError(sessionError.message)
+            return
+          }
+
+          if (data.user) {
+            showSuccess()
+            setTimeout(() => {
+              window.location.href = 'dashboard.html'
+            }, 2000)
+            return
+          }
+        }
+
+        // Try getting current session
+        const { data: { session }, error: getError } = await supabase.auth.getSession()
+
+        if (session) {
+          showSuccess()
+          setTimeout(() => {
+            window.location.href = 'dashboard.html'
+          }, 2000)
+          return
+        }
+
+        // If we get here, try OTP verification with token_hash
+        const tokenHash = queryParams.get('token_hash')
+        const verifyType = queryParams.get('type')
+
+        if (tokenHash && verifyType) {
+          const { data, error: verifyError } = await supabase.auth.verifyOtp({
+            token_hash: tokenHash,
+            type: verifyType
+          })
+
+          if (verifyError) {
+            showError(verifyError.message)
+            return
+          }
+
+          if (data.user) {
+            showSuccess()
+            setTimeout(() => {
+              window.location.href = 'dashboard.html'
+            }, 2000)
+            return
+          }
+        }
+
+        showError('Could not verify your email. Please try signing up again.')
+
+      } catch (err) {
+        console.error('Verification error:', err)
+        showError('Something went wrong. Please try again.')
+      }
+    }
+
+    function showSuccess() {
+      document.getElementById('state-loading').classList.add('hidden')
+      document.getElementById('state-success').classList.remove('hidden')
+    }
+
+    function showError(message) {
+      document.getElementById('state-loading').classList.add('hidden')
+      document.getElementById('state-error').classList.remove('hidden')
+      if (message) {
+        document.getElementById('error-message').textContent = message
+      }
+    }
+
+    handleVerification()
+  </script>
+</body>
+</html>
