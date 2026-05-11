@@ -11,7 +11,7 @@
 <body class="bg-gray-50 min-h-screen flex items-center justify-center">
   <div class="text-center max-w-md mx-auto px-6">
 
-    <!-- Loading state -->
+    <!-- Loading -->
     <div id="state-loading">
       <div class="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
         <svg class="animate-spin w-8 h-8 text-indigo-600" fill="none" viewBox="0 0 24 24">
@@ -23,7 +23,7 @@
       <p class="text-gray-400 text-sm">Please wait a moment</p>
     </div>
 
-    <!-- Success state -->
+    <!-- Success -->
     <div id="state-success" class="hidden">
       <div class="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
         <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -31,16 +31,21 @@
         </svg>
       </div>
       <h2 class="text-xl font-bold text-gray-900 mb-2">Email verified! 🎉</h2>
-      <p class="text-gray-400 text-sm mb-6">Taking you to your dashboard...</p>
-      <div class="flex items-center justify-center gap-2">
+      <p class="text-gray-400 text-sm mb-2">Welcome to SilverCrest!</p>
+      <p class="text-gray-400 text-sm mb-6">
+        A welcome email has been sent to
+        <span id="success-email" class="font-semibold text-indigo-600"></span>
+      </p>
+      <div class="flex items-center justify-center gap-2 mb-4">
         <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
           <span class="text-white font-bold text-xs">S</span>
         </div>
         <span class="font-bold text-gray-900">SilverCrest</span>
       </div>
+      <p class="text-xs text-gray-400">Redirecting to your dashboard...</p>
     </div>
 
-    <!-- Error state -->
+    <!-- Error -->
     <div id="state-error" class="hidden">
       <div class="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
         <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -48,9 +53,12 @@
         </svg>
       </div>
       <h2 class="text-xl font-bold text-gray-900 mb-2">Verification failed</h2>
-      <p id="error-message" class="text-gray-400 text-sm mb-6">The link may have expired or already been used.</p>
+      <p id="error-message" class="text-gray-400 text-sm mb-6">
+        The link may have expired or already been used.
+      </p>
       <a href="signup.html"
-        class="inline-block bg-indigo-600 text-white font-semibold px-6 py-3 rounded-xl hover:bg-indigo-700 transition text-sm">
+        class="inline-block bg-indigo-600 text-white font-semibold px-6 py-3 rounded-xl
+        hover:bg-indigo-700 transition text-sm">
         Sign up again
       </a>
     </div>
@@ -62,81 +70,87 @@
 
     async function handleVerification() {
       try {
-        // Get the URL hash or query params
         const hashParams = new URLSearchParams(window.location.hash.substring(1))
         const queryParams = new URLSearchParams(window.location.search)
 
-        // Check for error in URL
         const error = hashParams.get('error') || queryParams.get('error')
-        const errorDescription = hashParams.get('error_description') || queryParams.get('error_description')
-
         if (error) {
-          showError(errorDescription || error)
+          showError(hashParams.get('error_description') || error)
           return
         }
 
-        // Get tokens from URL hash (Supabase puts them here)
         const accessToken = hashParams.get('access_token')
         const refreshToken = hashParams.get('refresh_token')
-        const type = hashParams.get('type')
+        const tokenHash = queryParams.get('token_hash')
+        const verifyType = queryParams.get('type')
+
+        let user = null
 
         if (accessToken && refreshToken) {
-          // Set the session manually
           const { data, error: sessionError } = await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken
           })
-
-          if (sessionError) {
-            showError(sessionError.message)
-            return
-          }
-
-          if (data.user) {
-            showSuccess()
-            setTimeout(() => {
-              window.location.href = 'dashboard.html'
-            }, 2000)
-            return
-          }
-        }
-
-        // Try getting current session
-        const { data: { session }, error: getError } = await supabase.auth.getSession()
-
-        if (session) {
-          showSuccess()
-          setTimeout(() => {
-            window.location.href = 'dashboard.html'
-          }, 2000)
-          return
-        }
-
-        // If we get here, try OTP verification with token_hash
-        const tokenHash = queryParams.get('token_hash')
-        const verifyType = queryParams.get('type')
-
-        if (tokenHash && verifyType) {
+          if (sessionError) { showError(sessionError.message); return }
+          user = data.user
+        } else if (tokenHash && verifyType) {
           const { data, error: verifyError } = await supabase.auth.verifyOtp({
             token_hash: tokenHash,
             type: verifyType
           })
-
-          if (verifyError) {
-            showError(verifyError.message)
-            return
-          }
-
-          if (data.user) {
-            showSuccess()
-            setTimeout(() => {
-              window.location.href = 'dashboard.html'
-            }, 2000)
-            return
-          }
+          if (verifyError) { showError(verifyError.message); return }
+          user = data.user
         }
 
-        showError('Could not verify your email. Please try signing up again.')
+        if (!user) {
+          const { data: { session } } = await supabase.auth.getSession()
+          if (session) user = session.user
+        }
+
+        if (!user) {
+          showError('Could not verify your email. Please try again.')
+          return
+        }
+
+        // Generate account number
+        const numericId = user.id.replace(/-/g, '')
+        const digits = numericId
+          .replace(/[a-f]/gi, d => String(d.charCodeAt(0) - 87))
+          .replace(/[^0-9]/g, '')
+          .substring(0, 12)
+          .padEnd(12, '0')
+
+        const fullName = user.user_metadata?.full_name || 'Valued Customer'
+        const email = user.email
+
+        document.getElementById('success-email').textContent = email
+        showSuccess()
+
+        // Send welcome email
+        try {
+          const res = await fetch(
+            'https://pxlaghpewiewiezsimpl.supabase.co/functions/v1/send-email',
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                type: 'welcome',
+                email: email,
+                full_name: fullName,
+                account_number: digits
+              })
+            }
+          )
+          const data = await res.json()
+          console.log('Welcome email:', data)
+        } catch (emailErr) {
+          console.error('Welcome email error:', emailErr)
+        }
+
+        // Redirect to dashboard
+        setTimeout(() => {
+          window.location.href = 'dashboard.html'
+        }, 3000)
 
       } catch (err) {
         console.error('Verification error:', err)
@@ -148,13 +162,10 @@
       document.getElementById('state-loading').classList.add('hidden')
       document.getElementById('state-success').classList.remove('hidden')
     }
-
-    function showError(message) {
+    function showError(msg) {
       document.getElementById('state-loading').classList.add('hidden')
       document.getElementById('state-error').classList.remove('hidden')
-      if (message) {
-        document.getElementById('error-message').textContent = message
-      }
+      if (msg) document.getElementById('error-message').textContent = msg
     }
 
     handleVerification()
