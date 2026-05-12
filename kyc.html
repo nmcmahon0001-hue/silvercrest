@@ -89,7 +89,9 @@
     <div class="kyc-step active" id="kyc-step-1">
       <div class="bg-white rounded-2xl border border-gray-100 p-6 mb-5">
         <h2 class="text-base font-bold text-gray-900 mb-1">Select ID type</h2>
-        <p class="text-sm text-gray-400 mb-5">Choose the government-issued ID you'll be uploading</p>
+        <p class="text-sm text-gray-400 mb-5">
+          Choose the government-issued ID you'll be uploading
+        </p>
         <div class="space-y-3">
 
           <div class="doc-option" id="doc-passport" onclick="selectDoc('passport')">
@@ -99,9 +101,9 @@
               </div>
               <div class="flex-1">
                 <p class="text-sm font-semibold text-gray-900">International Passport</p>
-                <p class="text-xs text-gray-400">Valid passport with photo page</p>
+                <p class="text-xs text-gray-400">Photo page only</p>
               </div>
-              <div class="w-5 h-5 rounded-full border-2 border-gray-300" id="check-passport"></div>
+              <div class="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center flex-shrink-0" id="check-passport"></div>
             </div>
           </div>
 
@@ -112,9 +114,9 @@
               </div>
               <div class="flex-1">
                 <p class="text-sm font-semibold text-gray-900">National ID Card</p>
-                <p class="text-xs text-gray-400">Government-issued national identity card</p>
+                <p class="text-xs text-gray-400">Front and back required</p>
               </div>
-              <div class="w-5 h-5 rounded-full border-2 border-gray-300" id="check-national_id"></div>
+              <div class="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center flex-shrink-0" id="check-national_id"></div>
             </div>
           </div>
 
@@ -125,9 +127,9 @@
               </div>
               <div class="flex-1">
                 <p class="text-sm font-semibold text-gray-900">Driver's License</p>
-                <p class="text-xs text-gray-400">Valid driver's license with photo</p>
+                <p class="text-xs text-gray-400">Front and back required</p>
               </div>
-              <div class="w-5 h-5 rounded-full border-2 border-gray-300" id="check-drivers_license"></div>
+              <div class="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center flex-shrink-0" id="check-drivers_license"></div>
             </div>
           </div>
 
@@ -138,9 +140,9 @@
               </div>
               <div class="flex-1">
                 <p class="text-sm font-semibold text-gray-900">Voter's Card</p>
-                <p class="text-xs text-gray-400">Government-issued voter registration card</p>
+                <p class="text-xs text-gray-400">Front and back required</p>
               </div>
-              <div class="w-5 h-5 rounded-full border-2 border-gray-300" id="check-voters_card"></div>
+              <div class="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center flex-shrink-0" id="check-voters_card"></div>
             </div>
           </div>
 
@@ -162,14 +164,14 @@
         <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-5">
           <p class="text-xs font-bold text-blue-700 mb-2">📋 Photo requirements:</p>
           <div class="grid grid-cols-2 gap-1.5">
-            <p class="text-xs text-blue-700 flex items-center gap-1">✓ Clear and readable</p>
-            <p class="text-xs text-blue-700 flex items-center gap-1">✓ All corners visible</p>
-            <p class="text-xs text-blue-700 flex items-center gap-1">✓ Good lighting</p>
-            <p class="text-xs text-blue-700 flex items-center gap-1">✓ No blur or glare</p>
+            <p class="text-xs text-blue-700">✓ Clear and readable</p>
+            <p class="text-xs text-blue-700">✓ All corners visible</p>
+            <p class="text-xs text-blue-700">✓ Good lighting</p>
+            <p class="text-xs text-blue-700">✓ No blur or glare</p>
           </div>
         </div>
 
-        <!-- Front -->
+        <!-- Front upload -->
         <div class="mb-4">
           <label class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">
             Front of Document *
@@ -191,11 +193,10 @@
           </div>
         </div>
 
-        <!-- Back -->
-        <div id="back-upload-section">
+        <!-- Back upload — hidden for passport -->
+        <div id="back-upload-section" style="display:none;">
           <label class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">
-            Back of Document
-            <span class="text-gray-400 font-normal normal-case">(if applicable)</span>
+            Back of Document *
           </label>
           <div class="upload-zone" id="back-zone"
             onclick="document.getElementById('back-input').click()">
@@ -213,6 +214,7 @@
             </div>
           </div>
         </div>
+
       </div>
 
       <div class="flex gap-3">
@@ -239,12 +241,12 @@
             <span id="summary-doc-type" class="text-sm font-semibold text-gray-900">—</span>
           </div>
           <div class="flex justify-between items-center py-3 border-b border-gray-50">
-            <span class="text-sm text-gray-500">Front Image</span>
+            <span class="text-sm text-gray-500">Front Photo</span>
             <span id="summary-front" class="text-sm font-semibold text-green-600">—</span>
           </div>
-          <div class="flex justify-between items-center py-3 border-b border-gray-50">
-            <span class="text-sm text-gray-500">Back Image</span>
-            <span id="summary-back" class="text-sm font-semibold text-gray-500">—</span>
+          <div id="summary-back-row" class="flex justify-between items-center py-3 border-b border-gray-50 hidden">
+            <span class="text-sm text-gray-500">Back Photo</span>
+            <span id="summary-back" class="text-sm font-semibold text-green-600">—</span>
           </div>
           <div class="flex justify-between items-center py-3">
             <span class="text-sm text-gray-500">Review Time</span>
@@ -281,15 +283,15 @@
         </div>
         <h2 class="text-xl font-bold text-gray-900 mb-2">Documents Submitted! 🎉</h2>
         <p class="text-gray-400 text-sm mb-6 max-w-sm mx-auto">
-          Your identity documents have been submitted for review. We'll verify your account
-          within 24 hours and notify you by email.
+          Your identity documents have been submitted for review.
+          We'll verify your account within 24 hours and notify you by email.
         </p>
         <div class="bg-amber-50 border border-amber-100 rounded-xl p-4 mb-6 text-left">
           <p class="text-xs font-bold text-amber-700 mb-2">While you wait:</p>
           <div class="space-y-1.5">
             <p class="text-xs text-amber-700">✓ You can still browse your dashboard</p>
             <p class="text-xs text-amber-700">✓ Full access unlocks after verification</p>
-            <p class="text-xs text-amber-700">✓ We'll email you at
+            <p class="text-xs text-amber-700">✓ We'll notify you at
               <span id="success-email" class="font-semibold"></span>
             </p>
           </div>
@@ -310,7 +312,7 @@
         </div>
         <h2 class="text-xl font-bold text-gray-900 mb-2">Under Review</h2>
         <p class="text-gray-400 text-sm mb-6 max-w-sm mx-auto">
-          Your documents have already been submitted and are currently under review.
+          Your documents are currently under review.
           We'll notify you by email once verified — usually within 24 hours.
         </p>
         <a href="dashboard.html"
@@ -353,20 +355,17 @@
 
       const status = profile?.kyc_status
 
-      // Already verified — go to dashboard
       if (status === 'verified') {
         window.location.href = 'dashboard.html'
         return
       }
 
-      // Already submitted — show pending screen
       if (status === 'pending') {
         showStep('pending')
         return
       }
 
-      // unverified or rejected — show the form (step 1)
-      // Form is already shown by default
+      // unverified or rejected — show the form
     }
 
     function showStep(name) {
@@ -392,9 +391,15 @@
           check.innerHTML = ''
         }
       })
-      // Hide back for passport
-      document.getElementById('back-upload-section').style.display =
-        type === 'passport' ? 'none' : 'block'
+
+      // Passport = front only, others = front + back
+      const backSection = document.getElementById('back-upload-section')
+      if (type === 'passport') {
+        backSection.style.display = 'none'
+        backFile = null
+      } else {
+        backSection.style.display = 'block'
+      }
     }
 
     // ── FILE UPLOAD ───────────────────────
@@ -438,10 +443,24 @@
           showError('Please upload the front of your document.')
           return
         }
+        // For non-passport, back is required
+        if (selectedDocType !== 'passport' && !backFile) {
+          showError('Please upload the back of your document.')
+          return
+        }
+
+        // Update summary
         document.getElementById('summary-doc-type').textContent = docLabels[selectedDocType]
         document.getElementById('summary-front').textContent = '✅ ' + frontFile.name
-        document.getElementById('summary-back').textContent =
-          backFile ? '✅ ' + backFile.name : 'Not provided'
+
+        // Show back row only for non-passport
+        const backRow = document.getElementById('summary-back-row')
+        if (selectedDocType !== 'passport') {
+          backRow.classList.remove('hidden')
+          document.getElementById('summary-back').textContent = '✅ ' + backFile.name
+        } else {
+          backRow.classList.add('hidden')
+        }
       }
 
       document.querySelectorAll('.kyc-step').forEach(s => s.classList.remove('active'))
