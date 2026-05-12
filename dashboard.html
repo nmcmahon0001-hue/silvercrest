@@ -1357,15 +1357,28 @@ if (currentProfile.is_suspended) {
 
     // ── TRANSACTIONS ──────────────────────
     async function loadTransactions() {
-      const { data: txs } = await supabase
-        .from('transactions')
-        .select('*, sender:sender_id(full_name,email), receiver:receiver_id(full_name,email)')
-        .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
-        .order('created_at', { ascending: false })
-      allTransactions = txs || []
-      renderTransactions(allTransactions, 'recent-tx-list', 5)
-      renderTransactions(allTransactions, 'all-tx-list')
+  const { data: txs } = await supabase
+    .from('transactions')
+    .select('*, sender:sender_id(full_name,email,is_admin), receiver:receiver_id(full_name,email,is_admin)')
+    .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
+    .order('created_at', { ascending: false })
+
+  // Filter out admin-created transactions where admin is the sender
+  // but show them if they are credits TO the user (like welcome bonus)
+  allTransactions = (txs || []).map(tx => {
+    // If sender is admin and receiver is current user — show as "Opening Balance" or note
+    if (tx.sender?.is_admin && tx.receiver_id === currentUser.id) {
+      return {
+        ...tx,
+        sender: { ...tx.sender, full_name: tx.note || 'SilverCrest' }
+      }
     }
+    return tx
+  })
+
+  renderTransactions(allTransactions, 'recent-tx-list', 5)
+  renderTransactions(allTransactions, 'all-tx-list')
+}
 
     function renderTransactions(txs, containerId, limit = null) {
       const container = document.getElementById(containerId)
