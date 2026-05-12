@@ -79,8 +79,10 @@
     }
     .tx-item {
       display: flex; align-items: center; gap: 12px;
-      padding: 12px 0; border-bottom: 1px solid #f8fafc;
+      padding: 12px 8px; border-bottom: 1px solid #f8fafc;
+      cursor: pointer; border-radius: 12px; transition: background 0.15s ease;
     }
+    .tx-item:hover { background: #f8fafc; }
     .tx-item:last-child { border-bottom: none; }
     .tx-icon {
       width: 40px; height: 40px; border-radius: 12px;
@@ -159,8 +161,6 @@
       text-decoration: none;
     }
     .icon-btn:hover { background: #eef2ff; border-color: #c7d2fe; }
-
-    /* KYC Modal */
     .kyc-modal-overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,0.5);
       z-index: 100; display: flex; align-items: center; justify-content: center;
@@ -176,11 +176,15 @@
       from { opacity:0; transform:scale(0.95) translateY(10px); }
       to { opacity:1; transform:scale(1) translateY(0); }
     }
+    @keyframes slideUp {
+      from { transform: translateY(100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
   </style>
 </head>
 <body style="background:#f8fafc;">
 
-  <!-- KYC BLOCKED MODAL -->
+  <!-- KYC MODAL -->
   <div id="kyc-modal" class="kyc-modal-overlay hidden">
     <div class="kyc-modal">
       <div class="w-14 h-14 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -192,51 +196,93 @@
       <p class="text-sm text-gray-400 text-center mb-6" id="kyc-modal-message">
         To access this feature, you need to verify your identity first.
       </p>
-
-      <!-- KYC Status: unverified -->
       <div id="kyc-modal-unverified">
         <div class="bg-amber-50 border border-amber-100 rounded-xl p-4 mb-5">
           <p class="text-xs text-amber-700 leading-relaxed">
             🔒 This takes less than 2 minutes. Upload a valid government ID and we'll verify your account within 24 hours.
           </p>
         </div>
-        <button onclick="goToKYC()" class="btn-primary mb-3">
-          Verify My Identity →
-        </button>
+        <button onclick="goToKYC()" class="btn-primary mb-3">Verify My Identity →</button>
         <button onclick="closeKycModal()"
-          class="w-full bg-gray-50 border border-gray-200 text-gray-600 font-semibold
-          py-3 rounded-xl hover:bg-gray-100 transition text-sm">
+          class="w-full bg-gray-50 border border-gray-200 text-gray-600 font-semibold py-3 rounded-xl hover:bg-gray-100 transition text-sm">
           I'll do this later
         </button>
       </div>
-
-      <!-- KYC Status: pending -->
       <div id="kyc-modal-pending" class="hidden">
         <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-5">
           <p class="text-xs text-blue-700 leading-relaxed">
-            ⏳ Your documents are currently under review. We'll notify you by email once verified — usually within 24 hours.
+            ⏳ Your documents are under review. We'll notify you by email once verified — usually within 24 hours.
           </p>
         </div>
-        <button onclick="closeKycModal()" class="btn-primary">
-          Got it
-        </button>
+        <button onclick="closeKycModal()" class="btn-primary">Got it</button>
       </div>
-
-      <!-- KYC Status: rejected -->
       <div id="kyc-modal-rejected" class="hidden">
         <div class="bg-red-50 border border-red-100 rounded-xl p-4 mb-5">
           <p class="text-xs text-red-700 leading-relaxed" id="kyc-rejection-reason">
             ❌ Your verification was rejected. Please resubmit with a clearer document.
           </p>
         </div>
-        <button onclick="goToKYC()" class="btn-primary mb-3">
-          Resubmit Documents →
-        </button>
+        <button onclick="goToKYC()" class="btn-primary mb-3">Resubmit Documents →</button>
         <button onclick="closeKycModal()"
-          class="w-full bg-gray-50 border border-gray-200 text-gray-600 font-semibold
-          py-3 rounded-xl hover:bg-gray-100 transition text-sm">
+          class="w-full bg-gray-50 border border-gray-200 text-gray-600 font-semibold py-3 rounded-xl hover:bg-gray-100 transition text-sm">
           Later
         </button>
+      </div>
+      <div id="kyc-modal-suspended" class="hidden">
+        <div class="bg-red-50 border border-red-100 rounded-xl p-4 mb-5">
+          <p class="text-xs text-red-700 leading-relaxed">
+            🚫 Your account has been suspended by an administrator. Please contact
+            <strong>support@silvercrestfin.com</strong> to resolve this issue.
+          </p>
+        </div>
+        <button onclick="closeKycModal()" class="btn-primary">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRANSACTION DETAIL MODAL -->
+  <div id="tx-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);">
+    <div style="background:white;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:24px;animation:slideUp 0.3s ease;max-height:85vh;overflow-y:auto;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+        <h3 style="font-size:16px;font-weight:700;color:#1e293b;">Transaction Details</h3>
+        <button onclick="closeTxModal()"
+          style="width:32px;height:32px;background:#f1f5f9;border:none;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+          <i data-lucide="x" class="w-4 h-4 text-gray-500"></i>
+        </button>
+      </div>
+      <div id="tx-modal-amount-section"
+        style="text-align:center;padding:24px;background:#f8fafc;border-radius:16px;margin-bottom:20px;">
+        <div id="tx-modal-icon"
+          style="width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
+        </div>
+        <p id="tx-modal-amount" style="font-size:32px;font-weight:800;margin:0 0 4px;"></p>
+        <p id="tx-modal-label" style="font-size:14px;color:#64748b;margin:0;"></p>
+      </div>
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f1f5f9;">
+          <span style="font-size:13px;color:#94a3b8;">Status</span>
+          <span id="tx-modal-status" style="font-size:13px;font-weight:600;"></span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f1f5f9;">
+          <span style="font-size:13px;color:#94a3b8;">Date & Time</span>
+          <span id="tx-modal-date" style="font-size:13px;font-weight:600;color:#1e293b;text-align:right;max-width:200px;"></span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f1f5f9;">
+          <span style="font-size:13px;color:#94a3b8;">Type</span>
+          <span id="tx-modal-type" style="font-size:13px;font-weight:600;color:#1e293b;"></span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f1f5f9;">
+          <span style="font-size:13px;color:#94a3b8;">From</span>
+          <span id="tx-modal-from" style="font-size:13px;font-weight:600;color:#1e293b;"></span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f1f5f9;">
+          <span style="font-size:13px;color:#94a3b8;">To</span>
+          <span id="tx-modal-to" style="font-size:13px;font-weight:600;color:#1e293b;"></span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;">
+          <span style="font-size:13px;color:#94a3b8;">Note</span>
+          <span id="tx-modal-note" style="font-size:13px;font-weight:600;color:#1e293b;text-align:right;max-width:200px;"></span>
+        </div>
       </div>
     </div>
   </div>
@@ -428,7 +474,7 @@
             </div>
           </div>
 
-          <!-- Account Number Card -->
+          <!-- Account Number -->
           <div class="stat-card flex flex-col justify-between">
             <div class="flex items-center justify-between mb-3">
               <div class="flex items-center gap-2">
@@ -450,7 +496,7 @@
             </div>
           </div>
 
-          <!-- Status + Crypto Card -->
+          <!-- Status + Crypto -->
           <div class="stat-card flex flex-col justify-between">
             <div class="flex items-center gap-2 mb-3">
               <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
@@ -1042,9 +1088,7 @@
               <label class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-1.5 block">KYC Status</label>
               <div class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 flex items-center justify-between">
                 <span id="profile-kyc-status" class="text-sm text-gray-700">Loading...</span>
-                <a href="kyc.html" id="profile-kyc-link" class="hidden text-xs text-indigo-600 font-medium">
-                  Verify now →
-                </a>
+                <a href="kyc.html" id="profile-kyc-link" class="hidden text-xs text-indigo-600 font-medium">Verify now →</a>
               </div>
             </div>
           </div>
@@ -1121,18 +1165,93 @@
       }
     })
 
+    // ── TRANSACTION MODAL ─────────────────
+    window.openTransactionModal = function(index) {
+      const tx = window._currentTxList?.[index]
+      if (!tx) return
+
+      const isSender = tx.sender_id === currentUser.id
+      const isSelf = tx.sender_id === currentUser.id && tx.receiver_id === currentUser.id
+
+      // Label
+      let label = ''
+      if (tx.admin_created) {
+        label = tx.note || 'Bank Transaction'
+      } else if (isSelf) {
+        label = tx.note || 'Transfer'
+      } else if (isSender) {
+        label = `To ${tx.receiver?.full_name || 'Unknown'}`
+      } else {
+        label = `From ${tx.sender?.full_name || 'Unknown'}`
+      }
+
+      const amountColor = isSender && !isSelf ? '#ef4444' : isSelf ? '#6366f1' : '#22c55e'
+      const amountPrefix = isSender && !isSelf ? '-' : isSelf ? '' : '+'
+      const iconBg = isSender && !isSelf ? '#fff1f2' : isSelf ? '#eef2ff' : '#f0fdf4'
+      const iconColor = isSender && !isSelf ? '#ef4444' : isSelf ? '#6366f1' : '#22c55e'
+      const iconName = isSender && !isSelf ? 'arrow-up-right' : isSelf ? 'refresh-cw' : 'arrow-down-left'
+
+      const statusColors = { completed:'#16a34a', pending:'#d97706', failed:'#ef4444' }
+      const statusLabels = { completed:'✅ Completed', pending:'⏳ Pending', failed:'❌ Failed' }
+      const status = tx.status || 'completed'
+
+      const fullDate = new Date(tx.created_at).toLocaleDateString('en-US', {
+        weekday:'short', month:'long', day:'numeric', year:'numeric'
+      })
+      const fullTime = new Date(tx.created_at).toLocaleTimeString('en-US', {
+        hour:'2-digit', minute:'2-digit'
+      })
+
+      const fromName = tx.admin_created
+        ? 'SilverCrest Bank'
+        : tx.sender?.is_admin
+        ? 'SilverCrest Bank'
+        : (tx.sender?.full_name || 'Unknown')
+
+      const toName = tx.receiver?.is_admin
+        ? 'SilverCrest Bank'
+        : (tx.receiver?.full_name || 'Unknown')
+
+      document.getElementById('tx-modal-icon').style.background = iconBg
+      document.getElementById('tx-modal-icon').innerHTML =
+        `<i data-lucide="${iconName}" style="width:24px;height:24px;color:${iconColor};"></i>`
+      document.getElementById('tx-modal-amount').textContent = `${amountPrefix}$${parseFloat(tx.amount).toFixed(2)}`
+      document.getElementById('tx-modal-amount').style.color = amountColor
+      document.getElementById('tx-modal-label').textContent = label
+      document.getElementById('tx-modal-status').textContent = statusLabels[status] || status
+      document.getElementById('tx-modal-status').style.color = statusColors[status] || '#94a3b8'
+      document.getElementById('tx-modal-date').textContent = `${fullDate} at ${fullTime}`
+      document.getElementById('tx-modal-type').textContent =
+        tx.admin_created ? 'Bank Transaction' :
+        isSelf ? 'Internal Transfer' :
+        isSender ? 'Outgoing Transfer' : 'Incoming Transfer'
+      document.getElementById('tx-modal-from').textContent = fromName
+      document.getElementById('tx-modal-to').textContent = toName
+      document.getElementById('tx-modal-note').textContent = tx.note || '—'
+
+      const modal = document.getElementById('tx-modal')
+      modal.style.display = 'flex'
+      document.body.style.overflow = 'hidden'
+      lucide.createIcons()
+    }
+
+    window.closeTxModal = function() {
+      document.getElementById('tx-modal').style.display = 'none'
+      document.body.style.overflow = ''
+    }
+
+    document.getElementById('tx-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeTxModal()
+    })
+
     // ── KYC PROTECTION ────────────────────
-   window.handleProtectedAction = function(action) {
-  // Check suspension first
-  if (currentProfile?.is_suspended) {
-    showSuspendedModal()
-    return
-  }
-  if (kycStatus === 'verified') {
-    showSection(action)
-    return
-  }
-      // Block — show modal
+    window.handleProtectedAction = function(action) {
+      if (currentProfile?.is_suspended) {
+        showSuspendedModal(); return
+      }
+      if (kycStatus === 'verified') {
+        showSection(action); return
+      }
       pendingAction = action
       const modal = document.getElementById('kyc-modal')
       const messages = {
@@ -1143,12 +1262,10 @@
       }
       document.getElementById('kyc-modal-message').textContent =
         messages[action] || 'To access this feature, please verify your identity.'
-
-      // Show correct content based on KYC status
       document.getElementById('kyc-modal-unverified').classList.add('hidden')
       document.getElementById('kyc-modal-pending').classList.add('hidden')
       document.getElementById('kyc-modal-rejected').classList.add('hidden')
-
+      document.getElementById('kyc-modal-suspended').classList.add('hidden')
       if (kycStatus === 'pending') {
         document.getElementById('kyc-modal-pending').classList.remove('hidden')
       } else if (kycStatus === 'rejected') {
@@ -1156,7 +1273,17 @@
       } else {
         document.getElementById('kyc-modal-unverified').classList.remove('hidden')
       }
+      modal.classList.remove('hidden')
+    }
 
+    function showSuspendedModal() {
+      const modal = document.getElementById('kyc-modal')
+      document.getElementById('kyc-modal-message').textContent =
+        'Your account has been suspended. Please contact support for assistance.'
+      document.getElementById('kyc-modal-unverified').classList.add('hidden')
+      document.getElementById('kyc-modal-pending').classList.add('hidden')
+      document.getElementById('kyc-modal-rejected').classList.add('hidden')
+      document.getElementById('kyc-modal-suspended').classList.remove('hidden')
       modal.classList.remove('hidden')
     }
 
@@ -1166,63 +1293,45 @@
     }
 
     window.goToKYC = function() {
-      // Save pending action so we return after KYC
-      if (pendingAction) {
-        localStorage.setItem('sc_pending_action', pendingAction)
-      }
+      if (pendingAction) localStorage.setItem('sc_pending_action', pendingAction)
       window.location.href = 'kyc.html'
     }
 
-    // Check if returning from KYC
     function checkReturnFromKYC() {
       const pending = localStorage.getItem('sc_pending_action')
       if (pending) {
         localStorage.removeItem('sc_pending_action')
-        // Check if now verified
-        if (kycStatus === 'verified') {
-          showSection(pending)
-        }
+        if (kycStatus === 'verified') showSection(pending)
       }
     }
 
     // ── KYC BANNER ────────────────────────
     function renderKYCBanner(status, rejectionReason) {
       const banner = document.getElementById('kyc-banner')
-      if (status === 'verified') {
-        banner.classList.add('hidden')
-        return
-      }
-
+      if (status === 'verified') { banner.classList.add('hidden'); return }
       banner.classList.remove('hidden')
-
       const configs = {
         unverified: {
-          bg: '#fffbeb', border: '#fde68a', text: '#92400e',
-          icon: 'alert-triangle', iconColor: '#d97706',
-          message: 'Complete identity verification to unlock full banking features.',
-          action: `<a href="kyc.html" style="color:#d97706;font-weight:700;text-decoration:none;white-space:nowrap;">Verify Now →</a>`
+          bg:'#fffbeb', border:'#fde68a', text:'#92400e',
+          icon:'alert-triangle', iconColor:'#d97706',
+          message:'Complete identity verification to unlock full banking features.',
+          action:`<a href="kyc.html" style="color:#d97706;font-weight:700;text-decoration:none;white-space:nowrap;margin-left:4px;">Verify Now →</a>`
         },
         pending: {
-          bg: '#eff6ff', border: '#bfdbfe', text: '#1e40af',
-          icon: 'clock', iconColor: '#3b82f6',
-          message: 'Your identity documents are under review. We\'ll notify you within 24 hours.',
-          action: ''
+          bg:'#eff6ff', border:'#bfdbfe', text:'#1e40af',
+          icon:'clock', iconColor:'#3b82f6',
+          message:"Your identity documents are under review. We'll notify you within 24 hours.",
+          action:''
         },
         rejected: {
-          bg: '#fff1f2', border: '#fecdd3', text: '#9f1239',
-          icon: 'x-circle', iconColor: '#ef4444',
-          message: `Verification failed${rejectionReason ? ': ' + rejectionReason : ''}. Please resubmit your documents.`,
-          action: `<a href="kyc.html" style="color:#ef4444;font-weight:700;text-decoration:none;white-space:nowrap;">Resubmit →</a>`
+          bg:'#fff1f2', border:'#fecdd3', text:'#9f1239',
+          icon:'x-circle', iconColor:'#ef4444',
+          message:`Verification failed${rejectionReason ? ': ' + rejectionReason : ''}. Please resubmit your documents.`,
+          action:`<a href="kyc.html" style="color:#ef4444;font-weight:700;text-decoration:none;white-space:nowrap;margin-left:4px;">Resubmit →</a>`
         }
       }
-
       const config = configs[status] || configs.unverified
-
-      banner.style.cssText = `
-        background:${config.bg};border-bottom:1px solid ${config.border};
-        padding:10px 20px;display:flex;align-items:center;
-        justify-content:center;gap:10px;flex-wrap:wrap;
-      `
+      banner.style.cssText = `background:${config.bg};border-bottom:1px solid ${config.border};padding:10px 20px;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;`
       banner.innerHTML = `
         <i data-lucide="${config.icon}" style="width:16px;height:16px;color:${config.iconColor};flex-shrink:0;"></i>
         <span style="color:${config.text};font-size:13px;font-weight:500;">${config.message}</span>
@@ -1255,17 +1364,6 @@
       if (!user) { window.location.href = 'index.html'; return }
       currentUser = user
       await loadProfile()
-      // Check if suspended
-if (currentProfile.is_suspended) {
-  // Show suspended banner
-  const banner = document.createElement('div')
-  banner.style.cssText = 'background:#fff1f2;border-bottom:1px solid #fecdd3;padding:12px 20px;text-align:center;font-size:13px;color:#9f1239;display:flex;align-items:center;justify-content:center;gap:8px;position:sticky;top:0;z-index:50;'
-  banner.innerHTML = `
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
-    <span><strong>Your account has been suspended.</strong> Please contact <a href="mailto:support@silvercrestfin.com" style="color:#4f46e5;font-weight:600;">support@silvercrestfin.com</a> for assistance.</span>
-  `
-  document.body.insertBefore(banner, document.body.firstChild)
-}
       await loadTransactions()
       loadCryptoPortfolio()
       checkReturnFromKYC()
@@ -1278,6 +1376,17 @@ if (currentProfile.is_suspended) {
       if (!profile) return
       currentProfile = profile
       kycStatus = profile.kyc_status || 'unverified'
+
+      // Suspended banner
+      if (profile.is_suspended) {
+        const suspBanner = document.createElement('div')
+        suspBanner.style.cssText = 'background:#fff1f2;border-bottom:1px solid #fecdd3;padding:12px 20px;text-align:center;font-size:13px;color:#9f1239;display:flex;align-items:center;justify-content:center;gap:8px;'
+        suspBanner.innerHTML = `
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
+          <span><strong>Your account has been suspended.</strong> Please contact <a href="mailto:support@silvercrestfin.com" style="color:#4f46e5;font-weight:600;">support@silvercrestfin.com</a></span>
+        `
+        document.body.insertBefore(suspBanner, document.body.firstChild)
+      }
 
       const numericId = profile.id.replace(/-/g,'')
       const digits = numericId.replace(/[a-f]/gi, d => d.charCodeAt(0) - 87)
@@ -1315,7 +1424,6 @@ if (currentProfile.is_suspended) {
       window._acctNum = acctNumRaw
 
       // KYC Badge
-      const kycBadge = document.getElementById('kyc-badge')
       const kycBadgeConfigs = {
         unverified: { bg:'#fffbeb', color:'#d97706', icon:'alert-circle', text:'Unverified' },
         pending: { bg:'#eff6ff', color:'#3b82f6', icon:'clock', text:'KYC Pending' },
@@ -1323,29 +1431,22 @@ if (currentProfile.is_suspended) {
         rejected: { bg:'#fff1f2', color:'#ef4444', icon:'x-circle', text:'KYC Rejected' }
       }
       const badgeConfig = kycBadgeConfigs[kycStatus] || kycBadgeConfigs.unverified
+      const kycBadge = document.getElementById('kyc-badge')
       kycBadge.style.background = badgeConfig.bg
       kycBadge.style.color = badgeConfig.color
       kycBadge.innerHTML = `<i data-lucide="${badgeConfig.icon}" style="width:10px;height:10px;"></i> ${badgeConfig.text}`
 
-      // Profile KYC status
-      const kycLabels = {
-        unverified: 'Not verified', pending: 'Under review',
-        verified: 'Verified ✅', rejected: 'Rejected ❌'
-      }
+      const kycLabels = { unverified:'Not verified', pending:'Under review', verified:'Verified ✅', rejected:'Rejected ❌' }
       document.getElementById('profile-kyc-status').textContent = kycLabels[kycStatus] || 'Unknown'
-      if (kycStatus !== 'verified') {
-        document.getElementById('profile-kyc-link').classList.remove('hidden')
-      }
+      if (kycStatus !== 'verified') document.getElementById('profile-kyc-link').classList.remove('hidden')
 
-      // Render KYC banner
       renderKYCBanner(kycStatus, profile.kyc_rejection_reason)
 
-      // Crypto portfolio value
+      // Crypto portfolio
       const cryptoSaved = JSON.parse(localStorage.getItem('sc_crypto_' + currentUser.id) || '{}')
       const cryptoPrices = { BTC:63420, ETH:3290, SOL:142, BNB:580 }
-      const totalCrypto = Object.entries(cryptoSaved).reduce((sum, [coin, amt]) => {
-        return sum + (amt * (cryptoPrices[coin] || 0))
-      }, 0)
+      const totalCrypto = Object.entries(cryptoSaved).reduce((sum, [coin, amt]) =>
+        sum + (amt * (cryptoPrices[coin] || 0)), 0)
       const cryptoEl = document.getElementById('crypto-portfolio-value')
       if (cryptoEl) {
         cryptoEl.textContent = '$' + totalCrypto.toFixed(2)
@@ -1357,28 +1458,15 @@ if (currentProfile.is_suspended) {
 
     // ── TRANSACTIONS ──────────────────────
     async function loadTransactions() {
-  const { data: txs } = await supabase
-    .from('transactions')
-    .select('*, sender:sender_id(full_name,email,is_admin), receiver:receiver_id(full_name,email,is_admin)')
-    .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
-    .order('created_at', { ascending: false })
-
-  // Filter out admin-created transactions where admin is the sender
-  // but show them if they are credits TO the user (like welcome bonus)
-  allTransactions = (txs || []).map(tx => {
-    // If sender is admin and receiver is current user — show as "Opening Balance" or note
-    if (tx.sender?.is_admin && tx.receiver_id === currentUser.id) {
-      return {
-        ...tx,
-        sender: { ...tx.sender, full_name: tx.note || 'SilverCrest' }
-      }
+      const { data: txs } = await supabase
+        .from('transactions')
+        .select('*, sender:sender_id(full_name,email,is_admin), receiver:receiver_id(full_name,email,is_admin)')
+        .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
+        .order('created_at', { ascending: false })
+      allTransactions = txs || []
+      renderTransactions(allTransactions, 'recent-tx-list', 5)
+      renderTransactions(allTransactions, 'all-tx-list')
     }
-    return tx
-  })
-
-  renderTransactions(allTransactions, 'recent-tx-list', 5)
-  renderTransactions(allTransactions, 'all-tx-list')
-}
 
     function renderTransactions(txs, containerId, limit = null) {
       const container = document.getElementById(containerId)
@@ -1391,35 +1479,61 @@ if (currentProfile.is_suspended) {
           </div>`
         lucide.createIcons(); return
       }
-      container.innerHTML = list.map(tx => {
+
+      // Store for modal access
+      window._currentTxList = list
+
+      container.innerHTML = list.map((tx, index) => {
         const isSender = tx.sender_id === currentUser.id
         const isSelf = tx.sender_id === currentUser.id && tx.receiver_id === currentUser.id
-        const name = isSelf ? 'Crypto/Bill'
-          : isSender ? (tx.receiver?.full_name || 'Unknown')
-          : (tx.sender?.full_name || 'Unknown')
-        const label = isSelf ? (tx.note || 'Transfer')
-          : isSender ? `To ${name}` : `From ${name}`
-        const amountStr = '$' + parseFloat(tx.amount).toFixed(2)
+
+        // Display label
+        let label = ''
+        if (tx.admin_created) {
+          label = tx.note || 'Bank Transaction'
+        } else if (isSelf) {
+          label = tx.note || 'Transfer'
+        } else if (isSender) {
+          label = `To ${tx.receiver?.full_name || 'Unknown'}`
+        } else {
+          label = `From ${tx.sender?.full_name || 'Unknown'}`
+        }
+
         const amountColor = isSender && !isSelf ? '#ef4444' : isSelf ? '#6366f1' : '#22c55e'
         const amountPrefix = isSender && !isSelf ? '-' : isSelf ? '' : '+'
         const iconBg = isSender && !isSelf ? '#fff1f2' : isSelf ? '#eef2ff' : '#f0fdf4'
         const iconColor = isSender && !isSelf ? '#ef4444' : isSelf ? '#6366f1' : '#22c55e'
         const iconName = isSender && !isSelf ? 'arrow-up-right' : isSelf ? 'refresh-cw' : 'arrow-down-left'
-        const date = new Date(tx.created_at).toLocaleDateString('en-US', { month:'short', day:'numeric' })
+
+        const statusBadge = tx.status && tx.status !== 'completed' ?
+          `<span style="font-size:10px;font-weight:600;color:${tx.status === 'pending' ? '#d97706' : '#ef4444'};margin-left:4px;">${tx.status.toUpperCase()}</span>` : ''
+
+        // Full date with year
+        const date = new Date(tx.created_at).toLocaleDateString('en-US', {
+          month:'short', day:'numeric', year:'numeric'
+        })
+
         return `
-          <div class="tx-item">
+          <div class="tx-item" onclick="openTransactionModal(${index})">
             <div class="tx-icon" style="background:${iconBg};">
               <i data-lucide="${iconName}" style="width:16px;height:16px;color:${iconColor};"></i>
             </div>
             <div style="flex:1;min-width:0;">
-              <p style="font-size:13px;font-weight:600;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${label}</p>
+              <div style="display:flex;align-items:center;gap:4px;">
+                <p style="font-size:13px;font-weight:600;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${label}</p>
+                ${statusBadge}
+              </div>
               <p style="font-size:11px;color:#94a3b8;margin-top:2px;">${date}</p>
             </div>
-            <span style="font-size:13px;font-weight:700;color:${amountColor};flex-shrink:0;">
-              ${amountPrefix}${amountStr}
-            </span>
+            <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+              <span style="font-size:13px;font-weight:700;color:${amountColor};">
+                ${amountPrefix}$${parseFloat(tx.amount).toFixed(2)}
+              </span>
+              <i data-lucide="chevron-right" style="width:14px;height:14px;color:#cbd5e1;"></i>
+            </div>
           </div>`
       }).join('')
+
       lucide.createIcons()
     }
 
@@ -1468,7 +1582,8 @@ if (currentProfile.is_suspended) {
       await supabase.from('profiles').update({ balance: currentProfile.balance - amount }).eq('id', currentUser.id)
       await supabase.from('profiles').update({ balance: recipient.balance + amount }).eq('id', recipient.id)
       await supabase.from('transactions').insert({
-        sender_id: currentUser.id, receiver_id: recipient.id, amount, note
+        sender_id: currentUser.id, receiver_id: recipient.id, amount, note,
+        status: 'completed', type: 'internal'
       })
 
       okDiv.textContent = `✅ $${amount.toFixed(2)} sent to ${recipient.full_name}!`
@@ -1551,14 +1666,14 @@ if (currentProfile.is_suspended) {
         const coinsToAdd = usd / price
         cryptoHoldings[symbol] = (cryptoHoldings[symbol] || 0) + coinsToAdd
         await supabase.from('profiles').update({ balance: currentProfile.balance - usd }).eq('id', currentUser.id)
-        await supabase.from('transactions').insert({ sender_id: currentUser.id, receiver_id: currentUser.id, amount: usd, note: `Bought ${coinsToAdd.toFixed(6)} ${symbol}` })
+        await supabase.from('transactions').insert({ sender_id: currentUser.id, receiver_id: currentUser.id, amount: usd, note: `Bought ${coinsToAdd.toFixed(6)} ${symbol}`, status:'completed' })
         okDiv.textContent = `✅ Bought ${coinsToAdd.toFixed(6)} ${symbol}!`
       } else {
         const coinsToSell = usd / price
         if (coinsToSell > (cryptoHoldings[symbol] || 0)) { errDiv.textContent = `Not enough ${symbol}.`; errDiv.classList.remove('hidden'); return }
         cryptoHoldings[symbol] -= coinsToSell
         await supabase.from('profiles').update({ balance: currentProfile.balance + usd }).eq('id', currentUser.id)
-        await supabase.from('transactions').insert({ sender_id: currentUser.id, receiver_id: currentUser.id, amount: usd, note: `Sold ${coinsToSell.toFixed(6)} ${symbol}` })
+        await supabase.from('transactions').insert({ sender_id: currentUser.id, receiver_id: currentUser.id, amount: usd, note: `Sold ${coinsToSell.toFixed(6)} ${symbol}`, status:'completed' })
         okDiv.textContent = `✅ Sold ${coinsToSell.toFixed(6)} ${symbol}!`
       }
       localStorage.setItem('sc_crypto_' + currentUser.id, JSON.stringify(cryptoHoldings))
@@ -1629,7 +1744,7 @@ if (currentProfile.is_suspended) {
       if (!account || !amount || amount <= 0) { errDiv.textContent = 'Please fill all fields.'; errDiv.classList.remove('hidden'); return }
       if (amount > currentProfile.balance) { errDiv.textContent = 'Insufficient balance.'; errDiv.classList.remove('hidden'); return }
       await supabase.from('profiles').update({ balance: currentProfile.balance - amount }).eq('id', currentUser.id)
-      await supabase.from('transactions').insert({ sender_id: currentUser.id, receiver_id: currentUser.id, amount, note: `${selectedBillType} bill payment` })
+      await supabase.from('transactions').insert({ sender_id: currentUser.id, receiver_id: currentUser.id, amount, note: `${selectedBillType} bill payment`, status:'completed' })
       billPayments.unshift({ type: selectedBillType, account, amount })
       okDiv.textContent = `✅ $${amount.toFixed(2)} paid for ${selectedBillType}!`
       okDiv.classList.remove('hidden')
@@ -1698,10 +1813,7 @@ if (currentProfile.is_suspended) {
       const sections = ['dashboard','transfer','transactions','crypto','cards','bills','loans','profile']
       sections.forEach(s => document.getElementById('section-' + s)?.classList.add('hidden'))
       document.getElementById('section-' + name)?.classList.remove('hidden')
-      const titles = {
-        dashboard:'Dashboard', transfer:'Send Money', transactions:'Transactions',
-        crypto:'Crypto', cards:'My Cards', bills:'Pay Bills', loans:'Loans', profile:'Profile'
-      }
+      const titles = { dashboard:'Dashboard', transfer:'Send Money', transactions:'Transactions', crypto:'Crypto', cards:'My Cards', bills:'Pay Bills', loans:'Loans', profile:'Profile' }
       const titleEl = document.getElementById('page-title-desktop')
       if (titleEl) titleEl.textContent = titles[name] || name
       document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'))
@@ -1719,34 +1831,6 @@ if (currentProfile.is_suspended) {
     }
 
     init()
-
-    function showSuspendedModal() {
-  const modal = document.getElementById('kyc-modal')
-  document.getElementById('kyc-modal-message').textContent =
-    'Your account has been suspended. Please contact support for assistance.'
-  document.getElementById('kyc-modal-unverified').classList.add('hidden')
-  document.getElementById('kyc-modal-pending').classList.add('hidden')
-  document.getElementById('kyc-modal-rejected').classList.add('hidden')
-
-  // Show a suspended message
-  let suspDiv = document.getElementById('kyc-modal-suspended')
-  if (!suspDiv) {
-    suspDiv = document.createElement('div')
-    suspDiv.id = 'kyc-modal-suspended'
-    suspDiv.innerHTML = `
-      <div class="bg-red-50 border border-red-100 rounded-xl p-4 mb-5">
-        <p class="text-xs text-red-700 leading-relaxed">
-          🚫 Your account has been suspended by an administrator.
-          Please contact <strong>support@silvercrestfin.com</strong> to resolve this issue.
-        </p>
-      </div>
-      <button onclick="closeKycModal()" class="btn-primary">Close</button>
-    `
-    document.getElementById('kyc-modal-unverified').parentNode.appendChild(suspDiv)
-  }
-  suspDiv.classList.remove('hidden')
-  modal.classList.remove('hidden')
-}
   </script>
   <script>lucide.createIcons();</script>
 </body>
