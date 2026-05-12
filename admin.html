@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SilverCrest — Admin Panel</title>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -9,764 +9,1009 @@
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <style>
     * { font-family: 'Inter', sans-serif; }
-    .sidebar { width: 260px; }
+    .sidebar {
+      width: 240px; position: fixed; top: 0; left: 0; bottom: 0;
+      background: #0f172a; display: flex; flex-direction: column;
+      padding: 20px; z-index: 40;
+    }
+    .main-content { margin-left: 240px; min-height: 100vh; background: #f8fafc; }
     .nav-item {
-      display: flex; align-items: center; gap: 12px;
-      padding: 10px 14px; border-radius: 12px;
-      color: #64748b; font-size: 14px; font-weight: 500;
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: 10px;
+      color: #94a3b8; font-size: 13px; font-weight: 500;
       cursor: pointer; transition: all 0.2s ease;
       border: none; background: none; width: 100%; text-align: left;
     }
-    .nav-item:hover { background: #f1f5f9; color: #1e293b; }
-    .nav-item.active { background: #fff1f2; color: #ef4444; }
+    .nav-item:hover { background: rgba(255,255,255,0.07); color: white; }
+    .nav-item.active { background: rgba(99,102,241,0.2); color: #818cf8; }
     .stat-card {
-      background: white; border-radius: 16px;
-      padding: 20px; border: 1px solid #f1f5f9;
-      transition: box-shadow 0.2s ease;
+      background: white; border-radius: 16px; padding: 20px;
+      border: 1px solid #f1f5f9;
     }
-    .stat-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
     .section-card {
-      background: white; border-radius: 20px;
-      padding: 24px; border: 1px solid #f1f5f9;
+      background: white; border-radius: 20px; padding: 24px;
+      border: 1px solid #f1f5f9;
     }
-    .input-field {
-      width: 100%; background: #f8fafc; border: 1px solid #e2e8f0;
-      border-radius: 12px; padding: 11px 16px; font-size: 14px;
-      color: #1e293b; outline: none; transition: all 0.2s ease;
-      font-family: 'Inter', sans-serif; box-sizing: border-box;
-    }
-    .input-field:focus { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,0.1); }
-    .btn-primary {
-      background: #ef4444; color: white; border: none;
-      border-radius: 10px; padding: 10px 18px; font-size: 13px;
-      font-weight: 600; cursor: pointer; transition: all 0.2s ease;
-      font-family: 'Inter', sans-serif;
-    }
-    .btn-primary:hover { background: #dc2626; }
-    .btn-secondary {
-      background: #f8fafc; color: #374151; border: 1px solid #e2e8f0;
-      border-radius: 10px; padding: 10px 18px; font-size: 13px;
-      font-weight: 600; cursor: pointer; transition: all 0.2s ease;
-      font-family: 'Inter', sans-serif;
-    }
-    .btn-secondary:hover { background: #f1f5f9; }
-    .btn-indigo {
-      background: #4f46e5; color: white; border: none;
-      border-radius: 10px; padding: 10px 18px; font-size: 13px;
-      font-weight: 600; cursor: pointer; transition: all 0.2s;
-      font-family: 'Inter', sans-serif;
-    }
-    .btn-indigo:hover { background: #4338ca; }
+    .admin-section { display: none; }
+    .admin-section.active { display: block; animation: fadeIn 0.2s ease; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);} }
     .badge {
       display: inline-flex; align-items: center; gap: 4px;
       padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
     }
-    .shimmer {
-      background: linear-gradient(90deg,#f8fafc 25%,#f1f5f9 50%,#f8fafc 75%);
-      background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px;
+    .btn {
+      border: none; border-radius: 10px; padding: 8px 16px;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      font-family: 'Inter', sans-serif; transition: all 0.2s;
     }
-    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    .btn-primary { background: #4f46e5; color: white; }
+    .btn-primary:hover { background: #4338ca; }
+    .btn-danger { background: #fee2e2; color: #ef4444; }
+    .btn-danger:hover { background: #fecaca; }
+    .btn-success { background: #dcfce7; color: #16a34a; }
+    .btn-success:hover { background: #bbf7d0; }
+    .btn-gray { background: #f1f5f9; color: #64748b; }
+    .btn-gray:hover { background: #e2e8f0; }
+    .input-field {
+      width: 100%; background: #f8fafc; border: 1px solid #e2e8f0;
+      border-radius: 10px; padding: 10px 14px; font-size: 14px;
+      color: #1e293b; outline: none; transition: all 0.2s;
+      font-family: 'Inter', sans-serif; box-sizing: border-box;
+    }
+    .input-field:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,0.1); }
+    select.input-field { cursor: pointer; }
+
+    /* User Detail Modal */
     .modal-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5);
       z-index: 100; display: flex; align-items: center; justify-content: center;
-      backdrop-filter: blur(4px);
+      backdrop-filter: blur(4px); padding: 20px;
     }
-    .modal-box {
-      background: white; border-radius: 24px; padding: 32px;
-      width: 100%; max-width: 420px; margin: 20px;
-      box-shadow: 0 25px 60px rgba(0,0,0,0.15);
+    .modal {
+      background: white; border-radius: 24px; width: 100%; max-width: 520px;
+      max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.2);
+      animation: modalIn 0.3s ease;
     }
-    table { width: 100%; border-collapse: collapse; }
-    th {
-      text-align: left; padding: 10px 14px;
-      font-size: 11px; font-weight: 700; color: #94a3b8;
-      text-transform: uppercase; letter-spacing: 0.05em;
-      border-bottom: 1px solid #f1f5f9;
+    @keyframes modalIn {
+      from{opacity:0;transform:scale(0.95);}
+      to{opacity:1;transform:scale(1);}
     }
-    td {
-      padding: 14px; font-size: 13px; color: #374151;
-      border-bottom: 1px solid #f8fafc; vertical-align: middle;
-    }
-    tr:last-child td { border-bottom: none; }
-    tr:hover td { background: #fafafa; }
-    @media (max-width: 1024px) {
+
+    @media (max-width: 768px) {
       .sidebar { display: none; }
-      .main-content { margin-left: 0 !important; }
+      .main-content { margin-left: 0; }
     }
   </style>
 </head>
-<body style="background:#f8fafc;" class="flex">
+<body>
+
+  <!-- USER DETAIL MODAL -->
+  <div id="user-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between p-6 border-b border-gray-100">
+        <h3 class="text-base font-bold text-gray-900">User Details</h3>
+        <button onclick="closeUserModal()"
+          class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-gray-200 transition">
+          <i data-lucide="x" class="w-4 h-4 text-gray-500"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-6">
+
+        <!-- User Header -->
+        <div class="flex items-center gap-4 mb-6 pb-6 border-b border-gray-100">
+          <div class="w-14 h-14 bg-indigo-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+            <span id="modal-avatar" class="text-indigo-600 font-bold text-xl">U</span>
+          </div>
+          <div class="flex-1">
+            <h4 id="modal-name" class="text-base font-bold text-gray-900">—</h4>
+            <p id="modal-email" class="text-sm text-gray-400">—</p>
+            <div class="flex items-center gap-2 mt-1.5">
+              <span id="modal-kyc-badge" class="badge">—</span>
+              <span id="modal-suspend-badge" class="badge">—</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- User Info Grid -->
+        <div class="grid grid-cols-2 gap-3 mb-6">
+          <div class="bg-gray-50 rounded-xl p-3">
+            <p class="text-xs text-gray-400 mb-1">Account Number</p>
+            <p id="modal-acct" class="text-sm font-bold text-gray-900 font-mono">—</p>
+          </div>
+          <div class="bg-gray-50 rounded-xl p-3">
+            <p class="text-xs text-gray-400 mb-1">Balance</p>
+            <p id="modal-balance" class="text-sm font-bold text-indigo-600">—</p>
+          </div>
+          <div class="bg-gray-50 rounded-xl p-3">
+            <p class="text-xs text-gray-400 mb-1">Phone</p>
+            <p id="modal-phone" class="text-sm font-semibold text-gray-900">—</p>
+          </div>
+          <div class="bg-gray-50 rounded-xl p-3">
+            <p class="text-xs text-gray-400 mb-1">Country</p>
+            <p id="modal-country" class="text-sm font-semibold text-gray-900">—</p>
+          </div>
+          <div class="bg-gray-50 rounded-xl p-3">
+            <p class="text-xs text-gray-400 mb-1">Gender</p>
+            <p id="modal-gender" class="text-sm font-semibold text-gray-900">—</p>
+          </div>
+          <div class="bg-gray-50 rounded-xl p-3">
+            <p class="text-xs text-gray-400 mb-1">Occupation</p>
+            <p id="modal-occupation" class="text-sm font-semibold text-gray-900">—</p>
+          </div>
+          <div class="bg-gray-50 rounded-xl p-3">
+            <p class="text-xs text-gray-400 mb-1">Date of Birth</p>
+            <p id="modal-dob" class="text-sm font-semibold text-gray-900">—</p>
+          </div>
+          <div class="bg-gray-50 rounded-xl p-3">
+            <p class="text-xs text-gray-400 mb-1">Member Since</p>
+            <p id="modal-joined" class="text-sm font-semibold text-gray-900">—</p>
+          </div>
+          <div class="bg-gray-50 rounded-xl p-3 col-span-2">
+            <p class="text-xs text-gray-400 mb-1">Address</p>
+            <p id="modal-address" class="text-sm font-semibold text-gray-900">—</p>
+          </div>
+          <div class="bg-gray-50 rounded-xl p-3 col-span-2">
+            <p class="text-xs text-gray-400 mb-1">Source of Funds</p>
+            <p id="modal-funds" class="text-sm font-semibold text-gray-900">—</p>
+          </div>
+        </div>
+
+        <!-- KYC Section -->
+        <div class="mb-6 p-4 rounded-xl border border-gray-100">
+          <div class="flex items-center justify-between mb-3">
+            <p class="text-sm font-bold text-gray-900">Identity Verification (KYC)</p>
+            <span id="modal-kyc-status-text" class="text-xs text-gray-500">—</span>
+          </div>
+          <div id="modal-kyc-actions" class="flex gap-2 flex-wrap">
+            <!-- Populated by JS -->
+          </div>
+          <div id="modal-kyc-doc" class="hidden mt-3">
+            <p class="text-xs text-gray-400 mb-1">Document Type</p>
+            <p id="modal-doc-type" class="text-sm font-semibold text-gray-700">—</p>
+          </div>
+          <div id="modal-rejection-section" class="hidden mt-3">
+            <label class="text-xs font-semibold text-gray-500 mb-1.5 block">
+              Rejection reason (shown to user)
+            </label>
+            <input type="text" id="modal-rejection-reason"
+              placeholder="e.g. Document was blurry or unreadable"
+              class="input-field"/>
+          </div>
+        </div>
+
+        <!-- Suspend Section -->
+        <div class="p-4 rounded-xl border border-gray-100 mb-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm font-bold text-gray-900">Account Status</p>
+              <p id="modal-suspend-text" class="text-xs text-gray-400 mt-0.5">—</p>
+            </div>
+            <button id="modal-suspend-btn" onclick="toggleSuspend()" class="btn">
+              —
+            </button>
+          </div>
+        </div>
+
+        <!-- Balance Adjustment -->
+        <div class="p-4 rounded-xl border border-gray-100 mb-6">
+          <p class="text-sm font-bold text-gray-900 mb-3">Adjust Balance</p>
+          <p class="text-xs text-gray-400 mb-3">
+            This changes the user's balance without creating a transaction record.
+          </p>
+          <div class="flex gap-2 mb-3">
+            <select id="balance-action" class="input-field" style="flex:1;">
+              <option value="add">Add funds</option>
+              <option value="reduce">Reduce funds</option>
+            </select>
+            <div class="relative flex-1">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+              <input type="number" id="balance-amount" placeholder="0.00"
+                class="input-field" style="padding-left:24px;"/>
+            </div>
+          </div>
+          <div id="balance-msg" class="hidden text-xs px-3 py-2 rounded-lg mb-3"></div>
+          <button onclick="adjustBalance()" class="btn btn-primary w-full">
+            Apply Balance Change
+          </button>
+        </div>
+
+        <!-- Create Transaction -->
+        <div class="p-4 rounded-xl border border-gray-100">
+          <p class="text-sm font-bold text-gray-900 mb-1">Create Transaction Record</p>
+          <p class="text-xs text-gray-400 mb-3">
+            Adds an entry to transaction history without affecting balance.
+          </p>
+          <div class="space-y-3">
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="text-xs text-gray-500 mb-1 block">Type</label>
+                <select id="tx-type" class="input-field">
+                  <option value="credit">Credit (incoming)</option>
+                  <option value="debit">Debit (outgoing)</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-xs text-gray-500 mb-1 block">Amount ($)</label>
+                <div class="relative">
+                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                  <input type="number" id="tx-amount" placeholder="0.00"
+                    class="input-field" style="padding-left:24px;"/>
+                </div>
+              </div>
+            </div>
+            <div>
+              <label class="text-xs text-gray-500 mb-1 block">Note / Description</label>
+              <input type="text" id="tx-note" placeholder="e.g. Refund, Bonus, Correction"
+                class="input-field"/>
+            </div>
+            <div>
+              <label class="text-xs text-gray-500 mb-1 block">Date</label>
+              <input type="datetime-local" id="tx-date" class="input-field"/>
+            </div>
+            <div>
+              <label class="text-xs text-gray-500 mb-1 block">Status</label>
+              <select id="tx-status" class="input-field">
+                <option value="completed">Completed</option>
+                <option value="pending">Pending</option>
+                <option value="failed">Failed</option>
+              </select>
+            </div>
+            <div id="tx-msg" class="hidden text-xs px-3 py-2 rounded-lg"></div>
+            <button onclick="createTransaction()" class="btn btn-primary w-full">
+              Create Transaction Record
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
 
   <!-- SIDEBAR -->
-  <aside class="sidebar bg-white border-r border-gray-100 flex flex-col p-5 fixed top-0 left-0 bottom-0 z-40">
-    <div class="flex items-center gap-2.5 px-2 mb-2 mt-1">
-      <div class="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center">
+  <aside class="sidebar">
+    <div class="flex items-center gap-2.5 px-2 mb-8 mt-1">
+      <div class="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center">
         <span class="text-white font-bold text-sm">S</span>
       </div>
-      <span class="text-gray-900 font-bold text-lg">SilverCrest</span>
-    </div>
-    <div class="px-2 mb-6">
-      <span class="badge" style="background:#fff1f2;color:#ef4444;">
-        <i data-lucide="shield-alert" style="width:10px;height:10px;"></i>
-        Admin Panel
+      <span class="text-white font-bold text-lg">SilverCrest</span>
+      <span class="ml-auto text-xs bg-indigo-500 text-white px-2 py-0.5 rounded-full font-semibold">
+        Admin
       </span>
     </div>
-
     <nav class="flex flex-col gap-1 flex-1">
-      <button class="nav-item active" id="nav-overview" onclick="showSection('overview')">
+      <button class="nav-item active" id="nav-overview" onclick="showAdminSection('overview')">
         <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Overview
       </button>
-      <button class="nav-item" id="nav-users" onclick="showSection('users')">
-        <i data-lucide="users" class="w-4 h-4"></i> Manage Users
+      <button class="nav-item" id="nav-users" onclick="showAdminSection('users')">
+        <i data-lucide="users" class="w-4 h-4"></i> Users
       </button>
-      <button class="nav-item" id="nav-transactions" onclick="showSection('transactions')">
-        <i data-lucide="list" class="w-4 h-4"></i> All Transactions
+      <button class="nav-item" id="nav-kyc" onclick="showAdminSection('kyc')">
+        <i data-lucide="shield-check" class="w-4 h-4"></i> KYC Reviews
+        <span id="kyc-badge-count" class="ml-auto bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full hidden"></span>
       </button>
-      <button class="nav-item" id="nav-activity" onclick="showSection('activity')">
-        <i data-lucide="activity" class="w-4 h-4"></i> Activity Log
+      <button class="nav-item" id="nav-transactions" onclick="showAdminSection('transactions')">
+        <i data-lucide="list" class="w-4 h-4"></i> Transactions
       </button>
     </nav>
-
-    <div class="border-t border-gray-100 pt-4 mt-4">
-      <div class="flex items-center gap-3 px-2 mb-3">
-        <div class="w-9 h-9 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-          <i data-lucide="shield-check" class="w-4 h-4 text-red-500"></i>
-        </div>
-        <div>
-          <p class="text-sm font-semibold text-gray-900">Administrator</p>
-          <p class="text-xs text-gray-400">Full access</p>
-        </div>
-      </div>
-      <button onclick="handleLogout()" class="nav-item text-red-500 hover:bg-red-50 hover:text-red-600">
+    <div class="border-t border-white/10 pt-4 mt-4">
+      <a href="dashboard.html"
+        class="nav-item flex items-center gap-2">
+        <i data-lucide="layout-dashboard" class="w-4 h-4"></i> User Dashboard
+      </a>
+      <button onclick="handleLogout()"
+        class="nav-item text-red-400 hover:bg-red-500/10 hover:text-red-400 mt-1">
         <i data-lucide="log-out" class="w-4 h-4"></i> Sign out
       </button>
     </div>
   </aside>
 
   <!-- MAIN -->
-  <main class="main-content flex-1" style="margin-left:260px;min-height:100vh;background:#f8fafc;">
+  <main class="main-content">
 
-    <!-- TOP BAR -->
+    <!-- Top Bar -->
     <div class="bg-white border-b border-gray-100 px-8 py-4 flex justify-between items-center sticky top-0 z-30">
       <div>
-        <h1 id="page-title" class="text-lg font-bold text-gray-900">Overview</h1>
-        <p class="text-xs text-gray-400 mt-0.5">SilverCrest Admin Dashboard</p>
+        <h1 id="admin-page-title" class="text-lg font-bold text-gray-900">Overview</h1>
+        <p class="text-xs text-gray-400 mt-0.5">SilverCrest Admin Panel</p>
       </div>
       <div class="flex items-center gap-3">
-        <span class="badge" style="background:#fff1f2;color:#ef4444;">
-          <i data-lucide="shield-alert" style="width:10px;height:10px;"></i>
-          Admin Mode
-        </span>
-        <a href="dashboard.html"
-          class="flex items-center gap-2 text-xs text-gray-500 font-medium
-          hover:text-gray-900 bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl transition">
-          <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
-          Back to App
-        </a>
+        <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
+          <span id="admin-avatar" class="text-indigo-600 font-bold text-sm">A</span>
+        </div>
+        <div>
+          <p id="admin-name" class="text-sm font-semibold text-gray-900">Admin</p>
+          <p class="text-xs text-gray-400">Administrator</p>
+        </div>
       </div>
     </div>
 
-    <div class="p-8">
+    <div class="p-6 lg:p-8">
 
-      <!-- ══════════════ OVERVIEW ══════════════ -->
-      <div id="section-overview">
-
-        <!-- Stat Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+      <!-- ══ OVERVIEW ══ -->
+      <div class="admin-section active" id="section-overview">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <div class="stat-card">
-            <div class="flex items-center justify-between mb-3">
-              <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-                <i data-lucide="users" class="w-5 h-5 text-blue-600"></i>
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-9 h-9 bg-indigo-100 rounded-xl flex items-center justify-center">
+                <i data-lucide="users" class="w-4 h-4 text-indigo-600"></i>
               </div>
-              <span class="badge" style="background:#eff6ff;color:#2563eb;">Total</span>
+              <span class="text-xs font-semibold text-gray-500">Total Users</span>
             </div>
-            <p id="stat-users" class="text-3xl font-bold text-gray-900">0</p>
-            <p class="text-xs text-gray-400 mt-1">Registered Users</p>
+            <p id="stat-total-users" class="text-2xl font-bold text-gray-900">—</p>
           </div>
           <div class="stat-card">
-            <div class="flex items-center justify-between mb-3">
-              <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-                <i data-lucide="arrow-left-right" class="w-5 h-5 text-green-600"></i>
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-9 h-9 bg-green-100 rounded-xl flex items-center justify-center">
+                <i data-lucide="dollar-sign" class="w-4 h-4 text-green-600"></i>
               </div>
-              <span class="badge" style="background:#f0fdf4;color:#16a34a;">Total</span>
+              <span class="text-xs font-semibold text-gray-500">Total Balance</span>
             </div>
-            <p id="stat-transactions" class="text-3xl font-bold text-gray-900">0</p>
-            <p class="text-xs text-gray-400 mt-1">Total Transactions</p>
+            <p id="stat-total-balance" class="text-2xl font-bold text-gray-900">—</p>
           </div>
           <div class="stat-card">
-            <div class="flex items-center justify-between mb-3">
-              <div class="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
-                <i data-lucide="dollar-sign" class="w-5 h-5 text-indigo-600"></i>
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-9 h-9 bg-amber-100 rounded-xl flex items-center justify-center">
+                <i data-lucide="clock" class="w-4 h-4 text-amber-600"></i>
               </div>
-              <span class="badge" style="background:#eef2ff;color:#4f46e5;">Live</span>
+              <span class="text-xs font-semibold text-gray-500">KYC Pending</span>
             </div>
-            <p id="stat-money" class="text-3xl font-bold text-gray-900">$0</p>
-            <p class="text-xs text-gray-400 mt-1">Total Money in System</p>
+            <p id="stat-kyc-pending" class="text-2xl font-bold text-gray-900">—</p>
           </div>
           <div class="stat-card">
-            <div class="flex items-center justify-between mb-3">
-              <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-                <i data-lucide="trending-up" class="w-5 h-5 text-purple-600"></i>
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-9 h-9 bg-blue-100 rounded-xl flex items-center justify-center">
+                <i data-lucide="arrow-right-left" class="w-4 h-4 text-blue-600"></i>
               </div>
-              <span class="badge" style="background:#faf5ff;color:#7c3aed;">Avg</span>
+              <span class="text-xs font-semibold text-gray-500">Transactions</span>
             </div>
-            <p id="stat-avg" class="text-3xl font-bold text-gray-900">$0</p>
-            <p class="text-xs text-gray-400 mt-1">Avg Balance Per User</p>
+            <p id="stat-total-tx" class="text-2xl font-bold text-gray-900">—</p>
           </div>
         </div>
 
-        <!-- Recent Users + Recent Transactions -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          <div class="section-card">
-            <div class="flex justify-between items-center mb-5">
-              <h3 class="text-sm font-bold text-gray-900">Recent Users</h3>
-              <button onclick="showSection('users')"
-                class="text-xs text-red-500 font-medium hover:underline">
-                View all →
-              </button>
-            </div>
-            <div id="overview-users">
-              <div class="shimmer h-12 mb-3"></div>
-              <div class="shimmer h-12 mb-3"></div>
-              <div class="shimmer h-12"></div>
-            </div>
-          </div>
-          <div class="section-card">
-            <div class="flex justify-between items-center mb-5">
-              <h3 class="text-sm font-bold text-gray-900">Recent Transactions</h3>
-              <button onclick="showSection('transactions')"
-                class="text-xs text-red-500 font-medium hover:underline">
-                View all →
-              </button>
-            </div>
-            <div id="overview-transactions">
-              <div class="shimmer h-12 mb-3"></div>
-              <div class="shimmer h-12 mb-3"></div>
-              <div class="shimmer h-12"></div>
-            </div>
-          </div>
+        <!-- Recent Users -->
+        <div class="section-card mb-5">
+          <h3 class="text-sm font-bold text-gray-900 mb-4">Recent Users</h3>
+          <div id="overview-users-list"></div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="section-card">
+          <h3 class="text-sm font-bold text-gray-900 mb-4">Recent Transactions</h3>
+          <div id="overview-tx-list"></div>
         </div>
       </div>
 
-      <!-- ══════════════ MANAGE USERS ══════════════ -->
-      <div id="section-users" class="hidden">
+      <!-- ══ USERS ══ -->
+      <div class="admin-section" id="section-users">
         <div class="section-card">
-          <div class="flex justify-between items-center mb-6">
+          <div class="flex justify-between items-center mb-5">
             <h3 class="text-base font-bold text-gray-900">All Users</h3>
             <div class="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2">
               <i data-lucide="search" class="w-3.5 h-3.5 text-gray-400"></i>
               <input type="text" id="user-search" placeholder="Search users..."
-                class="bg-transparent text-sm outline-none w-40" oninput="filterUsers()"/>
+                class="bg-transparent text-sm outline-none w-40"
+                oninput="filterUsers()"/>
             </div>
           </div>
-          <div class="overflow-x-auto">
-            <table>
-              <thead>
-                <tr>
-                  <th>User</th>
-                  <th>Account No.</th>
-                  <th>Balance</th>
-                  <th>Role</th>
-                  <th>Joined</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="users-tbody">
-                <tr><td colspan="6">
-                  <div class="shimmer h-10 mb-2"></div>
-                  <div class="shimmer h-10 mb-2"></div>
-                  <div class="shimmer h-10"></div>
-                </td></tr>
-              </tbody>
-            </table>
-          </div>
+          <div id="users-list"></div>
         </div>
       </div>
 
-      <!-- ══════════════ ALL TRANSACTIONS ══════════════ -->
-      <div id="section-transactions" class="hidden">
+      <!-- ══ KYC REVIEWS ══ -->
+      <div class="admin-section" id="section-kyc">
         <div class="section-card">
-          <div class="flex justify-between items-center mb-6">
+          <h3 class="text-base font-bold text-gray-900 mb-5">KYC Reviews</h3>
+          <div id="kyc-list"></div>
+        </div>
+      </div>
+
+      <!-- ══ TRANSACTIONS ══ -->
+      <div class="admin-section" id="section-transactions">
+        <div class="section-card">
+          <div class="flex justify-between items-center mb-5">
             <h3 class="text-base font-bold text-gray-900">All Transactions</h3>
             <div class="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2">
               <i data-lucide="search" class="w-3.5 h-3.5 text-gray-400"></i>
-              <input type="text" id="tx-search" placeholder="Search..."
-                class="bg-transparent text-sm outline-none w-36" oninput="filterTransactions()"/>
+              <input type="text" id="tx-search-admin" placeholder="Search..."
+                class="bg-transparent text-sm outline-none w-40"
+                oninput="filterAdminTransactions()"/>
             </div>
           </div>
-          <div class="overflow-x-auto">
-            <table>
-              <thead>
-                <tr>
-                  <th>From</th>
-                  <th>To</th>
-                  <th>Amount</th>
-                  <th>Note</th>
-                  <th>Date</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="transactions-tbody">
-                <tr><td colspan="6">
-                  <div class="shimmer h-10 mb-2"></div>
-                  <div class="shimmer h-10 mb-2"></div>
-                  <div class="shimmer h-10"></div>
-                </td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- ══════════════ ACTIVITY LOG ══════════════ -->
-      <div id="section-activity" class="hidden">
-        <div class="section-card">
-          <div class="flex items-center gap-3 mb-6">
-            <div class="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
-              <i data-lucide="activity" class="w-5 h-5 text-indigo-600"></i>
-            </div>
-            <div>
-              <h3 class="text-base font-bold text-gray-900">Activity Log</h3>
-              <p class="text-xs text-gray-400">All platform activity in real time</p>
-            </div>
-          </div>
-          <div id="activity-log" class="space-y-3">
-            <div class="shimmer h-12"></div>
-            <div class="shimmer h-12"></div>
-            <div class="shimmer h-12"></div>
-          </div>
+          <div id="admin-tx-list"></div>
         </div>
       </div>
 
     </div>
   </main>
 
-  <!-- EDIT BALANCE MODAL -->
-  <div id="edit-modal" class="modal-overlay hidden">
-    <div class="modal-box">
-      <div class="flex items-center gap-3 mb-6">
-        <div class="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
-          <i data-lucide="edit" class="w-5 h-5 text-indigo-600"></i>
-        </div>
-        <div>
-          <h3 class="text-base font-bold text-gray-900">Edit Balance</h3>
-          <p id="edit-modal-name" class="text-xs text-gray-400">User</p>
-        </div>
-      </div>
-      <input type="hidden" id="edit-user-id"/>
-      <div class="mb-5">
-        <label class="text-sm font-medium text-gray-700 mb-1.5 block">New Balance ($)</label>
-        <div class="relative">
-          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
-          <input type="number" id="edit-balance-input" class="input-field" style="padding-left:28px;"/>
-        </div>
-      </div>
-      <div class="flex gap-3">
-        <button onclick="saveBalance()" class="btn-indigo flex-1">Save Changes</button>
-        <button onclick="closeModal()" class="btn-secondary flex-1">Cancel</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- VIEW USER MODAL -->
-  <div id="view-modal" class="modal-overlay hidden">
-    <div class="modal-box">
-      <div class="flex justify-between items-start mb-6">
-        <h3 class="text-base font-bold text-gray-900">User Details</h3>
-        <button onclick="closeViewModal()"
-          class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-gray-200 transition">
-          <i data-lucide="x" class="w-4 h-4 text-gray-500"></i>
-        </button>
-      </div>
-      <div id="view-modal-content" class="space-y-3"></div>
-      <button onclick="closeViewModal()" class="btn-secondary w-full mt-6">Close</button>
-    </div>
-  </div>
-
   <script type="module">
     import { supabase } from './supabase.js'
 
+    let currentAdmin = null
     let allUsers = []
     let allTransactions = []
+    let selectedUser = null
 
-    // ── INIT ──────────────────────────────
+    // ── INIT ─────────────────────────────
     async function init() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { window.location.href = 'index.html'; return }
 
       const { data: profile } = await supabase
-        .from('profiles').select('is_admin').eq('id', user.id).single()
+        .from('profiles').select('*').eq('id', user.id).single()
+
       if (!profile?.is_admin) {
-        alert('Access denied!')
         window.location.href = 'dashboard.html'; return
       }
 
-      await loadStats()
-      await loadUsers()
-      await loadTransactions()
-      renderActivityLog()
+      currentAdmin = profile
+      document.getElementById('admin-name').textContent = profile.full_name || 'Admin'
+      document.getElementById('admin-avatar').textContent =
+        (profile.full_name || 'A').charAt(0).toUpperCase()
+
+      await loadAllData()
     }
 
-    // ── STATS ─────────────────────────────
-    async function loadStats() {
-      const { data: users } = await supabase.from('profiles').select('balance')
-      const { data: txs } = await supabase.from('transactions').select('id')
-
-      const totalMoney = users?.reduce((s, u) => s + parseFloat(u.balance), 0) || 0
-      const avgBalance = users?.length ? totalMoney / users.length : 0
-
-      document.getElementById('stat-users').textContent = users?.length || 0
-      document.getElementById('stat-transactions').textContent = txs?.length || 0
-      document.getElementById('stat-money').textContent = '$' + totalMoney.toFixed(2)
-      document.getElementById('stat-avg').textContent = '$' + avgBalance.toFixed(2)
+    async function loadAllData() {
+      await Promise.all([loadUsers(), loadTransactions()])
+      renderOverview()
+      renderUsers()
+      renderKYC()
+      renderTransactions()
     }
 
-    // ── LOAD USERS ────────────────────────
+    // ── LOAD DATA ─────────────────────────
     async function loadUsers() {
-      const { data: users } = await supabase
-        .from('profiles').select('*').order('created_at', { ascending: false })
-      allUsers = users || []
-      renderUsers(allUsers)
-      renderOverviewUsers(allUsers.slice(0, 5))
+      const { data } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false })
+      allUsers = data || []
     }
 
-    function renderUsers(users) {
-      const tbody = document.getElementById('users-tbody')
-      if (!users.length) {
-        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-gray-400">No users found</td></tr>`
-        return
-      }
-      tbody.innerHTML = users.map(u => {
-        const acctNum = 'SC' + u.id.replace(/-/g,'').substring(0,10).toUpperCase()
-        const formatted = acctNum.match(/.{1,4}/g).join(' ')
-        const initial = (u.full_name || 'U').charAt(0).toUpperCase()
-        const date = new Date(u.created_at).toLocaleDateString('en-US',
-          { month:'short', day:'numeric', year:'numeric' })
-        return `
-          <tr>
-            <td>
-              <div style="display:flex;align-items:center;gap:10px;">
-                <div style="width:34px;height:34px;background:#eef2ff;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                  <span style="font-size:13px;font-weight:700;color:#4f46e5;">${initial}</span>
-                </div>
-                <div>
-                  <p style="font-size:13px;font-weight:600;color:#1e293b;">${u.full_name}</p>
-                  <p style="font-size:11px;color:#94a3b8;">${u.email}</p>
-                </div>
-              </div>
-            </td>
-            <td>
-              <span style="font-family:monospace;font-size:12px;color:#64748b;">${formatted}</span>
-            </td>
-            <td>
-              <span style="font-size:13px;font-weight:700;color:#4f46e5;">$${parseFloat(u.balance).toFixed(2)}</span>
-            </td>
-            <td>
-              <span class="badge" style="${u.is_admin
-                ? 'background:#fff1f2;color:#ef4444;'
-                : 'background:#f0fdf4;color:#16a34a;'}">
-                ${u.is_admin ? 'Admin' : 'User'}
-              </span>
-            </td>
-            <td style="color:#94a3b8;font-size:12px;">${date}</td>
-            <td>
-              <div style="display:flex;gap:6px;">
-                <button onclick="openViewModal('${u.id}')"
-                  style="background:#eef2ff;color:#4f46e5;border:none;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:600;cursor:pointer;">
-                  View
-                </button>
-                <button onclick="openEditModal('${u.id}', ${u.balance}, '${u.full_name}')"
-                  style="background:#f0fdf4;color:#16a34a;border:none;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:600;cursor:pointer;">
-                  Edit
-                </button>
-                <button onclick="deleteUser('${u.id}', '${u.full_name}')"
-                  style="background:#fff1f2;color:#ef4444;border:none;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:600;cursor:pointer;">
-                  Delete
-                </button>
-              </div>
-            </td>
-          </tr>`
-      }).join('')
+    async function loadTransactions() {
+      const { data } = await supabase
+        .from('transactions')
+        .select('*, sender:sender_id(full_name,email), receiver:receiver_id(full_name,email)')
+        .order('created_at', { ascending: false })
+      allTransactions = data || []
     }
 
-    function renderOverviewUsers(users) {
-      const container = document.getElementById('overview-users')
-      if (!users.length) {
-        container.innerHTML = `<p style="color:#94a3b8;font-size:14px;text-align:center;padding:20px;">No users yet</p>`
-        return
+    // ── OVERVIEW ─────────────────────────
+    function renderOverview() {
+      const nonAdmins = allUsers.filter(u => !u.is_admin)
+      const totalBalance = nonAdmins.reduce((sum, u) => sum + parseFloat(u.balance || 0), 0)
+      const kycPending = nonAdmins.filter(u => u.kyc_status === 'pending').length
+
+      document.getElementById('stat-total-users').textContent = nonAdmins.length
+      document.getElementById('stat-total-balance').textContent =
+        '$' + totalBalance.toFixed(2)
+      document.getElementById('stat-kyc-pending').textContent = kycPending
+      document.getElementById('stat-total-tx').textContent = allTransactions.length
+
+      // KYC badge
+      const badge = document.getElementById('kyc-badge-count')
+      if (kycPending > 0) {
+        badge.textContent = kycPending
+        badge.classList.remove('hidden')
       }
-      container.innerHTML = users.map(u => {
-        const initial = (u.full_name || 'U').charAt(0).toUpperCase()
-        return `
-          <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #f8fafc;">
-            <div style="width:36px;height:36px;background:#eef2ff;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-              <span style="font-size:13px;font-weight:700;color:#4f46e5;">${initial}</span>
-            </div>
-            <div style="flex:1;">
-              <p style="font-size:13px;font-weight:600;color:#1e293b;">${u.full_name}</p>
-              <p style="font-size:11px;color:#94a3b8;">${u.email}</p>
-            </div>
-            <span style="font-size:13px;font-weight:700;color:#4f46e5;">$${parseFloat(u.balance).toFixed(2)}</span>
-          </div>`
-      }).join('')
+
+      // Recent users
+      const recentUsers = nonAdmins.slice(0, 5)
+      document.getElementById('overview-users-list').innerHTML =
+        recentUsers.length ? recentUsers.map(u => userRow(u)).join('') :
+        '<p class="text-gray-400 text-sm text-center py-6">No users yet</p>'
+
+      // Recent transactions
+      const recentTx = allTransactions.slice(0, 5)
+      document.getElementById('overview-tx-list').innerHTML =
+        recentTx.length ? recentTx.map(tx => txRow(tx)).join('') :
+        '<p class="text-gray-400 text-sm text-center py-6">No transactions yet</p>'
+
+      lucide.createIcons()
+    }
+
+    // ── USERS ─────────────────────────────
+    function renderUsers(filter = '') {
+      const list = allUsers
+        .filter(u => !u.is_admin)
+        .filter(u =>
+          !filter ||
+          (u.full_name || '').toLowerCase().includes(filter) ||
+          (u.email || '').toLowerCase().includes(filter)
+        )
+
+      document.getElementById('users-list').innerHTML =
+        list.length ? list.map(u => userRow(u)).join('') :
+        '<p class="text-gray-400 text-sm text-center py-10">No users found</p>'
+
+      lucide.createIcons()
+    }
+
+    function userRow(u) {
+      const initial = (u.full_name || 'U').charAt(0).toUpperCase()
+      const kycColors = {
+        unverified: { bg:'#fffbeb', color:'#d97706', text:'Unverified' },
+        pending: { bg:'#eff6ff', color:'#3b82f6', text:'KYC Pending' },
+        verified: { bg:'#f0fdf4', color:'#16a34a', text:'Verified' },
+        rejected: { bg:'#fff1f2', color:'#ef4444', text:'Rejected' }
+      }
+      const kyc = kycColors[u.kyc_status] || kycColors.unverified
+      const suspended = u.is_suspended
+
+      return `
+        <div class="flex items-center gap-3 py-3 border-b border-gray-50 hover:bg-gray-50 rounded-xl px-2 cursor-pointer transition"
+          onclick="openUserModal('${u.id}')">
+          <div class="w-9 h-9 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
+            <span class="text-indigo-600 font-bold text-sm">${initial}</span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold text-gray-900 truncate">${u.full_name || 'Unknown'}</p>
+            <p class="text-xs text-gray-400 truncate">${u.email}</p>
+          </div>
+          <div class="flex items-center gap-2 flex-shrink-0">
+            <span class="badge" style="background:${kyc.bg};color:${kyc.color};">
+              ${kyc.text}
+            </span>
+            ${suspended ? `<span class="badge" style="background:#fff1f2;color:#ef4444;">Suspended</span>` : ''}
+            <span class="text-sm font-bold text-gray-700">
+              $${parseFloat(u.balance || 0).toFixed(2)}
+            </span>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-gray-300"></i>
+          </div>
+        </div>`
     }
 
     window.filterUsers = function() {
       const q = document.getElementById('user-search').value.toLowerCase()
-      const filtered = allUsers.filter(u =>
-        u.full_name?.toLowerCase().includes(q) ||
-        u.email?.toLowerCase().includes(q)
-      )
-      renderUsers(filtered)
+      renderUsers(q)
     }
 
-    // ── LOAD TRANSACTIONS ─────────────────
-    async function loadTransactions() {
-      const { data: txs } = await supabase
-        .from('transactions')
-        .select('*, sender:sender_id(full_name,email), receiver:receiver_id(full_name,email)')
-        .order('created_at', { ascending: false })
-      allTransactions = txs || []
-      renderTransactions(allTransactions)
-      renderOverviewTransactions(allTransactions.slice(0, 5))
-    }
+    // ── KYC REVIEWS ───────────────────────
+    function renderKYC() {
+      const pending = allUsers.filter(u => u.kyc_status === 'pending')
+      const container = document.getElementById('kyc-list')
 
-    function renderTransactions(txs) {
-      const tbody = document.getElementById('transactions-tbody')
-      if (!txs.length) {
-        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-gray-400">No transactions yet</td></tr>`
-        return
+      if (!pending.length) {
+        container.innerHTML = `
+          <div class="text-center py-12">
+            <i data-lucide="check-circle" class="w-12 h-12 text-green-300 mx-auto mb-3"></i>
+            <p class="text-gray-400 text-sm font-medium">No pending KYC reviews</p>
+            <p class="text-gray-300 text-xs mt-1">All submissions have been reviewed</p>
+          </div>`
+        lucide.createIcons(); return
       }
-      tbody.innerHTML = txs.map(tx => {
-        const isSelf = tx.sender_id === tx.receiver_id
-        const date = new Date(tx.created_at).toLocaleDateString('en-US',
-          { month:'short', day:'numeric', year:'numeric' })
+
+      container.innerHTML = pending.map(u => {
+        const initial = (u.full_name || 'U').charAt(0).toUpperCase()
+        const submitted = u.kyc_submitted_at ?
+          new Date(u.kyc_submitted_at).toLocaleDateString('en-US',
+            { month:'short', day:'numeric', year:'numeric' }) : 'Unknown'
+
         return `
-          <tr>
-            <td>
-              <p style="font-size:13px;font-weight:600;color:#1e293b;">
-                ${tx.sender?.full_name || 'Unknown'}
+          <div class="flex items-center gap-3 py-4 border-b border-gray-50 cursor-pointer
+            hover:bg-gray-50 rounded-xl px-2 transition" onclick="openUserModal('${u.id}')">
+            <div class="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
+              <span class="text-amber-600 font-bold">${initial}</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-semibold text-gray-900">${u.full_name || 'Unknown'}</p>
+              <p class="text-xs text-gray-400">${u.email}</p>
+              <p class="text-xs text-gray-400 mt-0.5">
+                Submitted: ${submitted} ·
+                Doc: ${u.kyc_document_type || 'Unknown'}
               </p>
-              <p style="font-size:11px;color:#94a3b8;">${tx.sender?.email || ''}</p>
-            </td>
-            <td>
-              <p style="font-size:13px;font-weight:600;color:#1e293b;">
-                ${isSelf ? 'Self (Crypto/Bill)' : (tx.receiver?.full_name || 'Unknown')}
-              </p>
-              <p style="font-size:11px;color:#94a3b8;">${isSelf ? '' : (tx.receiver?.email || '')}</p>
-            </td>
-            <td>
-              <span style="font-size:13px;font-weight:700;color:#4f46e5;">
-                $${parseFloat(tx.amount).toFixed(2)}
-              </span>
-            </td>
-            <td style="color:#64748b;font-size:12px;max-width:150px;">
-              <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;">
-                ${tx.note || '—'}
-              </span>
-            </td>
-            <td style="color:#94a3b8;font-size:12px;">${date}</td>
-            <td>
-              <button onclick="deleteTransaction('${tx.id}')"
-                style="background:#fff1f2;color:#ef4444;border:none;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:600;cursor:pointer;">
-                Delete
-              </button>
-            </td>
-          </tr>`
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="badge" style="background:#eff6ff;color:#3b82f6;">Pending Review</span>
+              <i data-lucide="chevron-right" class="w-4 h-4 text-gray-300"></i>
+            </div>
+          </div>`
       }).join('')
+
+      lucide.createIcons()
     }
 
-    function renderOverviewTransactions(txs) {
-      const container = document.getElementById('overview-transactions')
-      if (!txs.length) {
-        container.innerHTML = `<p style="color:#94a3b8;font-size:14px;text-align:center;padding:20px;">No transactions yet</p>`
-        return
+    // ── TRANSACTIONS ──────────────────────
+    function renderTransactions(filter = '') {
+      const list = allTransactions.filter(tx =>
+        !filter ||
+        (tx.sender?.full_name || '').toLowerCase().includes(filter) ||
+        (tx.receiver?.full_name || '').toLowerCase().includes(filter) ||
+        (tx.note || '').toLowerCase().includes(filter)
+      )
+
+      document.getElementById('admin-tx-list').innerHTML =
+        list.length ? list.map(tx => txRow(tx)).join('') :
+        '<p class="text-gray-400 text-sm text-center py-10">No transactions found</p>'
+
+      lucide.createIcons()
+    }
+
+    function txRow(tx) {
+      const date = new Date(tx.created_at).toLocaleDateString('en-US',
+        { month:'short', day:'numeric', year:'numeric' })
+      const statusColors = {
+        completed: { bg:'#f0fdf4', color:'#16a34a' },
+        pending: { bg:'#fffbeb', color:'#d97706' },
+        failed: { bg:'#fff1f2', color:'#ef4444' }
       }
-      container.innerHTML = txs.map(tx => {
-        const isSelf = tx.sender_id === tx.receiver_id
-        const label = isSelf
-          ? `${tx.sender?.full_name} → Self`
-          : `${tx.sender?.full_name || '?'} → ${tx.receiver?.full_name || '?'}`
-        const date = new Date(tx.created_at).toLocaleDateString('en-US',
-          { month:'short', day:'numeric' })
-        return `
-          <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #f8fafc;">
-            <div style="width:36px;height:36px;background:#eef2ff;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-              <i data-lucide="arrow-left-right" style="width:16px;height:16px;color:#4f46e5;"></i>
-            </div>
-            <div style="flex:1;min-width:0;">
-              <p style="font-size:13px;font-weight:600;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${label}</p>
-              <p style="font-size:11px;color:#94a3b8;">${date}</p>
-            </div>
-            <span style="font-size:13px;font-weight:700;color:#4f46e5;flex-shrink:0;">
+      const s = statusColors[tx.status] || statusColors.completed
+
+      return `
+        <div class="flex items-center gap-3 py-3 border-b border-gray-50">
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold text-gray-900 truncate">
+              ${tx.sender?.full_name || 'Unknown'} →
+              ${tx.receiver?.full_name || 'Unknown'}
+            </p>
+            <p class="text-xs text-gray-400 mt-0.5">${tx.note || 'Transfer'} · ${date}</p>
+          </div>
+          <div class="flex items-center gap-2 flex-shrink-0">
+            <span class="badge" style="background:${s.bg};color:${s.color};">
+              ${tx.status || 'completed'}
+            </span>
+            <span class="text-sm font-bold text-gray-900">
               $${parseFloat(tx.amount).toFixed(2)}
             </span>
-          </div>`
-      }).join('')
+          </div>
+        </div>`
+    }
+
+    window.filterAdminTransactions = function() {
+      const q = document.getElementById('tx-search-admin').value.toLowerCase()
+      renderTransactions(q)
+    }
+
+    // ── USER MODAL ────────────────────────
+    window.openUserModal = function(userId) {
+      selectedUser = allUsers.find(u => u.id === userId)
+      if (!selectedUser) return
+
+      const u = selectedUser
+      const initial = (u.full_name || 'U').charAt(0).toUpperCase()
+
+      // Generate account number
+      const numericId = u.id.replace(/-/g, '')
+      const digits = numericId
+        .replace(/[a-f]/gi, d => String(d.charCodeAt(0) - 87))
+        .replace(/[^0-9]/g, '').substring(0, 12).padEnd(12, '0')
+
+      // Basic info
+      document.getElementById('modal-avatar').textContent = initial
+      document.getElementById('modal-name').textContent = u.full_name || 'Unknown'
+      document.getElementById('modal-email').textContent = u.email
+      document.getElementById('modal-acct').textContent = digits
+      document.getElementById('modal-balance').textContent =
+        '$' + parseFloat(u.balance || 0).toFixed(2)
+      document.getElementById('modal-phone').textContent = u.phone || 'Not provided'
+      document.getElementById('modal-country').textContent = u.country || 'Not provided'
+      document.getElementById('modal-gender').textContent = u.gender || 'Not provided'
+      document.getElementById('modal-occupation').textContent = u.occupation || 'Not provided'
+      document.getElementById('modal-address').textContent = u.address || 'Not provided'
+      document.getElementById('modal-funds').textContent = u.source_of_funds || 'Not provided'
+      document.getElementById('modal-dob').textContent = u.date_of_birth ?
+        new Date(u.date_of_birth).toLocaleDateString('en-US',
+          { year:'numeric', month:'long', day:'numeric' }) : 'Not provided'
+      document.getElementById('modal-joined').textContent =
+        new Date(u.created_at).toLocaleDateString('en-US',
+          { year:'numeric', month:'long', day:'numeric' })
+
+      // KYC badge
+      const kycConfigs = {
+        unverified: { bg:'#fffbeb', color:'#d97706', text:'Unverified' },
+        pending: { bg:'#eff6ff', color:'#3b82f6', text:'KYC Pending' },
+        verified: { bg:'#f0fdf4', color:'#16a34a', text:'KYC Verified' },
+        rejected: { bg:'#fff1f2', color:'#ef4444', text:'KYC Rejected' }
+      }
+      const kyc = kycConfigs[u.kyc_status] || kycConfigs.unverified
+      document.getElementById('modal-kyc-badge').textContent = kyc.text
+      document.getElementById('modal-kyc-badge').style.cssText =
+        `background:${kyc.bg};color:${kyc.color};display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;`
+
+      // Suspend badge
+      const suspBadge = document.getElementById('modal-suspend-badge')
+      if (u.is_suspended) {
+        suspBadge.textContent = 'Suspended'
+        suspBadge.style.cssText = 'background:#fff1f2;color:#ef4444;display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;'
+      } else {
+        suspBadge.textContent = 'Active'
+        suspBadge.style.cssText = 'background:#f0fdf4;color:#16a34a;display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;'
+      }
+
+      // KYC actions
+      renderKYCActions(u)
+
+      // Suspend button
+      const suspBtn = document.getElementById('modal-suspend-btn')
+      const suspText = document.getElementById('modal-suspend-text')
+      if (u.is_suspended) {
+        suspBtn.textContent = '✅ Activate Account'
+        suspBtn.className = 'btn btn-success'
+        suspText.textContent = 'This account is currently suspended'
+      } else {
+        suspBtn.textContent = '🚫 Suspend Account'
+        suspBtn.className = 'btn btn-danger'
+        suspText.textContent = 'This account is currently active'
+      }
+
+      // Set default tx date to now
+      const now = new Date()
+      now.setMinutes(now.getMinutes() - now.getTimezoneOffset())
+      document.getElementById('tx-date').value = now.toISOString().slice(0, 16)
+
+      // Clear messages
+      document.getElementById('balance-msg').classList.add('hidden')
+      document.getElementById('tx-msg').classList.add('hidden')
+      document.getElementById('balance-amount').value = ''
+      document.getElementById('tx-amount').value = ''
+      document.getElementById('tx-note').value = ''
+
+      document.getElementById('user-modal').classList.remove('hidden')
+      document.body.style.overflow = 'hidden'
       lucide.createIcons()
     }
 
-    window.filterTransactions = function() {
-      const q = document.getElementById('tx-search').value.toLowerCase()
-      const filtered = allTransactions.filter(tx =>
-        (tx.sender?.full_name || '').toLowerCase().includes(q) ||
-        (tx.receiver?.full_name || '').toLowerCase().includes(q) ||
-        (tx.note || '').toLowerCase().includes(q)
-      )
-      renderTransactions(filtered)
+    function renderKYCActions(u) {
+      const container = document.getElementById('modal-kyc-actions')
+      const statusText = document.getElementById('modal-kyc-status-text')
+      const docSection = document.getElementById('modal-kyc-doc')
+      const rejSection = document.getElementById('modal-rejection-section')
+
+      statusText.textContent = u.kyc_status?.toUpperCase() || 'UNVERIFIED'
+
+      if (u.kyc_document_type) {
+        docSection.classList.remove('hidden')
+        document.getElementById('modal-doc-type').textContent = u.kyc_document_type
+      } else {
+        docSection.classList.add('hidden')
+      }
+
+      if (u.kyc_status === 'pending') {
+        rejSection.classList.remove('hidden')
+        container.innerHTML = `
+          <button onclick="updateKYC('verified')"
+            class="btn btn-success flex items-center gap-1.5">
+            <i data-lucide="check" class="w-3.5 h-3.5"></i> Approve
+          </button>
+          <button onclick="updateKYC('rejected')"
+            class="btn btn-danger flex items-center gap-1.5">
+            <i data-lucide="x" class="w-3.5 h-3.5"></i> Reject
+          </button>`
+      } else if (u.kyc_status === 'verified') {
+        rejSection.classList.add('hidden')
+        container.innerHTML = `
+          <span class="text-xs text-green-600 font-semibold flex items-center gap-1">
+            ✅ Verified
+          </span>
+          <button onclick="updateKYC('unverified')" class="btn btn-gray text-xs">
+            Reset to Unverified
+          </button>`
+      } else {
+        rejSection.classList.add('hidden')
+        container.innerHTML = `
+          <span class="text-xs text-gray-400">No documents submitted yet</span>`
+      }
+
+      lucide.createIcons()
     }
 
-    // ── ACTIVITY LOG ──────────────────────
-    function renderActivityLog() {
-      const container = document.getElementById('activity-log')
-      const activities = []
+    window.closeUserModal = function() {
+      document.getElementById('user-modal').classList.add('hidden')
+      document.body.style.overflow = ''
+      selectedUser = null
+    }
 
-      allTransactions.slice(0, 20).forEach(tx => {
-        const isSelf = tx.sender_id === tx.receiver_id
-        activities.push({
-          icon: isSelf ? 'refresh-cw' : 'send',
-          iconBg: isSelf ? '#eef2ff' : '#f0fdf4',
-          iconColor: isSelf ? '#4f46e5' : '#16a34a',
-          text: isSelf
-            ? `${tx.sender?.full_name} performed a crypto/bill transaction of $${parseFloat(tx.amount).toFixed(2)}`
-            : `${tx.sender?.full_name} sent $${parseFloat(tx.amount).toFixed(2)} to ${tx.receiver?.full_name}`,
-          time: new Date(tx.created_at).toLocaleString('en-US',
-            { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' })
-        })
-      })
+    // ── KYC APPROVAL ─────────────────────
+    window.updateKYC = async function(newStatus) {
+      if (!selectedUser) return
 
-      allUsers.slice(0, 5).forEach(u => {
-        activities.push({
-          icon: 'user-plus',
-          iconBg: '#faf5ff',
-          iconColor: '#7c3aed',
-          text: `${u.full_name} joined SilverCrest`,
-          time: new Date(u.created_at).toLocaleString('en-US',
-            { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' })
-        })
-      })
+      const reason = newStatus === 'rejected' ?
+        document.getElementById('modal-rejection-reason').value.trim() : null
 
-      activities.sort((a, b) => new Date(b.time) - new Date(a.time))
-
-      if (!activities.length) {
-        container.innerHTML = `
-          <div style="text-align:center;padding:40px;">
-            <p style="color:#94a3b8;font-size:14px;">No activity yet</p>
-          </div>`
+      if (newStatus === 'rejected' && !reason) {
+        alert('Please enter a rejection reason.')
         return
       }
 
-      container.innerHTML = activities.map(a => `
-        <div style="display:flex;align-items:center;gap:12px;padding:14px;background:#f8fafc;border-radius:12px;">
-          <div style="width:38px;height:38px;background:${a.iconBg};border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-            <i data-lucide="${a.icon}" style="width:16px;height:16px;color:${a.iconColor};"></i>
-          </div>
-          <div style="flex:1;">
-            <p style="font-size:13px;color:#374151;">${a.text}</p>
-            <p style="font-size:11px;color:#94a3b8;margin-top:2px;">${a.time}</p>
-          </div>
-        </div>`).join('')
-      lucide.createIcons()
-    }
-
-    // ── EDIT BALANCE ──────────────────────
-    window.openEditModal = function(userId, balance, name) {
-      document.getElementById('edit-user-id').value = userId
-      document.getElementById('edit-balance-input').value = balance
-      document.getElementById('edit-modal-name').textContent = name
-      document.getElementById('edit-modal').classList.remove('hidden')
-    }
-
-    window.closeModal = function() {
-      document.getElementById('edit-modal').classList.add('hidden')
-    }
-
-    window.saveBalance = async function() {
-      const userId = document.getElementById('edit-user-id').value
-      const newBalance = parseFloat(document.getElementById('edit-balance-input').value)
-      if (isNaN(newBalance) || newBalance < 0) {
-        alert('Please enter a valid balance.'); return
+      const updates = {
+        kyc_status: newStatus,
+        kyc_reviewed_at: new Date().toISOString()
       }
+      if (reason) updates.kyc_rejection_reason = reason
+
       const { error } = await supabase
-        .from('profiles').update({ balance: newBalance }).eq('id', userId)
+        .from('profiles')
+        .update(updates)
+        .eq('id', selectedUser.id)
+
       if (error) { alert('Error: ' + error.message); return }
-      closeModal()
-      await loadUsers()
-      await loadStats()
-    }
 
-    // ── VIEW USER ─────────────────────────
-    window.openViewModal = function(userId) {
-      const user = allUsers.find(u => u.id === userId)
-      if (!user) return
-      const acctNum = 'SC' + user.id.replace(/-/g,'').substring(0,10).toUpperCase()
-      const txCount = allTransactions.filter(t =>
-        t.sender_id === userId || t.receiver_id === userId).length
-      document.getElementById('view-modal-content').innerHTML = `
-        <div style="display:flex;flex-direction:column;gap:12px;">
-          <div style="display:flex;align-items:center;gap:12px;padding-bottom:16px;border-bottom:1px solid #f1f5f9;">
-            <div style="width:48px;height:48px;background:#eef2ff;border-radius:14px;display:flex;align-items:center;justify-content:center;">
-              <span style="font-size:20px;font-weight:700;color:#4f46e5;">${user.full_name.charAt(0)}</span>
-            </div>
-            <div>
-              <p style="font-size:15px;font-weight:700;color:#1e293b;">${user.full_name}</p>
-              <p style="font-size:12px;color:#94a3b8;">${user.email}</p>
-            </div>
-          </div>
-          ${[
-            ['Account Number', acctNum],
-            ['Balance', '$' + parseFloat(user.balance).toFixed(2)],
-            ['Role', user.is_admin ? 'Administrator' : 'Regular User'],
-            ['Total Transactions', txCount],
-            ['Member Since', new Date(user.created_at).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' })]
-          ].map(([label, value]) => `
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#f8fafc;border-radius:10px;">
-              <span style="font-size:12px;color:#64748b;font-weight:500;">${label}</span>
-              <span style="font-size:13px;color:#1e293b;font-weight:600;">${value}</span>
-            </div>`).join('')}
-        </div>`
-      document.getElementById('view-modal').classList.remove('hidden')
-    }
-
-    window.closeViewModal = function() {
-      document.getElementById('view-modal').classList.add('hidden')
-    }
-
-    // ── DELETE USER ───────────────────────
-    window.deleteUser = async function(userId, name) {
-      if (!confirm(`Delete ${name}? This cannot be undone.`)) return
-      await supabase.from('profiles').delete().eq('id', userId)
-      await loadUsers()
-      await loadStats()
-    }
-
-    // ── DELETE TRANSACTION ────────────────
-    window.deleteTransaction = async function(txId) {
-      if (!confirm('Delete this transaction?')) return
-      await supabase.from('transactions').delete().eq('id', txId)
-      await loadTransactions()
-      await loadStats()
-    }
-
-    // ── SECTION SWITCHER ──────────────────
-    window.showSection = function(name) {
-      ;['overview','users','transactions','activity'].forEach(s => {
-        document.getElementById('section-' + s)?.classList.add('hidden')
-      })
-      document.getElementById('section-' + name)?.classList.remove('hidden')
-      const titles = {
-        overview: 'Overview',
-        users: 'Manage Users',
-        transactions: 'All Transactions',
-        activity: 'Activity Log'
+      // Update local data
+      selectedUser.kyc_status = newStatus
+      const userIndex = allUsers.findIndex(u => u.id === selectedUser.id)
+      if (userIndex !== -1) {
+        allUsers[userIndex].kyc_status = newStatus
+        if (reason) allUsers[userIndex].kyc_rejection_reason = reason
       }
-      document.getElementById('page-title').textContent = titles[name]
-      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'))
-      document.getElementById('nav-' + name)?.classList.add('active')
-      if (name === 'activity') renderActivityLog()
+
+      // Refresh modal KYC section
+      renderKYCActions(selectedUser)
+
+      // Update KYC badge in header
+      const kycConfigs = {
+        unverified: { bg:'#fffbeb', color:'#d97706', text:'Unverified' },
+        pending: { bg:'#eff6ff', color:'#3b82f6', text:'KYC Pending' },
+        verified: { bg:'#f0fdf4', color:'#16a34a', text:'KYC Verified' },
+        rejected: { bg:'#fff1f2', color:'#ef4444', text:'KYC Rejected' }
+      }
+      const kyc = kycConfigs[newStatus]
+      document.getElementById('modal-kyc-badge').textContent = kyc.text
+      document.getElementById('modal-kyc-badge').style.cssText =
+        `background:${kyc.bg};color:${kyc.color};display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;`
+
+      // Re-render lists
+      renderUsers()
+      renderKYC()
+      renderOverview()
+
+      alert(`✅ KYC status updated to ${newStatus}!`)
     }
 
-    // ── LOGOUT ────────────────────────────
+    // ── SUSPEND / ACTIVATE ────────────────
+    window.toggleSuspend = async function() {
+      if (!selectedUser) return
+      const newStatus = !selectedUser.is_suspended
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({ is_suspended: newStatus })
+        .eq('id', selectedUser.id)
+
+      if (error) { alert('Error: ' + error.message); return }
+
+      selectedUser.is_suspended = newStatus
+      const userIndex = allUsers.findIndex(u => u.id === selectedUser.id)
+      if (userIndex !== -1) allUsers[userIndex].is_suspended = newStatus
+
+      // Update suspend button
+      const suspBtn = document.getElementById('modal-suspend-btn')
+      const suspText = document.getElementById('modal-suspend-text')
+      const suspBadge = document.getElementById('modal-suspend-badge')
+
+      if (newStatus) {
+        suspBtn.textContent = '✅ Activate Account'
+        suspBtn.className = 'btn btn-success'
+        suspText.textContent = 'This account is currently suspended'
+        suspBadge.textContent = 'Suspended'
+        suspBadge.style.cssText = 'background:#fff1f2;color:#ef4444;display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;'
+      } else {
+        suspBtn.textContent = '🚫 Suspend Account'
+        suspBtn.className = 'btn btn-danger'
+        suspText.textContent = 'This account is currently active'
+        suspBadge.textContent = 'Active'
+        suspBadge.style.cssText = 'background:#f0fdf4;color:#16a34a;display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;'
+      }
+
+      renderUsers()
+      alert(`✅ Account ${newStatus ? 'suspended' : 'activated'} successfully!`)
+    }
+
+    // ── BALANCE ADJUSTMENT ────────────────
+    window.adjustBalance = async function() {
+      if (!selectedUser) return
+      const action = document.getElementById('balance-action').value
+      const amount = parseFloat(document.getElementById('balance-amount').value)
+      const msgEl = document.getElementById('balance-msg')
+
+      if (!amount || amount <= 0) {
+        showMsg('balance-msg', 'Please enter a valid amount.', 'error')
+        return
+      }
+
+      const currentBalance = parseFloat(selectedUser.balance || 0)
+      const newBalance = action === 'add'
+        ? currentBalance + amount
+        : currentBalance - amount
+
+      if (newBalance < 0) {
+        showMsg('balance-msg', 'Balance cannot go below $0.', 'error')
+        return
+      }
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({ balance: newBalance })
+        .eq('id', selectedUser.id)
+
+      if (error) {
+        showMsg('balance-msg', 'Error: ' + error.message, 'error')
+        return
+      }
+
+      selectedUser.balance = newBalance
+      const userIndex = allUsers.findIndex(u => u.id === selectedUser.id)
+      if (userIndex !== -1) allUsers[userIndex].balance = newBalance
+
+      document.getElementById('modal-balance').textContent =
+        '$' + newBalance.toFixed(2)
+      document.getElementById('balance-amount').value = ''
+
+      showMsg('balance-msg',
+        `✅ Balance ${action === 'add' ? 'increased' : 'reduced'} by $${amount.toFixed(2)}. New balance: $${newBalance.toFixed(2)}`,
+        'success'
+      )
+      renderUsers()
+    }
+
+    // ── CREATE TRANSACTION ────────────────
+    window.createTransaction = async function() {
+      if (!selectedUser) return
+      const type = document.getElementById('tx-type').value
+      const amount = parseFloat(document.getElementById('tx-amount').value)
+      const note = document.getElementById('tx-note').value.trim()
+      const date = document.getElementById('tx-date').value
+      const status = document.getElementById('tx-status').value
+
+      if (!amount || amount <= 0) {
+        showMsg('tx-msg', 'Please enter a valid amount.', 'error')
+        return
+      }
+      if (!note) {
+        showMsg('tx-msg', 'Please enter a note/description.', 'error')
+        return
+      }
+
+      const txData = {
+        sender_id: type === 'debit' ? selectedUser.id : currentAdmin.id,
+        receiver_id: type === 'credit' ? selectedUser.id : currentAdmin.id,
+        amount,
+        note,
+        status,
+        admin_created: true,
+        created_at: date ? new Date(date).toISOString() : new Date().toISOString()
+      }
+
+      const { error } = await supabase.from('transactions').insert(txData)
+
+      if (error) {
+        showMsg('tx-msg', 'Error: ' + error.message, 'error')
+        return
+      }
+
+      document.getElementById('tx-amount').value = ''
+      document.getElementById('tx-note').value = ''
+      showMsg('tx-msg', '✅ Transaction record created successfully!', 'success')
+      await loadTransactions()
+      renderTransactions()
+    }
+
+    function showMsg(elementId, text, type) {
+      const el = document.getElementById(elementId)
+      el.textContent = text
+      el.style.cssText = type === 'success'
+        ? 'background:#f0fdf4;color:#16a34a;display:block;font-size:12px;padding:8px 12px;border-radius:8px;'
+        : 'background:#fff1f2;color:#ef4444;display:block;font-size:12px;padding:8px 12px;border-radius:8px;'
+      el.classList.remove('hidden')
+    }
+
+    // ── SECTION NAVIGATION ────────────────
+    window.showAdminSection = function(name) {
+      document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'))
+      document.getElementById('section-' + name).classList.add('active')
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'))
+      document.getElementById('nav-' + name).classList.add('active')
+      const titles = {
+        overview:'Overview', users:'All Users',
+        kyc:'KYC Reviews', transactions:'All Transactions'
+      }
+      document.getElementById('admin-page-title').textContent = titles[name] || name
+    }
+
     window.handleLogout = async function() {
       await supabase.auth.signOut()
       window.location.href = 'index.html'

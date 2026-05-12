@@ -1122,11 +1122,16 @@
     })
 
     // ── KYC PROTECTION ────────────────────
-    window.handleProtectedAction = function(action) {
-      if (kycStatus === 'verified') {
-        showSection(action)
-        return
-      }
+   window.handleProtectedAction = function(action) {
+  // Check suspension first
+  if (currentProfile?.is_suspended) {
+    showSuspendedModal()
+    return
+  }
+  if (kycStatus === 'verified') {
+    showSection(action)
+    return
+  }
       // Block — show modal
       pendingAction = action
       const modal = document.getElementById('kyc-modal')
@@ -1250,6 +1255,17 @@
       if (!user) { window.location.href = 'index.html'; return }
       currentUser = user
       await loadProfile()
+      // Check if suspended
+if (currentProfile.is_suspended) {
+  // Show suspended banner
+  const banner = document.createElement('div')
+  banner.style.cssText = 'background:#fff1f2;border-bottom:1px solid #fecdd3;padding:12px 20px;text-align:center;font-size:13px;color:#9f1239;display:flex;align-items:center;justify-content:center;gap:8px;position:sticky;top:0;z-index:50;'
+  banner.innerHTML = `
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
+    <span><strong>Your account has been suspended.</strong> Please contact <a href="mailto:support@silvercrestfin.com" style="color:#4f46e5;font-weight:600;">support@silvercrestfin.com</a> for assistance.</span>
+  `
+  document.body.insertBefore(banner, document.body.firstChild)
+}
       await loadTransactions()
       loadCryptoPortfolio()
       checkReturnFromKYC()
@@ -1690,6 +1706,34 @@
     }
 
     init()
+
+    function showSuspendedModal() {
+  const modal = document.getElementById('kyc-modal')
+  document.getElementById('kyc-modal-message').textContent =
+    'Your account has been suspended. Please contact support for assistance.'
+  document.getElementById('kyc-modal-unverified').classList.add('hidden')
+  document.getElementById('kyc-modal-pending').classList.add('hidden')
+  document.getElementById('kyc-modal-rejected').classList.add('hidden')
+
+  // Show a suspended message
+  let suspDiv = document.getElementById('kyc-modal-suspended')
+  if (!suspDiv) {
+    suspDiv = document.createElement('div')
+    suspDiv.id = 'kyc-modal-suspended'
+    suspDiv.innerHTML = `
+      <div class="bg-red-50 border border-red-100 rounded-xl p-4 mb-5">
+        <p class="text-xs text-red-700 leading-relaxed">
+          🚫 Your account has been suspended by an administrator.
+          Please contact <strong>support@silvercrestfin.com</strong> to resolve this issue.
+        </p>
+      </div>
+      <button onclick="closeKycModal()" class="btn-primary">Close</button>
+    `
+    document.getElementById('kyc-modal-unverified').parentNode.appendChild(suspDiv)
+  }
+  suspDiv.classList.remove('hidden')
+  modal.classList.remove('hidden')
+}
   </script>
   <script>lucide.createIcons();</script>
 </body>
