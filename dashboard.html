@@ -95,6 +95,11 @@
       font-family: 'Inter', sans-serif; box-sizing: border-box;
     }
     .input-field:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,0.1); }
+    .field-label {
+      display: block; font-size: 12px; font-weight: 600;
+      color: #64748b; text-transform: uppercase;
+      letter-spacing: 0.05em; margin-bottom: 6px;
+    }
     .btn-primary {
       background: #4f46e5; color: white; border: none;
       border-radius: 12px; padding: 13px 20px; font-size: 14px;
@@ -180,6 +185,15 @@
       from { transform: translateY(100%); opacity: 0; }
       to { transform: translateY(0); opacity: 1; }
     }
+    .transfer-tab {
+      flex: 1; padding: 10px; border: 2px solid #e2e8f0;
+      border-radius: 12px; background: white; cursor: pointer;
+      font-size: 13px; font-weight: 600; color: #64748b;
+      transition: all 0.2s; text-align: center; font-family: 'Inter', sans-serif;
+    }
+    .transfer-tab.active {
+      border-color: #4f46e5; background: #eef2ff; color: #4f46e5;
+    }
   </style>
 </head>
 <body style="background:#f8fafc;">
@@ -190,9 +204,7 @@
       <div class="w-14 h-14 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
         <i data-lucide="shield-alert" class="w-7 h-7 text-amber-500"></i>
       </div>
-      <h3 class="text-lg font-bold text-gray-900 text-center mb-2">
-        Identity Verification Required
-      </h3>
+      <h3 class="text-lg font-bold text-gray-900 text-center mb-2">Identity Verification Required</h3>
       <p class="text-sm text-gray-400 text-center mb-6" id="kyc-modal-message">
         To access this feature, you need to verify your identity first.
       </p>
@@ -250,7 +262,6 @@
           <i data-lucide="x" class="w-4 h-4 text-gray-500"></i>
         </button>
       </div>
-      
       <div id="tx-modal-amount-section"
         style="text-align:center;padding:24px;background:#f8fafc;border-radius:16px;margin-bottom:20px;">
         <div id="tx-modal-icon"
@@ -276,13 +287,25 @@
           <span style="font-size:13px;color:#94a3b8;">Type</span>
           <span id="tx-modal-type" style="font-size:13px;font-weight:600;color:#1e293b;"></span>
         </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f1f5f9;">
-          <span style="font-size:13px;color:#94a3b8;">From</span>
-          <span id="tx-modal-from" style="font-size:13px;font-weight:600;color:#1e293b;"></span>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:12px 0;border-bottom:1px solid #f1f5f9;">
+          <span style="font-size:13px;color:#94a3b8;flex-shrink:0;">From</span>
+          <span id="tx-modal-from" style="font-size:13px;font-weight:600;color:#1e293b;text-align:right;max-width:240px;line-height:1.5;"></span>
         </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f1f5f9;">
-          <span style="font-size:13px;color:#94a3b8;">To</span>
-          <span id="tx-modal-to" style="font-size:13px;font-weight:600;color:#1e293b;"></span>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:12px 0;border-bottom:1px solid #f1f5f9;">
+          <span style="font-size:13px;color:#94a3b8;flex-shrink:0;">To</span>
+          <span id="tx-modal-to" style="font-size:13px;font-weight:600;color:#1e293b;text-align:right;max-width:240px;line-height:1.5;"></span>
+        </div>
+        <div id="tx-modal-bank-row" style="display:none;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f1f5f9;">
+          <span style="font-size:13px;color:#94a3b8;">Bank</span>
+          <span id="tx-modal-bank" style="font-size:13px;font-weight:600;color:#1e293b;"></span>
+        </div>
+        <div id="tx-modal-swift-row" style="display:none;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f1f5f9;">
+          <span id="tx-modal-swift-label" style="font-size:13px;color:#94a3b8;">SWIFT/BIC</span>
+          <span id="tx-modal-swift" style="font-size:13px;font-weight:600;color:#1e293b;font-family:monospace;"></span>
+        </div>
+        <div id="tx-modal-routing-row" style="display:none;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f1f5f9;">
+          <span style="font-size:13px;color:#94a3b8;">Routing Number</span>
+          <span id="tx-modal-routing" style="font-size:13px;font-weight:600;color:#1e293b;font-family:monospace;"></span>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;">
           <span style="font-size:13px;color:#94a3b8;">Note</span>
@@ -453,12 +476,11 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-5">
-          <!-- Balance Card -->
           <div class="balance-card">
             <div class="relative z-10">
               <div class="flex items-center justify-between mb-1">
                 <p style="color:rgba(200,210,255,0.8);" class="text-xs font-medium">Available Balance</p>
-                <button class="eye-btn" id="toggle-balance-btn" onclick="toggleBalance()">
+                <button class="eye-btn" onclick="toggleBalance()">
                   <i data-lucide="eye" class="w-3.5 h-3.5" id="eye-icon"></i>
                   <span id="eye-label">Hide</span>
                 </button>
@@ -479,7 +501,6 @@
             </div>
           </div>
 
-          <!-- Account Number -->
           <div class="stat-card flex flex-col justify-between">
             <div class="flex items-center justify-between mb-3">
               <div class="flex items-center gap-2">
@@ -501,7 +522,6 @@
             </div>
           </div>
 
-          <!-- Status + Crypto -->
           <div class="stat-card flex flex-col justify-between">
             <div class="flex items-center gap-2 mb-3">
               <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
@@ -533,7 +553,6 @@
           </div>
         </div>
 
-        <!-- Quick Actions -->
         <div class="section-card mb-4">
           <h3 class="text-sm font-bold text-gray-900 mb-3">Quick Actions</h3>
           <div class="grid grid-cols-4 gap-2 lg:gap-3">
@@ -564,7 +583,6 @@
           </div>
         </div>
 
-        <!-- Recent Transactions -->
         <div class="section-card">
           <div class="flex justify-between items-center mb-4">
             <h3 class="text-sm font-bold text-gray-900">Recent Transactions</h3>
@@ -583,41 +601,168 @@
 
       <!-- ══════════ SEND MONEY ══════════ -->
       <div id="section-transfer" class="hidden">
-        <div class="section-card max-w-lg mx-auto">
+        <div class="section-card max-w-2xl mx-auto">
           <div class="flex items-center gap-3 mb-5">
             <div class="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
               <i data-lucide="send" class="w-5 h-5 text-indigo-600"></i>
             </div>
             <div>
               <h3 class="text-base font-bold text-gray-900">Send Money</h3>
-              <p class="text-xs text-gray-400">Instant transfer to any SilverCrest user</p>
+              <p class="text-xs text-gray-400">Choose how you want to send</p>
             </div>
           </div>
+
+          <!-- Transfer Type Tabs -->
+          <div class="flex gap-2 mb-6">
+            <button class="transfer-tab active" id="tab-instant" onclick="switchTransferTab('instant')">
+              ⚡ Instant
+            </button>
+            <button class="transfer-tab" id="tab-wire" onclick="switchTransferTab('wire')">
+              🌐 Wire Transfer
+            </button>
+            <button class="transfer-tab" id="tab-bank" onclick="switchTransferTab('bank')">
+              🏦 Bank Transfer
+            </button>
+          </div>
+
+          <!-- Error / Success -->
           <div id="transfer-error" class="hidden bg-red-50 border border-red-100 text-red-500 px-4 py-3 rounded-xl mb-4 text-sm"></div>
           <div id="transfer-success" class="hidden bg-green-50 border border-green-100 text-green-600 px-4 py-3 rounded-xl mb-4 text-sm"></div>
-          <div class="space-y-4">
-            <div>
-              <label class="text-sm font-medium text-gray-700 mb-1.5 block">Recipient Email</label>
-              <input type="email" id="recipient-email" placeholder="friend@example.com" class="input-field"/>
-            </div>
-            <div>
-              <label class="text-sm font-medium text-gray-700 mb-1.5 block">Amount</label>
-              <div class="relative">
-                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
-                <input type="number" id="transfer-amount" placeholder="0.00" min="1"
-                  class="input-field" style="padding-left:28px;"/>
+
+          <!-- ── INSTANT TRANSFER ── -->
+          <div id="form-instant">
+            <div class="space-y-4">
+              <div>
+                <label class="field-label">Recipient Email</label>
+                <input type="email" id="instant-email" placeholder="friend@example.com" class="input-field"/>
               </div>
-              <p class="text-xs text-gray-400 mt-1.5">
-                Available: <span id="available-balance-transfer" class="font-semibold text-gray-700">$0.00</span>
-              </p>
+              <div>
+                <label class="field-label">Amount</label>
+                <div class="relative">
+                  <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                  <input type="number" id="instant-amount" placeholder="0.00" class="input-field" style="padding-left:28px;"/>
+                </div>
+                <p class="text-xs text-gray-400 mt-1.5">
+                  Available: <span id="available-balance-transfer" class="font-semibold text-gray-700">$0.00</span>
+                </p>
+              </div>
+              <div>
+                <label class="field-label">Note <span class="font-normal normal-case text-gray-400">(optional)</span></label>
+                <input type="text" id="instant-note" placeholder="For rent, lunch, etc." class="input-field"/>
+              </div>
+              <button id="instant-btn" class="btn-primary">Send Instantly ⚡</button>
             </div>
-            <div>
-              <label class="text-sm font-medium text-gray-700 mb-1.5 block">
-                Note <span class="font-normal text-gray-400">(optional)</span>
-              </label>
-              <input type="text" id="transfer-note" placeholder="For rent, lunch, etc." class="input-field"/>
+          </div>
+
+          <!-- ── WIRE TRANSFER ── -->
+          <div id="form-wire" class="hidden">
+            <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-5">
+              <p class="text-xs text-blue-700 font-semibold mb-1">🌐 International Wire Transfer</p>
+              <p class="text-xs text-blue-600">Funds are held immediately and released upon admin approval. Usually processed within 1 business day.</p>
             </div>
-            <button id="transfer-btn" class="btn-primary">Send Money</button>
+            <div class="space-y-4">
+              <div>
+                <label class="field-label">Recipient Full Name *</label>
+                <input type="text" id="wire-name" placeholder="John Smith" class="input-field"/>
+              </div>
+              <div>
+                <label class="field-label">Recipient Bank Name *</label>
+                <input type="text" id="wire-bank" placeholder="e.g. Citibank, Barclays, HSBC" class="input-field"/>
+              </div>
+              <div>
+                <label class="field-label">Recipient Account Number *</label>
+                <input type="text" id="wire-account" placeholder="Account number" class="input-field"/>
+              </div>
+              <div>
+                <label class="field-label">SWIFT / BIC Code *</label>
+                <input type="text" id="wire-swift" placeholder="e.g. CITIUS33, BARCGB22"
+                  class="input-field" style="text-transform:uppercase;font-family:monospace;"/>
+                <p class="text-xs text-gray-400 mt-1">8 or 11 character international bank identifier</p>
+              </div>
+              <div>
+                <label class="field-label">Bank Address *</label>
+                <input type="text" id="wire-bank-address" placeholder="123 Bank Street, New York, NY 10001" class="input-field"/>
+              </div>
+              <div>
+                <label class="field-label">Recipient Country *</label>
+                <input type="text" id="wire-country" placeholder="e.g. United States, United Kingdom" class="input-field"/>
+              </div>
+              <div>
+                <label class="field-label">Amount *</label>
+                <div class="relative">
+                  <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                  <input type="number" id="wire-amount" placeholder="0.00" class="input-field" style="padding-left:28px;"/>
+                </div>
+                <p class="text-xs text-gray-400 mt-1.5">
+                  Available: <span id="wire-available" class="font-semibold text-gray-700">$0.00</span>
+                </p>
+              </div>
+              <div>
+                <label class="field-label">Purpose of Payment *</label>
+                <input type="text" id="wire-note" placeholder="e.g. Business payment, Family support" class="input-field"/>
+              </div>
+              <div class="bg-amber-50 border border-amber-100 rounded-xl p-3">
+                <p class="text-xs text-amber-700">
+                  ⚠️ Funds will be <strong>held immediately</strong> from your balance and released upon approval. Wire transfers are subject to review.
+                </p>
+              </div>
+              <button id="wire-btn" class="btn-primary">Submit Wire Transfer</button>
+            </div>
+          </div>
+
+          <!-- ── BANK TRANSFER ── -->
+          <div id="form-bank" class="hidden">
+            <div class="bg-green-50 border border-green-100 rounded-xl p-4 mb-5">
+              <p class="text-xs text-green-700 font-semibold mb-1">🏦 Domestic Bank Transfer</p>
+              <p class="text-xs text-green-600">Funds are held immediately. Transfers typically take 2-5 business days to process after approval.</p>
+            </div>
+            <div class="space-y-4">
+              <div>
+                <label class="field-label">Recipient Full Name *</label>
+                <input type="text" id="bank-name" placeholder="John Smith" class="input-field"/>
+              </div>
+              <div>
+                <label class="field-label">Recipient Bank Name *</label>
+                <input type="text" id="bank-bank" placeholder="e.g. Chase, Bank of America, Wells Fargo" class="input-field"/>
+              </div>
+              <div>
+                <label class="field-label">Recipient Account Number *</label>
+                <input type="text" id="bank-account" placeholder="Account number" class="input-field"/>
+              </div>
+              <div>
+                <label class="field-label">Routing Number *</label>
+                <input type="text" id="bank-routing" placeholder="9-digit routing number"
+                  maxlength="9" class="input-field" style="font-family:monospace;"/>
+                <p class="text-xs text-gray-400 mt-1">9-digit ABA routing number found on checks</p>
+              </div>
+              <div>
+                <label class="field-label">Account Type *</label>
+                <select id="bank-account-type" class="input-field">
+                  <option value="checking">Checking Account</option>
+                  <option value="savings">Savings Account</option>
+                </select>
+              </div>
+              <div>
+                <label class="field-label">Amount *</label>
+                <div class="relative">
+                  <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                  <input type="number" id="bank-amount" placeholder="0.00" class="input-field" style="padding-left:28px;"/>
+                </div>
+                <p class="text-xs text-gray-400 mt-1.5">
+                  Available: <span id="bank-available" class="font-semibold text-gray-700">$0.00</span>
+                </p>
+              </div>
+              <div>
+                <label class="field-label">Purpose of Payment *</label>
+                <input type="text" id="bank-note" placeholder="e.g. Rent payment, Invoice #1234" class="input-field"/>
+              </div>
+              <div class="bg-amber-50 border border-amber-100 rounded-xl p-3">
+                <p class="text-xs text-amber-700">
+                  ⚠️ Funds will be <strong>held immediately</strong> from your balance. Bank transfers take 2-5 business days after approval.
+                </p>
+              </div>
+              <button id="bank-btn" class="btn-primary">Submit Bank Transfer</button>
+            </div>
           </div>
         </div>
       </div>
@@ -670,7 +815,7 @@
             <div id="crypto-success" class="hidden bg-green-50 border border-green-100 text-green-600 px-4 py-3 rounded-xl mb-4 text-sm"></div>
             <div class="space-y-4">
               <div>
-                <label class="text-sm font-medium text-gray-700 mb-1.5 block">Coin</label>
+                <label class="field-label">Coin</label>
                 <select id="crypto-coin" class="input-field" onchange="updateCryptoPreview()">
                   <option value="BTC" data-price="63420">Bitcoin (BTC) — $63,420</option>
                   <option value="ETH" data-price="3290">Ethereum (ETH) — $3,290</option>
@@ -679,7 +824,7 @@
                 </select>
               </div>
               <div>
-                <label class="text-sm font-medium text-gray-700 mb-1.5 block">Action</label>
+                <label class="field-label">Action</label>
                 <div class="grid grid-cols-2 gap-2">
                   <button id="btn-buy" onclick="setCryptoAction('buy')"
                     class="py-2.5 rounded-xl text-sm font-semibold border-2 cursor-pointer"
@@ -690,7 +835,7 @@
                 </div>
               </div>
               <div>
-                <label class="text-sm font-medium text-gray-700 mb-1.5 block">Amount ($)</label>
+                <label class="field-label">Amount ($)</label>
                 <div class="relative">
                   <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
                   <input type="number" id="crypto-amount" placeholder="0.00"
@@ -799,23 +944,23 @@
             </div>
             <div class="space-y-4">
               <div>
-                <label class="text-sm font-medium text-gray-700 mb-1.5 block">Card Number</label>
+                <label class="field-label">Card Number</label>
                 <input type="text" id="ext-card-number" placeholder="1234 5678 9012 3456"
                   maxlength="19" class="input-field" oninput="formatCardNumber(this)"/>
               </div>
               <div class="grid grid-cols-2 gap-3">
                 <div>
-                  <label class="text-sm font-medium text-gray-700 mb-1.5 block">Expiry</label>
+                  <label class="field-label">Expiry</label>
                   <input type="text" id="ext-card-expiry" placeholder="MM/YY"
                     maxlength="5" class="input-field" oninput="formatExpiry(this)"/>
                 </div>
                 <div>
-                  <label class="text-sm font-medium text-gray-700 mb-1.5 block">CVV</label>
+                  <label class="field-label">CVV</label>
                   <input type="password" id="ext-card-cvv" placeholder="•••" maxlength="3" class="input-field"/>
                 </div>
               </div>
               <div>
-                <label class="text-sm font-medium text-gray-700 mb-1.5 block">Name on Card</label>
+                <label class="field-label">Name on Card</label>
                 <input type="text" id="ext-card-name" placeholder="John Doe" class="input-field"/>
               </div>
               <div class="flex items-center gap-2">
@@ -887,11 +1032,11 @@
             </div>
             <div class="space-y-4">
               <div>
-                <label class="text-sm font-medium text-gray-700 mb-1.5 block">Account / Meter No.</label>
+                <label class="field-label">Account / Meter No.</label>
                 <input type="text" id="bill-account" placeholder="Enter account number" class="input-field"/>
               </div>
               <div>
-                <label class="text-sm font-medium text-gray-700 mb-1.5 block">Amount ($)</label>
+                <label class="field-label">Amount ($)</label>
                 <div class="relative">
                   <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
                   <input type="number" id="bill-amount" placeholder="0.00" class="input-field" style="padding-left:28px;"/>
@@ -959,7 +1104,7 @@
             </div>
             <div class="space-y-4">
               <div>
-                <label class="text-sm font-medium text-gray-700 mb-1.5 block">Loan Amount ($)</label>
+                <label class="field-label">Loan Amount ($)</label>
                 <div class="relative">
                   <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
                   <input type="number" id="loan-amount" placeholder="0.00" class="input-field"
@@ -967,7 +1112,7 @@
                 </div>
               </div>
               <div>
-                <label class="text-sm font-medium text-gray-700 mb-1.5 block">Repayment Period</label>
+                <label class="field-label">Repayment Period</label>
                 <select id="loan-period" class="input-field" onchange="updateLoanPreview()">
                   <option value="6">6 months</option>
                   <option value="12" selected>12 months</option>
@@ -1063,6 +1208,12 @@
                 <button onclick="copyAccountNumber()" class="text-xs text-indigo-600 font-medium flex items-center gap-1">
                   <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy
                 </button>
+              </div>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-1.5 block">Routing Number</label>
+              <div class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
+                <span class="text-sm font-mono text-gray-700">082637291</span>
               </div>
             </div>
             <div>
@@ -1170,98 +1321,139 @@
       }
     })
 
-    // ── TRANSACTION MODAL ─────────────────
-  window.openTransactionModal = function(index) {
-  const tx = window._currentTxList?.[index]
-  if (!tx) return
-
-  const isSender = tx.sender_id === currentUser.id
-  const isSelf = tx.sender_id === currentUser.id && tx.receiver_id === currentUser.id
-
-  // Label
-  let label = ''
-  if (tx.admin_created) {
-    label = isSender ? (tx.receiver_name || 'Bank Transfer') : (tx.sender_name || 'Bank Transfer')
-  } else if (isSelf) {
-    label = tx.note || 'Transfer'
-  } else if (isSender) {
-    label = `To ${tx.receiver?.full_name || 'Unknown'}`
-  } else {
-    label = `From ${tx.sender?.full_name || 'Unknown'}`
-  }
-
-  const amountColor = isSender && !isSelf ? '#ef4444' : '#22c55e'
-  const amountPrefix = isSender && !isSelf ? '-' : '+'
-  const iconBg = isSender && !isSelf ? '#fff1f2' : '#f0fdf4'
-  const iconColor = isSender && !isSelf ? '#ef4444' : '#22c55e'
-  const iconName = isSender && !isSelf ? 'arrow-up-right' : 'arrow-down-left'
-
-  const statusColors = { completed:'#16a34a', pending:'#d97706', failed:'#ef4444' }
-  const statusLabels = { completed:'✅ Completed', pending:'⏳ Pending', failed:'❌ Failed' }
-  const status = tx.status || 'completed'
-
-  const fullDate = new Date(tx.created_at).toLocaleDateString('en-US', {
-    weekday:'short', month:'long', day:'numeric', year:'numeric'
-  })
-  const fullTime = new Date(tx.created_at).toLocaleTimeString('en-US', {
-    hour:'2-digit', minute:'2-digit'
-  })
-
-  // From / To with account numbers
-  let fromName, fromAcct, toName, toAcct
-
-  if (tx.admin_created) {
-    if (isSender) {
-      // Debit — user sent
-      fromName = tx.sender_name || currentProfile?.full_name || 'You'
-      fromAcct = tx.sender_account || '—'
-      toName = tx.receiver_name || 'Unknown'
-      toAcct = tx.receiver_account || '—'
-    } else {
-      // Credit — user received
-      fromName = tx.sender_name || 'Unknown'
-      fromAcct = tx.sender_account || '—'
-      toName = tx.receiver_name || currentProfile?.full_name || 'You'
-      toAcct = tx.receiver_account || '—'
+    // ── TRANSFER TABS ─────────────────────
+    window.switchTransferTab = function(tab) {
+      ;['instant','wire','bank'].forEach(t => {
+        document.getElementById('tab-' + t).classList.toggle('active', t === tab)
+        document.getElementById('form-' + t).classList.toggle('hidden', t !== tab)
+      })
+      // Clear messages
+      document.getElementById('transfer-error').classList.add('hidden')
+      document.getElementById('transfer-success').classList.add('hidden')
     }
-  } else {
-    fromName = tx.sender?.full_name || 'Unknown'
-    fromAcct = '—'
-    toName = tx.receiver?.full_name || 'Unknown'
-    toAcct = '—'
-  }
 
-  const txId = 'TXN-' + tx.id.replace(/-/g,'').substring(0,8).toUpperCase()
+    // ── TRANSACTION MODAL ─────────────────
+    window.openTransactionModal = function(index) {
+      const tx = window._currentTxList?.[index]
+      if (!tx) return
 
-  document.getElementById('tx-modal-icon').style.background = iconBg
-  document.getElementById('tx-modal-icon').innerHTML =
-    `<i data-lucide="${iconName}" style="width:24px;height:24px;color:${iconColor};"></i>`
-  document.getElementById('tx-modal-amount').textContent =
-    `${amountPrefix}$${parseFloat(tx.amount).toFixed(2)}`
-  document.getElementById('tx-modal-amount').style.color = amountColor
-  document.getElementById('tx-modal-label').textContent = label
-  document.getElementById('tx-modal-status').textContent = statusLabels[status] || status
-  document.getElementById('tx-modal-status').style.color = statusColors[status] || '#94a3b8'
-  document.getElementById('tx-modal-date').textContent = `${fullDate} at ${fullTime}`
-  document.getElementById('tx-modal-type').textContent =
-    tx.admin_created ? (tx.category || 'Bank Transaction') :
-    isSelf ? 'Internal Transfer' :
-    isSender ? 'Outgoing Transfer' : 'Incoming Transfer'
-  document.getElementById('tx-modal-from').textContent =
-    fromAcct !== '—' ? `${fromName} · Acc: ${fromAcct}` : fromName
-  document.getElementById('tx-modal-to').textContent =
-    toAcct !== '—' ? `${toName} · Acc: ${toAcct}` : toName
-  document.getElementById('tx-modal-note').textContent = tx.note || '—'
+      const isSender = tx.sender_id === currentUser.id
+      const isSelf = tx.sender_id === currentUser.id && tx.receiver_id === currentUser.id
 
-  // Add transaction ID to modal — find the note row and add ID above it
-  const txIdEl = document.getElementById('tx-modal-txid')
-  if (txIdEl) txIdEl.textContent = txId
+      let label = ''
+      if (tx.admin_created) {
+        label = isSender ? (tx.receiver_name || 'Bank Transfer') : (tx.sender_name || 'Bank Transfer')
+      } else if (tx.transfer_type === 'wire' || tx.transfer_type === 'bank') {
+        label = tx.recipient_name || 'External Transfer'
+      } else if (isSelf) {
+        label = tx.note || 'Transfer'
+      } else if (isSender) {
+        label = `To ${tx.receiver?.full_name || 'Unknown'}`
+      } else {
+        label = `From ${tx.sender?.full_name || 'Unknown'}`
+      }
 
-  const modal = document.getElementById('tx-modal')
-  modal.style.display = 'flex'
-  document.body.style.overflow = 'hidden'
-  lucide.createIcons()
-}
+      const amountColor = isSender && !isSelf ? '#ef4444' : '#22c55e'
+      const amountPrefix = isSender && !isSelf ? '-' : '+'
+      const iconBg = isSender && !isSelf ? '#fff1f2' : '#f0fdf4'
+      const iconColor = isSender && !isSelf ? '#ef4444' : '#22c55e'
+      const iconName = isSender && !isSelf ? 'arrow-up-right' : 'arrow-down-left'
+
+      const statusColors = { completed:'#16a34a', pending:'#d97706', failed:'#ef4444' }
+      const statusLabels = { completed:'✅ Completed', pending:'⏳ Pending — Awaiting Approval', failed:'❌ Failed' }
+      const status = tx.status || 'completed'
+
+      const fullDate = new Date(tx.created_at).toLocaleDateString('en-US', {
+        weekday:'short', month:'long', day:'numeric', year:'numeric'
+      })
+      const fullTime = new Date(tx.created_at).toLocaleTimeString('en-US', {
+        hour:'2-digit', minute:'2-digit'
+      })
+
+      let fromName, fromAcct, toName, toAcct
+
+      if (tx.admin_created) {
+        if (isSender) {
+          fromName = tx.sender_name || currentProfile?.full_name || 'You'
+          fromAcct = tx.sender_account || '—'
+          toName = tx.receiver_name || 'Unknown'
+          toAcct = tx.receiver_account || '—'
+        } else {
+          fromName = tx.sender_name || 'Unknown'
+          fromAcct = tx.sender_account || '—'
+          toName = tx.receiver_name || currentProfile?.full_name || 'You'
+          toAcct = tx.receiver_account || '—'
+        }
+      } else if (tx.transfer_type === 'wire' || tx.transfer_type === 'bank') {
+        fromName = tx.sender?.full_name || currentProfile?.full_name || 'You'
+        fromAcct = window._acctNum || '—'
+        toName = tx.recipient_name || 'Unknown'
+        toAcct = tx.recipient_account || '—'
+      } else {
+        fromName = tx.sender?.full_name || 'Unknown'
+        fromAcct = '—'
+        toName = tx.receiver?.full_name || 'Unknown'
+        toAcct = '—'
+      }
+
+      const txId = 'TXN-' + tx.id.replace(/-/g,'').substring(0,8).toUpperCase()
+
+      // Determine type label
+      let typeLabel = 'Transfer'
+      if (tx.transfer_type === 'wire') typeLabel = '🌐 Wire Transfer'
+      else if (tx.transfer_type === 'bank') typeLabel = '🏦 Bank Transfer'
+      else if (tx.admin_created) typeLabel = tx.category || 'Bank Transaction'
+      else if (isSelf) typeLabel = 'Internal Transfer'
+      else if (isSender) typeLabel = 'Outgoing Transfer'
+      else typeLabel = 'Incoming Transfer'
+
+      document.getElementById('tx-modal-icon').style.background = iconBg
+      document.getElementById('tx-modal-icon').innerHTML =
+        `<i data-lucide="${iconName}" style="width:24px;height:24px;color:${iconColor};"></i>`
+      document.getElementById('tx-modal-amount').textContent =
+        `${amountPrefix}$${parseFloat(tx.amount).toFixed(2)}`
+      document.getElementById('tx-modal-amount').style.color = amountColor
+      document.getElementById('tx-modal-label').textContent = label
+      document.getElementById('tx-modal-txid').textContent = txId
+      document.getElementById('tx-modal-status').textContent = statusLabels[status] || status
+      document.getElementById('tx-modal-status').style.color = statusColors[status] || '#94a3b8'
+      document.getElementById('tx-modal-date').textContent = `${fullDate} at ${fullTime}`
+      document.getElementById('tx-modal-type').textContent = typeLabel
+      document.getElementById('tx-modal-from').textContent =
+        fromAcct !== '—' ? `${fromName}\nAcc: ${fromAcct}` : fromName
+      document.getElementById('tx-modal-to').textContent =
+        toAcct !== '—' ? `${toName}\nAcc: ${toAcct}` : toName
+      document.getElementById('tx-modal-note').textContent = tx.note || '—'
+
+      // Show bank/swift rows for wire/bank transfers
+      const bankRow = document.getElementById('tx-modal-bank-row')
+      const swiftRow = document.getElementById('tx-modal-swift-row')
+      const routingRow = document.getElementById('tx-modal-routing-row')
+
+      if (tx.transfer_type === 'wire') {
+        bankRow.style.display = 'flex'
+        swiftRow.style.display = 'flex'
+        routingRow.style.display = 'none'
+        document.getElementById('tx-modal-bank').textContent = tx.recipient_bank || '—'
+        document.getElementById('tx-modal-swift').textContent = tx.swift_code || '—'
+        document.getElementById('tx-modal-swift-label').textContent = 'SWIFT/BIC'
+      } else if (tx.transfer_type === 'bank') {
+        bankRow.style.display = 'flex'
+        swiftRow.style.display = 'none'
+        routingRow.style.display = 'flex'
+        document.getElementById('tx-modal-bank').textContent = tx.recipient_bank || '—'
+        document.getElementById('tx-modal-routing').textContent = tx.routing_number || '—'
+      } else {
+        bankRow.style.display = 'none'
+        swiftRow.style.display = 'none'
+        routingRow.style.display = 'none'
+      }
+
+      const modal = document.getElementById('tx-modal')
+      modal.style.display = 'flex'
+      document.body.style.overflow = 'hidden'
+      lucide.createIcons()
+    }
 
     window.closeTxModal = function() {
       document.getElementById('tx-modal').style.display = 'none'
@@ -1274,19 +1466,14 @@
 
     // ── KYC PROTECTION ────────────────────
     window.handleProtectedAction = function(action) {
-      if (currentProfile?.is_suspended) {
-        showSuspendedModal(); return
-      }
-      if (kycStatus === 'verified') {
-        showSection(action); return
-      }
+      if (currentProfile?.is_suspended) { showSuspendedModal(); return }
+      if (kycStatus === 'verified') { showSection(action); return }
       pendingAction = action
-      const modal = document.getElementById('kyc-modal')
       const messages = {
-        transfer: 'To send money, you need to verify your identity first.',
-        cards: 'To access cards, you need to verify your identity first.',
-        bills: 'To pay bills, you need to verify your identity first.',
-        loans: 'To apply for loans, you need to verify your identity first.'
+        transfer:'To send money, you need to verify your identity first.',
+        cards:'To access cards, you need to verify your identity first.',
+        bills:'To pay bills, you need to verify your identity first.',
+        loans:'To apply for loans, you need to verify your identity first.'
       }
       document.getElementById('kyc-modal-message').textContent =
         messages[action] || 'To access this feature, please verify your identity.'
@@ -1301,18 +1488,17 @@
       } else {
         document.getElementById('kyc-modal-unverified').classList.remove('hidden')
       }
-      modal.classList.remove('hidden')
+      document.getElementById('kyc-modal').classList.remove('hidden')
     }
 
     function showSuspendedModal() {
-      const modal = document.getElementById('kyc-modal')
       document.getElementById('kyc-modal-message').textContent =
         'Your account has been suspended. Please contact support for assistance.'
       document.getElementById('kyc-modal-unverified').classList.add('hidden')
       document.getElementById('kyc-modal-pending').classList.add('hidden')
       document.getElementById('kyc-modal-rejected').classList.add('hidden')
       document.getElementById('kyc-modal-suspended').classList.remove('hidden')
-      modal.classList.remove('hidden')
+      document.getElementById('kyc-modal').classList.remove('hidden')
     }
 
     window.closeKycModal = function() {
@@ -1343,7 +1529,7 @@
           bg:'#fffbeb', border:'#fde68a', text:'#92400e',
           icon:'alert-triangle', iconColor:'#d97706',
           message:'Complete identity verification to unlock full banking features.',
-          action:`<a href="kyc.html" style="color:#d97706;font-weight:700;text-decoration:none;white-space:nowrap;margin-left:4px;">Verify Now →</a>`
+          action:`<a href="kyc.html" style="color:#d97706;font-weight:700;text-decoration:none;margin-left:4px;">Verify Now →</a>`
         },
         pending: {
           bg:'#eff6ff', border:'#bfdbfe', text:'#1e40af',
@@ -1354,8 +1540,8 @@
         rejected: {
           bg:'#fff1f2', border:'#fecdd3', text:'#9f1239',
           icon:'x-circle', iconColor:'#ef4444',
-          message:`Verification failed${rejectionReason ? ': ' + rejectionReason : ''}. Please resubmit your documents.`,
-          action:`<a href="kyc.html" style="color:#ef4444;font-weight:700;text-decoration:none;white-space:nowrap;margin-left:4px;">Resubmit →</a>`
+          message:`Verification failed${rejectionReason ? ': ' + rejectionReason : ''}. Please resubmit.`,
+          action:`<a href="kyc.html" style="color:#ef4444;font-weight:700;text-decoration:none;margin-left:4px;">Resubmit →</a>`
         }
       }
       const config = configs[status] || configs.unverified
@@ -1395,6 +1581,7 @@
       await loadTransactions()
       loadCryptoPortfolio()
       checkReturnFromKYC()
+      setupTransferButtons()
     }
 
     // ── PROFILE ───────────────────────────
@@ -1405,13 +1592,12 @@
       currentProfile = profile
       kycStatus = profile.kyc_status || 'unverified'
 
-      // Suspended banner
       if (profile.is_suspended) {
         const suspBanner = document.createElement('div')
         suspBanner.style.cssText = 'background:#fff1f2;border-bottom:1px solid #fecdd3;padding:12px 20px;text-align:center;font-size:13px;color:#9f1239;display:flex;align-items:center;justify-content:center;gap:8px;'
         suspBanner.innerHTML = `
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
-          <span><strong>Your account has been suspended.</strong> Please contact <a href="mailto:support@silvercrestfin.com" style="color:#4f46e5;font-weight:600;">support@silvercrestfin.com</a></span>
+          <span><strong>Your account has been suspended.</strong> Contact <a href="mailto:support@silvercrestfin.com" style="color:#4f46e5;font-weight:600;">support@silvercrestfin.com</a></span>
         `
         document.body.insertBefore(suspBanner, document.body.firstChild)
       }
@@ -1436,6 +1622,8 @@
       document.getElementById('acct-number').textContent = acctNum
       document.getElementById('account-number-display').textContent = acctNum
       document.getElementById('available-balance-transfer').textContent = bal
+      document.getElementById('wire-available').textContent = bal
+      document.getElementById('bank-available').textContent = bal
       document.getElementById('profile-avatar').textContent = initial
       document.getElementById('profile-name').textContent = name
       document.getElementById('profile-email').textContent = profile.email
@@ -1451,7 +1639,6 @@
       document.getElementById('virtual-card-number').textContent = `•••• •••• •••• ${last4}`
       window._acctNum = acctNumRaw
 
-      // KYC Badge
       const kycBadgeConfigs = {
         unverified: { bg:'#fffbeb', color:'#d97706', icon:'alert-circle', text:'Unverified' },
         pending: { bg:'#eff6ff', color:'#3b82f6', icon:'clock', text:'KYC Pending' },
@@ -1470,7 +1657,6 @@
 
       renderKYCBanner(kycStatus, profile.kyc_rejection_reason)
 
-      // Crypto portfolio
       const cryptoSaved = JSON.parse(localStorage.getItem('sc_crypto_' + currentUser.id) || '{}')
       const cryptoPrices = { BTC:63420, ETH:3290, SOL:142, BNB:580 }
       const totalCrypto = Object.entries(cryptoSaved).reduce((sum, [coin, amt]) =>
@@ -1485,160 +1671,283 @@
     }
 
     // ── TRANSACTIONS ──────────────────────
-async function loadTransactions() {
-  const { data: txs } = await supabase
-    .from('transactions')
-    .select('*, sender:sender_id(full_name,email,is_admin), receiver:receiver_id(full_name,email,is_admin)')
-    .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
-    .order('created_at', { ascending: false })
+    async function loadTransactions() {
+      const { data: txs } = await supabase
+        .from('transactions')
+        .select('*, sender:sender_id(full_name,email,is_admin), receiver:receiver_id(full_name,email,is_admin)')
+        .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
+        .order('created_at', { ascending: false })
 
-  // Filter out admin self-transactions (balance adjustments)
-  allTransactions = (txs || []).filter(tx => {
-    if (tx.admin_created && tx.sender_id === tx.receiver_id) return false
-    if (tx.admin_created && tx.sender?.is_admin && tx.receiver?.is_admin) return false
-    return true
-  })
+      allTransactions = (txs || []).filter(tx => {
+        if (tx.admin_created && tx.sender_id === tx.receiver_id) return false
+        if (tx.admin_created && tx.sender?.is_admin && tx.receiver?.is_admin) return false
+        return true
+      })
 
-  renderTransactions(allTransactions, 'recent-tx-list', 5)
-  renderTransactions(allTransactions, 'all-tx-list')
-}
-
-    function renderTransactions(txs, containerId, limit = null) {
-  const container = document.getElementById(containerId)
-  const list = limit ? txs.slice(0, limit) : txs
-  if (!list.length) {
-    container.innerHTML = `
-      <div style="text-align:center;padding:32px 0;">
-        <i data-lucide="inbox" style="width:32px;height:32px;color:#e2e8f0;margin:0 auto 8px;display:block;"></i>
-        <p style="color:#94a3b8;font-size:14px;">No transactions yet</p>
-      </div>`
-    lucide.createIcons(); return
-  }
-
-  window._currentTxList = list
-
-  container.innerHTML = list.map((tx, index) => {
-    const isSender = tx.sender_id === currentUser.id
-    const isSelf = tx.sender_id === currentUser.id && tx.receiver_id === currentUser.id
-
-    // Display label — use custom names for admin-created
-    let label = ''
-    if (tx.admin_created) {
-      if (isSender) {
-        // Debit — user is sender
-        label = tx.receiver_name || 'Bank Transfer'
-      } else {
-        // Credit — user is receiver
-        label = tx.sender_name || 'Bank Transfer'
-      }
-    } else if (isSelf) {
-      label = tx.note || 'Transfer'
-    } else if (isSender) {
-      label = `To ${tx.receiver?.full_name || 'Unknown'}`
-    } else {
-      label = `From ${tx.sender?.full_name || 'Unknown'}`
+      renderTransactions(allTransactions, 'recent-tx-list', 5)
+      renderTransactions(allTransactions, 'all-tx-list')
     }
 
-    const amountColor = isSender && !isSelf ? '#ef4444' : '#22c55e'
-    const amountPrefix = isSender && !isSelf ? '-' : '+'
-    const iconBg = isSender && !isSelf ? '#fff1f2' : '#f0fdf4'
-    const iconColor = isSender && !isSelf ? '#ef4444' : '#22c55e'
-    const iconName = isSender && !isSelf ? 'arrow-up-right' : 'arrow-down-left'
+    function renderTransactions(txs, containerId, limit = null) {
+      const container = document.getElementById(containerId)
+      const list = limit ? txs.slice(0, limit) : txs
+      if (!list.length) {
+        container.innerHTML = `
+          <div style="text-align:center;padding:32px 0;">
+            <i data-lucide="inbox" style="width:32px;height:32px;color:#e2e8f0;margin:0 auto 8px;display:block;"></i>
+            <p style="color:#94a3b8;font-size:14px;">No transactions yet</p>
+          </div>`
+        lucide.createIcons(); return
+      }
 
-    const statusBadge = tx.status && tx.status !== 'completed' ?
-      `<span style="font-size:10px;font-weight:600;color:${tx.status === 'pending' ? '#d97706' : '#ef4444'};margin-left:4px;">
-        ${tx.status.toUpperCase()}
-      </span>` : ''
+      window._currentTxList = list
 
-    const date = new Date(tx.created_at).toLocaleDateString('en-US', {
-      month:'short', day:'numeric', year:'numeric'
-    })
+      container.innerHTML = list.map((tx, index) => {
+        const isSender = tx.sender_id === currentUser.id
+        const isSelf = tx.sender_id === currentUser.id && tx.receiver_id === currentUser.id
 
-    const txId = 'TXN-' + tx.id.replace(/-/g,'').substring(0,8).toUpperCase()
+        let label = ''
+        if (tx.admin_created) {
+          label = isSender ? (tx.receiver_name || 'Bank Transaction') : (tx.sender_name || 'Bank Transaction')
+        } else if (tx.transfer_type === 'wire') {
+          label = `Wire Transfer → ${tx.recipient_name || 'Unknown'}`
+        } else if (tx.transfer_type === 'bank') {
+          label = `Bank Transfer → ${tx.recipient_name || 'Unknown'}`
+        } else if (isSelf) {
+          label = tx.note || 'Transfer'
+        } else if (isSender) {
+          label = `To ${tx.receiver?.full_name || 'Unknown'}`
+        } else {
+          label = `From ${tx.sender?.full_name || 'Unknown'}`
+        }
 
-    return `
-      <div class="tx-item" onclick="openTransactionModal(${index})">
-        <div class="tx-icon" style="background:${iconBg};">
-          <i data-lucide="${iconName}" style="width:16px;height:16px;color:${iconColor};"></i>
-        </div>
-        <div style="flex:1;min-width:0;">
-          <div style="display:flex;align-items:center;gap:4px;">
-            <p style="font-size:13px;font-weight:600;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-              ${label}
-            </p>
-            ${statusBadge}
-          </div>
-          <p style="font-size:11px;color:#94a3b8;margin-top:2px;">${date}</p>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-          <span style="font-size:13px;font-weight:700;color:${amountColor};">
-            ${amountPrefix}$${parseFloat(tx.amount).toFixed(2)}
-          </span>
-          <i data-lucide="chevron-right" style="width:14px;height:14px;color:#cbd5e1;"></i>
-        </div>
-      </div>`
-  }).join('')
+        const amountColor = isSender && !isSelf ? '#ef4444' : '#22c55e'
+        const amountPrefix = isSender && !isSelf ? '-' : '+'
+        const iconBg = isSender && !isSelf ? '#fff1f2' : '#f0fdf4'
+        const iconColor = isSender && !isSelf ? '#ef4444' : '#22c55e'
+        const iconName = isSender && !isSelf ? 'arrow-up-right' : 'arrow-down-left'
 
-  lucide.createIcons()
-}
+        const status = tx.status || 'completed'
+        const statusBadge = status !== 'completed' ?
+          `<span style="font-size:10px;font-weight:600;color:${status === 'pending' ? '#d97706' : '#ef4444'};margin-left:4px;">
+            ${status.toUpperCase()}
+          </span>` : ''
+
+        const date = new Date(tx.created_at).toLocaleDateString('en-US', {
+          month:'short', day:'numeric', year:'numeric'
+        })
+
+        return `
+          <div class="tx-item" onclick="openTransactionModal(${index})">
+            <div class="tx-icon" style="background:${iconBg};">
+              <i data-lucide="${iconName}" style="width:16px;height:16px;color:${iconColor};"></i>
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="display:flex;align-items:center;gap:4px;">
+                <p style="font-size:13px;font-weight:600;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                  ${label}
+                </p>
+                ${statusBadge}
+              </div>
+              <p style="font-size:11px;color:#94a3b8;margin-top:2px;">${date}</p>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+              <span style="font-size:13px;font-weight:700;color:${amountColor};">
+                ${amountPrefix}$${parseFloat(tx.amount).toFixed(2)}
+              </span>
+              <i data-lucide="chevron-right" style="width:14px;height:14px;color:#cbd5e1;"></i>
+            </div>
+          </div>`
+      }).join('')
+
+      lucide.createIcons()
+    }
 
     window.filterTransactions = function() {
       const q = document.getElementById('tx-search').value.toLowerCase()
       const filtered = allTransactions.filter(tx =>
         (tx.sender?.full_name || '').toLowerCase().includes(q) ||
         (tx.receiver?.full_name || '').toLowerCase().includes(q) ||
+        (tx.recipient_name || '').toLowerCase().includes(q) ||
         (tx.note || '').toLowerCase().includes(q)
       )
       renderTransactions(filtered, 'all-tx-list')
     }
 
-    // ── SEND MONEY ────────────────────────
-    document.getElementById('transfer-btn').addEventListener('click', async () => {
-      const email = document.getElementById('recipient-email').value.trim()
-      const amount = parseFloat(document.getElementById('transfer-amount').value)
-      const note = document.getElementById('transfer-note').value.trim()
-      const errDiv = document.getElementById('transfer-error')
-      const okDiv = document.getElementById('transfer-success')
-      const btn = document.getElementById('transfer-btn')
-      errDiv.classList.add('hidden'); okDiv.classList.add('hidden')
+    // ── TRANSFER BUTTONS ──────────────────
+    function setupTransferButtons() {
 
-      if (!email || !amount || amount <= 0) {
-        errDiv.textContent = 'Please enter a valid recipient and amount.'
-        errDiv.classList.remove('hidden'); return
-      }
-      if (amount > currentProfile.balance) {
-        errDiv.textContent = 'Insufficient balance.'
-        errDiv.classList.remove('hidden'); return
-      }
-      if (email === currentProfile.email) {
-        errDiv.textContent = 'You cannot send money to yourself.'
-        errDiv.classList.remove('hidden'); return
-      }
-      btn.textContent = 'Sending...'; btn.disabled = true
+      // ── INSTANT TRANSFER ──
+      document.getElementById('instant-btn').addEventListener('click', async () => {
+        const email = document.getElementById('instant-email').value.trim()
+        const amount = parseFloat(document.getElementById('instant-amount').value)
+        const note = document.getElementById('instant-note').value.trim()
+        const errDiv = document.getElementById('transfer-error')
+        const okDiv = document.getElementById('transfer-success')
+        const btn = document.getElementById('instant-btn')
+        errDiv.classList.add('hidden'); okDiv.classList.add('hidden')
 
-      const { data: recipient } = await supabase
-        .from('profiles').select('*').eq('email', email).single()
-      if (!recipient) {
-        errDiv.textContent = 'Recipient not found.'
-        errDiv.classList.remove('hidden')
-        btn.textContent = 'Send Money'; btn.disabled = false; return
-      }
+        if (!email || !amount || amount <= 0) {
+          errDiv.textContent = 'Please enter a valid recipient and amount.'
+          errDiv.classList.remove('hidden'); return
+        }
+        if (amount > currentProfile.balance) {
+          errDiv.textContent = 'Insufficient balance.'
+          errDiv.classList.remove('hidden'); return
+        }
+        if (email === currentProfile.email) {
+          errDiv.textContent = 'You cannot send money to yourself.'
+          errDiv.classList.remove('hidden'); return
+        }
 
-      await supabase.from('profiles').update({ balance: currentProfile.balance - amount }).eq('id', currentUser.id)
-      await supabase.from('profiles').update({ balance: recipient.balance + amount }).eq('id', recipient.id)
-      await supabase.from('transactions').insert({
-        sender_id: currentUser.id, receiver_id: recipient.id, amount, note,
-        status: 'completed', type: 'internal'
+        btn.textContent = 'Sending...'; btn.disabled = true
+
+        const { data: recipient } = await supabase
+          .from('profiles').select('*').eq('email', email).single()
+        if (!recipient) {
+          errDiv.textContent = 'Recipient not found on SilverCrest.'
+          errDiv.classList.remove('hidden')
+          btn.textContent = 'Send Instantly ⚡'; btn.disabled = false; return
+        }
+
+        await supabase.from('profiles').update({ balance: currentProfile.balance - amount }).eq('id', currentUser.id)
+        await supabase.from('profiles').update({ balance: recipient.balance + amount }).eq('id', recipient.id)
+        await supabase.from('transactions').insert({
+          sender_id: currentUser.id, receiver_id: recipient.id,
+          amount, note, status: 'completed', transfer_type: 'internal'
+        })
+
+        okDiv.textContent = `✅ $${amount.toFixed(2)} sent to ${recipient.full_name} instantly!`
+        okDiv.classList.remove('hidden')
+        document.getElementById('instant-email').value = ''
+        document.getElementById('instant-amount').value = ''
+        document.getElementById('instant-note').value = ''
+        btn.textContent = 'Send Instantly ⚡'; btn.disabled = false
+        await loadProfile(); await loadTransactions()
       })
 
-      okDiv.textContent = `✅ $${amount.toFixed(2)} sent to ${recipient.full_name}!`
-      okDiv.classList.remove('hidden')
-      document.getElementById('recipient-email').value = ''
-      document.getElementById('transfer-amount').value = ''
-      document.getElementById('transfer-note').value = ''
-      btn.textContent = 'Send Money'; btn.disabled = false
-      await loadProfile(); await loadTransactions()
-    })
+      // ── WIRE TRANSFER ──
+      document.getElementById('wire-btn').addEventListener('click', async () => {
+        const name = document.getElementById('wire-name').value.trim()
+        const bank = document.getElementById('wire-bank').value.trim()
+        const account = document.getElementById('wire-account').value.trim()
+        const swift = document.getElementById('wire-swift').value.trim().toUpperCase()
+        const bankAddress = document.getElementById('wire-bank-address').value.trim()
+        const country = document.getElementById('wire-country').value.trim()
+        const amount = parseFloat(document.getElementById('wire-amount').value)
+        const note = document.getElementById('wire-note').value.trim()
+        const errDiv = document.getElementById('transfer-error')
+        const okDiv = document.getElementById('transfer-success')
+        const btn = document.getElementById('wire-btn')
+        errDiv.classList.add('hidden'); okDiv.classList.add('hidden')
+
+        if (!name || !bank || !account || !swift || !bankAddress || !country || !amount || !note) {
+          errDiv.textContent = 'Please fill in all required fields.'
+          errDiv.classList.remove('hidden'); return
+        }
+        if (amount > currentProfile.balance) {
+          errDiv.textContent = 'Insufficient balance.'
+          errDiv.classList.remove('hidden'); return
+        }
+
+        btn.textContent = 'Submitting...'; btn.disabled = true
+
+        // Hold funds immediately
+        await supabase.from('profiles')
+          .update({ balance: currentProfile.balance - amount })
+          .eq('id', currentUser.id)
+
+        // Create pending transaction
+        await supabase.from('transactions').insert({
+          sender_id: currentUser.id,
+          receiver_id: currentUser.id,
+          amount,
+          note,
+          status: 'pending',
+          transfer_type: 'wire',
+          recipient_name: name,
+          recipient_bank: bank,
+          recipient_account: account,
+          swift_code: swift,
+          bank_address: bankAddress,
+          recipient_country: country
+        })
+
+        okDiv.textContent = `✅ Wire transfer of $${amount.toFixed(2)} submitted! Funds held pending approval.`
+        okDiv.classList.remove('hidden')
+        document.getElementById('wire-name').value = ''
+        document.getElementById('wire-bank').value = ''
+        document.getElementById('wire-account').value = ''
+        document.getElementById('wire-swift').value = ''
+        document.getElementById('wire-bank-address').value = ''
+        document.getElementById('wire-country').value = ''
+        document.getElementById('wire-amount').value = ''
+        document.getElementById('wire-note').value = ''
+        btn.textContent = 'Submit Wire Transfer'; btn.disabled = false
+        await loadProfile(); await loadTransactions()
+      })
+
+      // ── BANK TRANSFER ──
+      document.getElementById('bank-btn').addEventListener('click', async () => {
+        const name = document.getElementById('bank-name').value.trim()
+        const bank = document.getElementById('bank-bank').value.trim()
+        const account = document.getElementById('bank-account').value.trim()
+        const routing = document.getElementById('bank-routing').value.trim()
+        const accountType = document.getElementById('bank-account-type').value
+        const amount = parseFloat(document.getElementById('bank-amount').value)
+        const note = document.getElementById('bank-note').value.trim()
+        const errDiv = document.getElementById('transfer-error')
+        const okDiv = document.getElementById('transfer-success')
+        const btn = document.getElementById('bank-btn')
+        errDiv.classList.add('hidden'); okDiv.classList.add('hidden')
+
+        if (!name || !bank || !account || !routing || !amount || !note) {
+          errDiv.textContent = 'Please fill in all required fields.'
+          errDiv.classList.remove('hidden'); return
+        }
+        if (routing.length !== 9 || !/^\d+$/.test(routing)) {
+          errDiv.textContent = 'Routing number must be exactly 9 digits.'
+          errDiv.classList.remove('hidden'); return
+        }
+        if (amount > currentProfile.balance) {
+          errDiv.textContent = 'Insufficient balance.'
+          errDiv.classList.remove('hidden'); return
+        }
+
+        btn.textContent = 'Submitting...'; btn.disabled = true
+
+        // Hold funds immediately
+        await supabase.from('profiles')
+          .update({ balance: currentProfile.balance - amount })
+          .eq('id', currentUser.id)
+
+        // Create pending transaction
+        await supabase.from('transactions').insert({
+          sender_id: currentUser.id,
+          receiver_id: currentUser.id,
+          amount,
+          note,
+          status: 'pending',
+          transfer_type: 'bank',
+          recipient_name: name,
+          recipient_bank: bank,
+          recipient_account: account,
+          routing_number: routing,
+          account_type: accountType
+        })
+
+        okDiv.textContent = `✅ Bank transfer of $${amount.toFixed(2)} submitted! Funds held pending approval. Estimated 2-5 business days.`
+        okDiv.classList.remove('hidden')
+        document.getElementById('bank-name').value = ''
+        document.getElementById('bank-bank').value = ''
+        document.getElementById('bank-account').value = ''
+        document.getElementById('bank-routing').value = ''
+        document.getElementById('bank-amount').value = ''
+        document.getElementById('bank-note').value = ''
+        btn.textContent = 'Submit Bank Transfer'; btn.disabled = false
+        await loadProfile(); await loadTransactions()
+      })
+    }
 
     // ── CRYPTO ────────────────────────────
     function loadCryptoPortfolio() {
