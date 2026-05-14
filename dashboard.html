@@ -121,6 +121,32 @@
     @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     .transfer-tab { flex: 1; padding: 10px; border: 2px solid #e2e8f0; border-radius: 12px; background: white; cursor: pointer; font-size: 13px; font-weight: 600; color: #64748b; transition: all 0.2s; text-align: center; font-family: 'Inter', sans-serif; }
     .transfer-tab.active { border-color: #4f46e5; background: #eef2ff; color: #4f46e5; }
+   .pin-key {
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 18px 10px;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1e293b;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: 'Inter', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pin-key:hover { background: #eef2ff; border-color: #c7d2fe; color: #4f46e5; transform: scale(1.05); }
+.pin-key:active { transform: scale(0.95); background: #4f46e5; color: white; border-color: #4f46e5; }
+.pin-back { background: #fff1f2; border-color: #fecdd3; }
+.pin-back:hover { background: #fee2e2; }
+@keyframes shake {
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-8px)}
+  40%{transform:translateX(8px)}
+  60%{transform:translateX(-6px)}
+  80%{transform:translateX(6px)}
+}
   </style>
 </head>
 <body style="background:#f8fafc;">
@@ -224,6 +250,97 @@
 <div id="success-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px);">
   <div style="background:white;border-radius:28px;width:90%;max-width:360px;padding:36px 28px;text-align:center;animation:modalIn 0.4s ease;">
 
+    <!-- PIN MODAL -->
+<div id="pin-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);">
+  <div style="background:white;border-radius:28px 28px 0 0;width:100%;max-width:480px;padding:32px 28px 40px;animation:slideUp 0.3s ease;">
+
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;">
+      <div>
+        <h3 style="font-size:18px;font-weight:800;color:#1e293b;margin:0 0 4px;">Confirm Transaction</h3>
+        <p style="font-size:13px;color:#94a3b8;margin:0;">Enter your 4-digit transaction PIN</p>
+      </div>
+      <button onclick="closePinModal()" style="width:36px;height:36px;background:#f1f5f9;border:none;border-radius:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+        <i data-lucide="x" class="w-4 h-4 text-gray-500"></i>
+      </button>
+    </div>
+
+    <!-- PIN dots -->
+    <div style="display:flex;justify-content:center;gap:16px;margin-bottom:12px;">
+      <div id="pin-dot-0" style="width:18px;height:18px;border-radius:50%;background:#e2e8f0;transition:all 0.2s;"></div>
+      <div id="pin-dot-1" style="width:18px;height:18px;border-radius:50%;background:#e2e8f0;transition:all 0.2s;"></div>
+      <div id="pin-dot-2" style="width:18px;height:18px;border-radius:50%;background:#e2e8f0;transition:all 0.2s;"></div>
+      <div id="pin-dot-3" style="width:18px;height:18px;border-radius:50%;background:#e2e8f0;transition:all 0.2s;"></div>
+    </div>
+
+    <!-- Error message -->
+    <p id="pin-error" style="display:none;text-align:center;font-size:13px;color:#ef4444;font-weight:600;margin-bottom:12px;"></p>
+    <p id="pin-attempts" style="text-align:center;font-size:12px;color:#94a3b8;margin-bottom:24px;min-height:18px;"></p>
+
+    <!-- CashApp style keypad -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:280px;margin:0 auto;">
+      <button class="pin-key" onclick="pinInput('1')">1</button>
+      <button class="pin-key" onclick="pinInput('2')">2</button>
+      <button class="pin-key" onclick="pinInput('3')">3</button>
+      <button class="pin-key" onclick="pinInput('4')">4</button>
+      <button class="pin-key" onclick="pinInput('5')">5</button>
+      <button class="pin-key" onclick="pinInput('6')">6</button>
+      <button class="pin-key" onclick="pinInput('7')">7</button>
+      <button class="pin-key" onclick="pinInput('8')">8</button>
+      <button class="pin-key" onclick="pinInput('9')">9</button>
+      <div></div>
+      <button class="pin-key" onclick="pinInput('0')">0</button>
+      <button class="pin-key pin-back" onclick="pinBackspace()">
+        <i data-lucide="delete" style="width:20px;height:20px;"></i>
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- SET PIN MODAL -->
+<div id="set-pin-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);">
+  <div style="background:white;border-radius:28px 28px 0 0;width:100%;max-width:480px;padding:32px 28px 40px;animation:slideUp 0.3s ease;">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <h3 id="set-pin-title" style="font-size:18px;font-weight:800;color:#1e293b;margin:0;">Set Transaction PIN</h3>
+      <button onclick="closeSetPinModal()" style="width:36px;height:36px;background:#f1f5f9;border:none;border-radius:12px;cursor:pointer;">
+        <i data-lucide="x" class="w-4 h-4 text-gray-500"></i>
+      </button>
+    </div>
+    <p id="set-pin-subtitle" style="font-size:13px;color:#94a3b8;margin:0 0 28px;">Choose a 4-digit PIN for authorizing transactions</p>
+
+    <!-- PIN dots -->
+    <div style="display:flex;justify-content:center;gap:16px;margin-bottom:12px;">
+      <div id="set-pin-dot-0" style="width:18px;height:18px;border-radius:50%;background:#e2e8f0;transition:all 0.2s;"></div>
+      <div id="set-pin-dot-1" style="width:18px;height:18px;border-radius:50%;background:#e2e8f0;transition:all 0.2s;"></div>
+      <div id="set-pin-dot-2" style="width:18px;height:18px;border-radius:50%;background:#e2e8f0;transition:all 0.2s;"></div>
+      <div id="set-pin-dot-3" style="width:18px;height:18px;border-radius:50%;background:#e2e8f0;transition:all 0.2s;"></div>
+    </div>
+
+    <p id="set-pin-error" style="display:none;text-align:center;font-size:13px;color:#ef4444;font-weight:600;margin-bottom:12px;"></p>
+    <p id="set-pin-step-label" style="text-align:center;font-size:12px;color:#94a3b8;margin-bottom:24px;">Step 1 of 2: Enter new PIN</p>
+
+    <!-- Keypad -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:280px;margin:0 auto;">
+      <button class="pin-key" onclick="setPinInput('1')">1</button>
+      <button class="pin-key" onclick="setPinInput('2')">2</button>
+      <button class="pin-key" onclick="setPinInput('3')">3</button>
+      <button class="pin-key" onclick="setPinInput('4')">4</button>
+      <button class="pin-key" onclick="setPinInput('5')">5</button>
+      <button class="pin-key" onclick="setPinInput('6')">6</button>
+      <button class="pin-key" onclick="setPinInput('7')">7</button>
+      <button class="pin-key" onclick="setPinInput('8')">8</button>
+      <button class="pin-key" onclick="setPinInput('9')">9</button>
+      <div></div>
+      <button class="pin-key" onclick="setPinInput('0')">0</button>
+      <button class="pin-key pin-back" onclick="setPinBackspace()">
+        <i data-lucide="delete" style="width:20px;height:20px;"></i>
+      </button>
+    </div>
+
+  </div>
+</div>
     <!-- Animated checkmark -->
     <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#22c55e,#16a34a);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;box-shadow:0 8px 32px rgba(34,197,94,0.35);">
       <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
@@ -1058,12 +1175,26 @@
             </div>
           </div>
           <div>
-            <label class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-1.5 block">KYC Status</label>
-            <div class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 flex items-center justify-between">
-              <span id="profile-kyc-status" class="text-sm text-gray-700">Loading...</span>
-              <a href="kyc.html" id="profile-kyc-link" class="hidden text-xs text-indigo-600 font-medium">Verify now</a>
-            </div>
-          </div>
+  <label class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-1.5 block">KYC Status</label>
+  <div class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 flex items-center justify-between">
+    <span id="profile-kyc-status" class="text-sm text-gray-700">Loading...</span>
+    <a href="kyc.html" id="profile-kyc-link" class="hidden text-xs text-indigo-600 font-medium">Verify now</a>
+  </div>
+</div>
+
+<div>
+  <label class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-1.5 block">Transaction PIN</label>
+  <div class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <i data-lucide="lock" class="w-4 h-4 text-gray-400"></i>
+      <span id="profile-pin-status" class="text-sm text-gray-700">Loading...</span>
+    </div>
+    <button id="profile-pin-btn" onclick="openSetPinModal(null)"
+      class="text-xs text-indigo-600 font-semibold px-3 py-1.5 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition">
+      Set PIN
+    </button>
+  </div>
+</div>
         </div>
       </div>
     </div>
@@ -1378,6 +1509,218 @@ window.closeSuccessModal = function() {
   document.getElementById('success-modal').style.display = 'none'
   document.body.style.overflow = ''
 }
+// PIN SYSTEM
+var currentPin = ''
+var pinAttempts = 0
+var pinLocked = false
+var pinCallback = null
+
+var setPinCurrent = ''
+var setPinFirst = ''
+var setPinStep = 1
+
+window.showPinModal = function(callback) {
+  if (!currentProfile.transaction_pin) {
+    window.openSetPinModal(function() {
+      window.showPinModal(callback)
+    })
+    return
+  }
+  if (pinLocked) {
+    alert('Too many wrong attempts. Please wait 30 seconds.')
+    return
+  }
+  currentPin = ''
+  pinAttempts = 0
+  pinCallback = callback
+  updatePinDots('pin-dot', currentPin)
+  document.getElementById('pin-error').style.display = 'none'
+  document.getElementById('pin-attempts').textContent = ''
+  document.getElementById('pin-modal').style.display = 'flex'
+  document.body.style.overflow = 'hidden'
+  lucide.createIcons()
+}
+
+window.closePinModal = function() {
+  document.getElementById('pin-modal').style.display = 'none'
+  document.body.style.overflow = ''
+  currentPin = ''
+  pinCallback = null
+}
+
+window.pinInput = function(digit) {
+  if (currentPin.length >= 4 || pinLocked) return
+  currentPin += digit
+  updatePinDots('pin-dot', currentPin)
+  if (currentPin.length === 4) {
+    setTimeout(function() { validatePin() }, 200)
+  }
+}
+
+window.pinBackspace = function() {
+  if (currentPin.length === 0) return
+  currentPin = currentPin.slice(0, -1)
+  updatePinDots('pin-dot', currentPin)
+}
+
+function validatePin() {
+  if (currentPin === currentProfile.transaction_pin) {
+    pinAttempts = 0
+    document.getElementById('pin-modal').style.display = 'none'
+    document.body.style.overflow = ''
+    var cb = pinCallback
+    currentPin = ''
+    pinCallback = null
+    if (cb) cb()
+  } else {
+    pinAttempts++
+    currentPin = ''
+    updatePinDots('pin-dot', '')
+    var dotsContainer = document.querySelector('#pin-modal .pin-dots')
+    var errEl = document.getElementById('pin-error')
+    var attEl = document.getElementById('pin-attempts')
+    errEl.textContent = 'Incorrect PIN. Try again.'
+    errEl.style.display = 'block'
+
+    // Shake dots
+    for (var i = 0; i < 4; i++) {
+      var dot = document.getElementById('pin-dot-' + i)
+      dot.style.animation = 'none'
+      dot.style.background = '#ef4444'
+      void dot.offsetWidth
+      dot.style.animation = 'shake 0.4s ease'
+    }
+    setTimeout(function() {
+      for (var i = 0; i < 4; i++) {
+        document.getElementById('pin-dot-' + i).style.background = '#e2e8f0'
+        document.getElementById('pin-dot-' + i).style.animation = ''
+      }
+    }, 600)
+
+    if (pinAttempts >= 3) {
+      pinLocked = true
+      errEl.textContent = 'Too many attempts. Locked for 30 seconds.'
+      attEl.textContent = ''
+      setTimeout(function() {
+        pinLocked = false
+        pinAttempts = 0
+        errEl.style.display = 'none'
+      }, 30000)
+    } else {
+      attEl.textContent = (3 - pinAttempts) + ' attempt' + (3 - pinAttempts === 1 ? '' : 's') + ' remaining'
+    }
+  }
+}
+
+function updatePinDots(prefix, pin) {
+  for (var i = 0; i < 4; i++) {
+    var dot = document.getElementById(prefix + '-' + i)
+    if (dot) {
+      dot.style.background = i < pin.length ? '#4f46e5' : '#e2e8f0'
+      dot.style.transform = i < pin.length ? 'scale(1.2)' : 'scale(1)'
+    }
+  }
+}
+
+// SET PIN
+window.openSetPinModal = function(callback) {
+  setPinCurrent = ''
+  setPinFirst = ''
+  setPinStep = 1
+  pinCallback = callback || null
+  updatePinDots('set-pin-dot', '')
+  document.getElementById('set-pin-title').textContent = currentProfile.transaction_pin ? 'Change Transaction PIN' : 'Set Transaction PIN'
+  document.getElementById('set-pin-subtitle').textContent = currentProfile.transaction_pin ? 'Enter a new 4-digit PIN' : 'Choose a 4-digit PIN for authorizing transactions'
+  document.getElementById('set-pin-step-label').textContent = 'Step 1 of 2: Enter new PIN'
+  document.getElementById('set-pin-error').style.display = 'none'
+  document.getElementById('set-pin-modal').style.display = 'flex'
+  document.body.style.overflow = 'hidden'
+  lucide.createIcons()
+}
+
+window.closeSetPinModal = function() {
+  document.getElementById('set-pin-modal').style.display = 'none'
+  document.body.style.overflow = ''
+  setPinCurrent = ''
+  setPinFirst = ''
+  setPinStep = 1
+}
+
+window.setPinInput = function(digit) {
+  if (setPinCurrent.length >= 4) return
+  setPinCurrent += digit
+  updatePinDots('set-pin-dot', setPinCurrent)
+  if (setPinCurrent.length === 4) {
+    setTimeout(function() { processPinStep() }, 200)
+  }
+}
+
+window.setPinBackspace = function() {
+  if (setPinCurrent.length === 0) return
+  setPinCurrent = setPinCurrent.slice(0, -1)
+  updatePinDots('set-pin-dot', setPinCurrent)
+}
+
+async function processPinStep() {
+  if (setPinStep === 1) {
+    setPinFirst = setPinCurrent
+    setPinCurrent = ''
+    setPinStep = 2
+    updatePinDots('set-pin-dot', '')
+    document.getElementById('set-pin-step-label').textContent = 'Step 2 of 2: Confirm your PIN'
+    document.getElementById('set-pin-error').style.display = 'none'
+  } else {
+    if (setPinCurrent === setPinFirst) {
+      await supabase.from('profiles').update({ transaction_pin: setPinCurrent }).eq('id', currentUser.id)
+      currentProfile.transaction_pin = setPinCurrent
+      document.getElementById('set-pin-modal').style.display = 'none'
+      document.body.style.overflow = ''
+      setPinCurrent = ''
+      setPinFirst = ''
+      setPinStep = 1
+      var cb = pinCallback
+      pinCallback = null
+      if (cb) {
+        cb()
+      } else {
+        window.showSuccessModal(
+          'PIN Set Successfully',
+          '',
+          'Your transaction PIN has been saved. You will need it to authorize all future transactions.',
+          [{ label: 'Status', value: 'Active' }]
+        )
+        // Refresh profile section
+        updateProfilePinSection()
+      }
+    } else {
+      setPinCurrent = ''
+      setPinStep = 1
+      setPinFirst = ''
+      updatePinDots('set-pin-dot', '')
+      document.getElementById('set-pin-error').textContent = 'PINs do not match. Try again.'
+      document.getElementById('set-pin-error').style.display = 'block'
+      document.getElementById('set-pin-step-label').textContent = 'Step 1 of 2: Enter new PIN'
+      for (var i = 0; i < 4; i++) {
+        var dot = document.getElementById('set-pin-dot-' + i)
+        dot.style.background = '#ef4444'
+        dot.style.animation = 'shake 0.4s ease'
+      }
+      setTimeout(function() {
+        for (var i = 0; i < 4; i++) {
+          document.getElementById('set-pin-dot-' + i).style.background = '#e2e8f0'
+          document.getElementById('set-pin-dot-' + i).style.animation = ''
+        }
+      }, 600)
+    }
+  }
+}
+
+function updateProfilePinSection() {
+  var pinStatus = document.getElementById('profile-pin-status')
+  var pinBtn = document.getElementById('profile-pin-btn')
+  if (pinStatus) pinStatus.textContent = currentProfile.transaction_pin ? 'PIN is set' : 'No PIN set'
+  if (pinBtn) pinBtn.textContent = currentProfile.transaction_pin ? 'Change PIN' : 'Set PIN'
+}
 // INIT
 async function init() {
   var result = await supabase.auth.getUser()
@@ -1454,6 +1797,12 @@ async function loadProfile() {
   document.getElementById('profile-kyc-status').textContent = kycLabels[kycStatus] || 'Unknown'
   if (kycStatus !== 'verified') document.getElementById('profile-kyc-link').classList.remove('hidden')
 
+  // PIN status
+  var pinStatus = document.getElementById('profile-pin-status')
+  var pinBtn = document.getElementById('profile-pin-btn')
+  if (pinStatus) pinStatus.textContent = profile.transaction_pin ? 'PIN is active' : 'No PIN set'
+  if (pinBtn) pinBtn.textContent = profile.transaction_pin ? 'Change PIN' : 'Set PIN'
+
   renderKYCBanner(kycStatus, profile.kyc_rejection_reason)
 
   var cryptoSaved = JSON.parse(localStorage.getItem('sc_crypto_' + currentUser.id) || '{}')
@@ -1465,7 +1814,6 @@ async function loadProfile() {
 
   lucide.createIcons()
 }
-
 // TRANSACTIONS
 async function loadTransactions() {
   var result = await supabase.from('transactions').select('*, sender:sender_id(full_name,email,is_admin), receiver:receiver_id(full_name,email,is_admin)').or('sender_id.eq.' + currentUser.id + ',receiver_id.eq.' + currentUser.id).order('created_at', { ascending: false })
@@ -1549,76 +1897,74 @@ function setupTransferButtons() {
       return
     }
 
-    var btn = document.getElementById('instant-btn')
-    btn.textContent = 'Sending...'; btn.disabled = true
-
     var recResult = await supabase.from('profiles').select('*').eq('email', email).single()
     var recipient = recResult.data
-
     if (!recipient) {
       errDiv.textContent = 'Recipient not found on SilverCrest.'
       errDiv.classList.remove('hidden')
-      btn.textContent = 'Send Instantly'; btn.disabled = false
       return
     }
 
     var senderResult = await supabase.from('profiles').select('balance').eq('id', currentUser.id).single()
     var freshBalance = parseFloat(senderResult.data.balance)
-
     if (amount > freshBalance) {
       errDiv.textContent = 'Insufficient balance.'
       errDiv.classList.remove('hidden')
-      btn.textContent = 'Send Instantly'; btn.disabled = false
       return
     }
 
-    var newSenderBalance = freshBalance - amount
-    var newReceiverBalance = parseFloat(recipient.balance) + amount
+    window.showPinModal(async function() {
+      var btn = document.getElementById('instant-btn')
+      btn.textContent = 'Sending...'; btn.disabled = true
 
-    var senderUpdate = await supabase.from('profiles').update({ balance: newSenderBalance }).eq('id', currentUser.id)
-    if (senderUpdate.error) {
-      errDiv.textContent = 'Transfer failed: ' + senderUpdate.error.message
-      errDiv.classList.remove('hidden')
+      var newSenderBalance = freshBalance - amount
+      var newReceiverBalance = parseFloat(recipient.balance) + amount
+
+      var senderUpdate = await supabase.from('profiles').update({ balance: newSenderBalance }).eq('id', currentUser.id)
+      if (senderUpdate.error) {
+        errDiv.textContent = 'Transfer failed: ' + senderUpdate.error.message
+        errDiv.classList.remove('hidden')
+        btn.textContent = 'Send Instantly'; btn.disabled = false
+        return
+      }
+
+      var receiverUpdate = await supabase.from('profiles').update({ balance: newReceiverBalance }).eq('id', recipient.id)
+      if (receiverUpdate.error) {
+        errDiv.textContent = 'Transfer failed: ' + receiverUpdate.error.message
+        errDiv.classList.remove('hidden')
+        btn.textContent = 'Send Instantly'; btn.disabled = false
+        return
+      }
+
+      await supabase.from('transactions').insert({
+        sender_id: currentUser.id,
+        receiver_id: recipient.id,
+        amount: amount,
+        note: note,
+        status: 'completed',
+        transfer_type: 'internal'
+      })
+
+      document.getElementById('instant-email').value = ''
+      document.getElementById('instant-amount').value = ''
+      document.getElementById('instant-note').value = ''
       btn.textContent = 'Send Instantly'; btn.disabled = false
-      return
-    }
 
-    var receiverUpdate = await supabase.from('profiles').update({ balance: newReceiverBalance }).eq('id', recipient.id)
-    if (receiverUpdate.error) {
-      errDiv.textContent = 'Transfer failed: ' + receiverUpdate.error.message
-      errDiv.classList.remove('hidden')
-      btn.textContent = 'Send Instantly'; btn.disabled = false
-      return
-    }
+      window.showSuccessModal(
+        'Transaction Successful',
+        '$' + amount.toFixed(2),
+        'Your payment has been sent instantly.',
+        [
+          { label: 'Recipient', value: recipient.full_name },
+          { label: 'Email', value: email },
+          { label: 'Note', value: note || 'No note' },
+          { label: 'Status', value: 'Completed' }
+        ]
+      )
 
-    await supabase.from('transactions').insert({
-      sender_id: currentUser.id,
-      receiver_id: recipient.id,
-      amount: amount,
-      note: note,
-      status: 'completed',
-      transfer_type: 'internal'
+      await loadProfile()
+      await loadTransactions()
     })
-
-    document.getElementById('instant-email').value = ''
-    document.getElementById('instant-amount').value = ''
-    document.getElementById('instant-note').value = ''
-    btn.textContent = 'Send Instantly'; btn.disabled = false
-
-    window.showSuccessModal(
-      'Transaction Successful',
-      '$' + amount.toFixed(2),
-      'Your payment has been sent instantly.',
-      [
-        { label: 'Recipient', value: recipient.full_name },
-        { label: 'Email', value: email },
-        { label: 'Note', value: note || 'No note' },
-        { label: 'Status', value: 'Completed' }
-      ]
-    )
-
-    await loadProfile()
-    await loadTransactions()
   })
 
   document.getElementById('wire-btn').addEventListener('click', async function() {
@@ -1643,57 +1989,58 @@ function setupTransferButtons() {
 
     var senderResult = await supabase.from('profiles').select('balance').eq('id', currentUser.id).single()
     var freshBalance = parseFloat(senderResult.data.balance)
-
     if (amount > freshBalance) {
       errDiv.textContent = 'Insufficient balance.'
       errDiv.classList.remove('hidden')
       return
     }
 
-    var btn = document.getElementById('wire-btn')
-    btn.textContent = 'Submitting...'; btn.disabled = true
+    window.showPinModal(async function() {
+      var btn = document.getElementById('wire-btn')
+      btn.textContent = 'Submitting...'; btn.disabled = true
 
-    await supabase.from('profiles').update({ balance: freshBalance - amount }).eq('id', currentUser.id)
+      await supabase.from('profiles').update({ balance: freshBalance - amount }).eq('id', currentUser.id)
 
-    await supabase.from('transactions').insert({
-      sender_id: currentUser.id,
-      receiver_id: currentUser.id,
-      amount: amount,
-      note: note,
-      status: 'pending',
-      transfer_type: 'wire',
-      recipient_name: name,
-      recipient_bank: bank,
-      recipient_account: account,
-      swift_code: swift,
-      bank_address: bankAddress,
-      recipient_country: country
+      await supabase.from('transactions').insert({
+        sender_id: currentUser.id,
+        receiver_id: currentUser.id,
+        amount: amount,
+        note: note,
+        status: 'pending',
+        transfer_type: 'wire',
+        recipient_name: name,
+        recipient_bank: bank,
+        recipient_account: account,
+        swift_code: swift,
+        bank_address: bankAddress,
+        recipient_country: country
+      })
+
+      document.getElementById('wire-name').value = ''
+      document.getElementById('wire-bank').value = ''
+      document.getElementById('wire-account').value = ''
+      document.getElementById('wire-swift').value = ''
+      document.getElementById('wire-bank-address').value = ''
+      document.getElementById('wire-country').value = ''
+      document.getElementById('wire-amount').value = ''
+      document.getElementById('wire-note').value = ''
+      btn.textContent = 'Submit Wire Transfer'; btn.disabled = false
+
+      window.showSuccessModal(
+        'Wire Transfer Submitted',
+        '$' + amount.toFixed(2),
+        'Funds are held and will be released upon approval. Usually processed within 1-3 business days.',
+        [
+          { label: 'Recipient', value: name },
+          { label: 'Bank', value: bank },
+          { label: 'SWIFT/BIC', value: swift, mono: true },
+          { label: 'Status', value: 'Pending Approval' }
+        ]
+      )
+
+      await loadProfile()
+      await loadTransactions()
     })
-
-    document.getElementById('wire-name').value = ''
-    document.getElementById('wire-bank').value = ''
-    document.getElementById('wire-account').value = ''
-    document.getElementById('wire-swift').value = ''
-    document.getElementById('wire-bank-address').value = ''
-    document.getElementById('wire-country').value = ''
-    document.getElementById('wire-amount').value = ''
-    document.getElementById('wire-note').value = ''
-    btn.textContent = 'Submit Wire Transfer'; btn.disabled = false
-
-    window.showSuccessModal(
-      'Wire Transfer Submitted',
-      '$' + amount.toFixed(2),
-      'Funds are held and will be released upon approval. Usually processed within 1-3 business days.',
-      [
-        { label: 'Recipient', value: name },
-        { label: 'Bank', value: bank },
-        { label: 'SWIFT/BIC', value: swift, mono: true },
-        { label: 'Status', value: 'Pending Approval' }
-      ]
-    )
-
-    await loadProfile()
-    await loadTransactions()
   })
 
   document.getElementById('bank-btn').addEventListener('click', async function() {
@@ -1722,55 +2069,56 @@ function setupTransferButtons() {
 
     var senderResult = await supabase.from('profiles').select('balance').eq('id', currentUser.id).single()
     var freshBalance = parseFloat(senderResult.data.balance)
-
     if (amount > freshBalance) {
       errDiv.textContent = 'Insufficient balance.'
       errDiv.classList.remove('hidden')
       return
     }
 
-    var btn = document.getElementById('bank-btn')
-    btn.textContent = 'Submitting...'; btn.disabled = true
+    window.showPinModal(async function() {
+      var btn = document.getElementById('bank-btn')
+      btn.textContent = 'Submitting...'; btn.disabled = true
 
-    await supabase.from('profiles').update({ balance: freshBalance - amount }).eq('id', currentUser.id)
+      await supabase.from('profiles').update({ balance: freshBalance - amount }).eq('id', currentUser.id)
 
-    await supabase.from('transactions').insert({
-      sender_id: currentUser.id,
-      receiver_id: currentUser.id,
-      amount: amount,
-      note: note,
-      status: 'pending',
-      transfer_type: 'bank',
-      recipient_name: name,
-      recipient_bank: bank,
-      recipient_account: account,
-      routing_number: routing,
-      account_type: accountType
+      await supabase.from('transactions').insert({
+        sender_id: currentUser.id,
+        receiver_id: currentUser.id,
+        amount: amount,
+        note: note,
+        status: 'pending',
+        transfer_type: 'bank',
+        recipient_name: name,
+        recipient_bank: bank,
+        recipient_account: account,
+        routing_number: routing,
+        account_type: accountType
+      })
+
+      document.getElementById('bank-name').value = ''
+      document.getElementById('bank-bank').value = ''
+      document.getElementById('bank-account').value = ''
+      document.getElementById('bank-routing').value = ''
+      document.getElementById('bank-amount').value = ''
+      document.getElementById('bank-note').value = ''
+      btn.textContent = 'Submit Bank Transfer'; btn.disabled = false
+
+      window.showSuccessModal(
+        'Bank Transfer Submitted',
+        '$' + amount.toFixed(2),
+        'Funds are held and will be released upon approval. Estimated 2-5 business days.',
+        [
+          { label: 'Recipient', value: name },
+          { label: 'Bank', value: bank },
+          { label: 'Routing Number', value: routing, mono: true },
+          { label: 'Account Type', value: accountType },
+          { label: 'Status', value: 'Pending Approval' }
+        ]
+      )
+
+      await loadProfile()
+      await loadTransactions()
     })
-
-    document.getElementById('bank-name').value = ''
-    document.getElementById('bank-bank').value = ''
-    document.getElementById('bank-account').value = ''
-    document.getElementById('bank-routing').value = ''
-    document.getElementById('bank-amount').value = ''
-    document.getElementById('bank-note').value = ''
-    btn.textContent = 'Submit Bank Transfer'; btn.disabled = false
-
-    window.showSuccessModal(
-      'Bank Transfer Submitted',
-      '$' + amount.toFixed(2),
-      'Funds are held and will be released upon approval. Estimated 2-5 business days.',
-      [
-        { label: 'Recipient', value: name },
-        { label: 'Bank', value: bank },
-        { label: 'Routing Number', value: routing, mono: true },
-        { label: 'Account Type', value: accountType },
-        { label: 'Status', value: 'Pending Approval' }
-      ]
-    )
-
-    await loadProfile()
-    await loadTransactions()
   })
 
 }
