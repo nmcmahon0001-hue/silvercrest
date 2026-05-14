@@ -1321,14 +1321,23 @@
 
     // ── TRANSFER TABS ─────────────────────
     window.switchTransferTab = function(tab) {
-      ;['instant','wire','bank'].forEach(t => {
-        document.getElementById('tab-' + t).classList.toggle('active', t === tab)
-        document.getElementById('form-' + t).classList.toggle('hidden', t !== tab)
-      })
-      // Clear messages
-      document.getElementById('transfer-error').classList.add('hidden')
-      document.getElementById('transfer-success').classList.add('hidden')
+  ;['instant','wire','bank'].forEach(t => {
+    const tabBtn = document.getElementById('tab-' + t)
+    const formDiv = document.getElementById('form-' + t)
+    if (tabBtn) tabBtn.classList.toggle('active', t === tab)
+    if (formDiv) {
+      if (t === tab) {
+        formDiv.style.display = 'block'
+        formDiv.classList.remove('hidden')
+      } else {
+        formDiv.style.display = 'none'
+        formDiv.classList.add('hidden')
+      }
     }
+  })
+  document.getElementById('transfer-error').classList.add('hidden')
+  document.getElementById('transfer-success').classList.add('hidden')
+}
 
     // ── TRANSACTION MODAL ─────────────────
     window.openTransactionModal = function(index) {
