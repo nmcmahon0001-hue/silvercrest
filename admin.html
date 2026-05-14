@@ -29,10 +29,7 @@
     .admin-section { display: none; }
     .admin-section.active { display: block; animation: fadeIn 0.2s ease; }
     @keyframes fadeIn { from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);} }
-    .badge {
-      display: inline-flex; align-items: center; gap: 4px;
-      padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
-    }
+    .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
     .btn { border: none; border-radius: 10px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s; }
     .btn-primary { background: #4f46e5; color: white; }
     .btn-primary:hover { background: #4338ca; }
@@ -50,18 +47,25 @@
     }
     .input-field:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,0.1); }
     select.input-field { cursor: pointer; }
+    .field-label { font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; display: block; }
     .modal-overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,0.5);
       z-index: 100; display: flex; align-items: center; justify-content: center;
       backdrop-filter: blur(4px); padding: 20px;
     }
     .modal {
-      background: white; border-radius: 24px; width: 100%; max-width: 520px;
+      background: white; border-radius: 24px; width: 100%; max-width: 560px;
       max-height: 90vh; overflow-y: auto;
       box-shadow: 0 25px 60px rgba(0,0,0,0.2);
       animation: modalIn 0.3s ease;
     }
     @keyframes modalIn { from{opacity:0;transform:scale(0.95);}to{opacity:1;transform:scale(1);} }
+    .divider { height: 1px; background: #f1f5f9; margin: 20px 0; }
+    .section-title {
+      font-size: 13px; font-weight: 700; color: #1e293b;
+      margin-bottom: 4px;
+    }
+    .section-subtitle { font-size: 11px; color: #94a3b8; margin-bottom: 14px; }
     @media (max-width: 768px) { .sidebar { display: none; } .main-content { margin-left: 0; } }
   </style>
 </head>
@@ -70,7 +74,9 @@
   <!-- USER DETAIL MODAL -->
   <div id="user-modal" class="modal-overlay hidden">
     <div class="modal">
-      <div class="flex items-center justify-between p-6 border-b border-gray-100">
+
+      <!-- Header -->
+      <div class="flex items-center justify-between p-6 border-b border-gray-100 sticky top-0 bg-white z-10">
         <h3 class="text-base font-bold text-gray-900">User Details</h3>
         <button onclick="closeUserModal()"
           class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-gray-200 transition">
@@ -140,116 +146,181 @@
         </div>
 
         <!-- KYC Section -->
-        <div class="mb-6 p-4 rounded-xl border border-gray-100">
-          <div class="flex items-center justify-between mb-3">
-            <p class="text-sm font-bold text-gray-900">Identity Verification (KYC)</p>
-            <span id="modal-kyc-status-text" class="text-xs text-gray-500">—</span>
-          </div>
-          <div id="modal-kyc-actions" class="flex gap-2 flex-wrap mb-3"></div>
-          <div id="modal-kyc-doc" class="hidden mb-3">
-            <p class="text-xs text-gray-400 mb-1">Document Type</p>
-            <p id="modal-doc-type" class="text-sm font-semibold text-gray-700">—</p>
-          </div>
-          <div id="modal-rejection-section" class="hidden">
-            <label class="text-xs font-semibold text-gray-500 mb-1.5 block">
-              Rejection reason (shown to user)
-            </label>
-            <input type="text" id="modal-rejection-reason"
-              placeholder="e.g. Document was blurry or unreadable"
-              class="input-field"/>
-          </div>
+        <div class="divider"></div>
+        <p class="section-title">Identity Verification (KYC)</p>
+        <div class="flex items-center justify-between mb-3">
+          <span id="modal-kyc-status-text" class="text-xs text-gray-500 font-semibold">—</span>
+          <div id="modal-kyc-actions" class="flex gap-2 flex-wrap"></div>
+        </div>
+        <div id="modal-kyc-doc" class="hidden mb-3 bg-gray-50 rounded-xl p-3">
+          <p class="text-xs text-gray-400 mb-1">Document Type</p>
+          <p id="modal-doc-type" class="text-sm font-semibold text-gray-700">—</p>
+        </div>
+        <div id="modal-rejection-section" class="hidden mb-4">
+          <label class="field-label">Rejection Reason (shown to user)</label>
+          <input type="text" id="modal-rejection-reason"
+            placeholder="e.g. Document was blurry or unreadable"
+            class="input-field"/>
         </div>
 
         <!-- Suspend Section -->
-        <div class="p-4 rounded-xl border border-gray-100 mb-6">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm font-bold text-gray-900">Account Status</p>
-              <p id="modal-suspend-text" class="text-xs text-gray-400 mt-0.5">—</p>
-            </div>
-            <button id="modal-suspend-btn" onclick="toggleSuspend()" class="btn">—</button>
+        <div class="divider"></div>
+        <p class="section-title">Account Control</p>
+        <p class="section-subtitle">Suspend or activate this user's account</p>
+        <div class="flex items-center justify-between bg-gray-50 rounded-xl p-4">
+          <div>
+            <p id="modal-suspend-text" class="text-sm font-semibold text-gray-700">—</p>
           </div>
+          <button id="modal-suspend-btn" onclick="toggleSuspend()" class="btn">—</button>
         </div>
 
         <!-- Balance Adjustment -->
-        <div class="p-4 rounded-xl border border-gray-100 mb-6">
-          <p class="text-sm font-bold text-gray-900 mb-1">Adjust Balance</p>
-          <p class="text-xs text-gray-400 mb-3">
-            Changes the user's balance without creating a transaction record.
-          </p>
-          <div class="flex gap-2 mb-3">
-            <select id="balance-action" class="input-field" style="flex:1;">
-              <option value="add">Add funds</option>
-              <option value="reduce">Reduce funds</option>
-            </select>
-            <div class="relative flex-1">
-              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
-              <input type="number" id="balance-amount" placeholder="0.00"
-                class="input-field" style="padding-left:24px;"/>
-            </div>
+        <div class="divider"></div>
+        <p class="section-title">Balance Adjustment</p>
+        <p class="section-subtitle">Modify balance silently — no transaction record created</p>
+        <div class="flex gap-2 mb-3">
+          <select id="balance-action" class="input-field" style="flex:1;">
+            <option value="add">Add funds</option>
+            <option value="reduce">Reduce funds</option>
+          </select>
+          <div class="relative flex-1">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+            <input type="number" id="balance-amount" placeholder="0.00"
+              class="input-field" style="padding-left:24px;"/>
           </div>
-          <div id="balance-msg" class="hidden text-xs px-3 py-2 rounded-lg mb-3"></div>
-          <button onclick="adjustBalance()" class="btn btn-primary w-full">
-            Apply Balance Change
-          </button>
         </div>
+        <div id="balance-msg" class="hidden text-xs px-3 py-2 rounded-lg mb-3"></div>
+        <button onclick="adjustBalance()" class="btn btn-primary w-full">Apply Balance Change</button>
 
         <!-- Create Transaction -->
-        <div class="p-4 rounded-xl border border-gray-100">
-          <p class="text-sm font-bold text-gray-900 mb-1">Create Transaction Record</p>
-          <p class="text-xs text-gray-400 mb-3">
-            Adds an entry to transaction history without affecting balance.
-          </p>
-          <div class="space-y-3">
-            <div class="grid grid-cols-2 gap-2">
-              <div>
-                <label class="text-xs text-gray-500 mb-1 block">Type</label>
-                <select id="tx-type" class="input-field">
-                  <option value="credit">Credit (incoming)</option>
-                  <option value="debit">Debit (outgoing)</option>
-                </select>
-              </div>
-              <div>
-                <label class="text-xs text-gray-500 mb-1 block">Amount ($)</label>
-                <div class="relative">
-                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
-                  <input type="number" id="tx-amount" placeholder="0.00"
-                    class="input-field" style="padding-left:24px;"/>
+        <div class="divider"></div>
+        <p class="section-title">Create Transaction Record</p>
+        <p class="section-subtitle">Add a transaction entry without affecting balance</p>
+
+        <div class="space-y-4">
+
+          <!-- Transaction Type -->
+          <div>
+            <label class="field-label">Transaction Type *</label>
+            <select id="tx-type" class="input-field" onchange="updateTxForm()">
+              <option value="credit">Credit — Money coming IN to user</option>
+              <option value="debit">Debit — Money going OUT from user</option>
+            </select>
+          </div>
+
+          <!-- Amount -->
+          <div>
+            <label class="field-label">Amount *</label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-semibold">$</span>
+              <input type="number" id="tx-amount" placeholder="0.00"
+                class="input-field" style="padding-left:28px;"/>
+            </div>
+          </div>
+
+          <!-- CREDIT: Sender details (manual) -->
+          <div id="tx-sender-section">
+            <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4 mb-3">
+              <p class="text-xs font-bold text-indigo-700 mb-3 flex items-center gap-1.5">
+                <i data-lucide="arrow-down-left" class="w-3.5 h-3.5"></i>
+                Sender Details (where money is coming FROM)
+              </p>
+              <div class="space-y-3">
+                <div>
+                  <label class="field-label">Sender Full Name *</label>
+                  <input type="text" id="tx-sender-name"
+                    placeholder="e.g. John Smith, Federal Reserve, Chase Bank"
+                    class="input-field"/>
+                </div>
+                <div>
+                  <label class="field-label">Sender Account Number *</label>
+                  <input type="text" id="tx-sender-account"
+                    placeholder="e.g. 1234567890"
+                    class="input-field"/>
                 </div>
               </div>
             </div>
-            <div>
-              <label class="text-xs text-gray-500 mb-1 block">
-                Display Name
-                <span class="text-gray-400 font-normal">(shown as sender/receiver name)</span>
-              </label>
-              <input type="text" id="tx-display-name"
-                placeholder="e.g. Wire Transfer, Salary Payment, Bonus"
-                class="input-field"/>
+            <div class="bg-gray-50 border border-gray-200 rounded-xl p-3">
+              <p class="text-xs font-semibold text-gray-500 mb-1">Receiver (Auto-filled)</p>
+              <p id="tx-receiver-display" class="text-sm font-bold text-gray-900">—</p>
+              <p id="tx-receiver-acct-display" class="text-xs text-gray-400 mt-0.5 font-mono">—</p>
             </div>
-            <div>
-              <label class="text-xs text-gray-500 mb-1 block">Note / Description</label>
-              <input type="text" id="tx-note"
-                placeholder="e.g. Monthly bonus, Account correction"
-                class="input-field"/>
-            </div>
-            <div>
-              <label class="text-xs text-gray-500 mb-1 block">Date</label>
-              <input type="datetime-local" id="tx-date" class="input-field"/>
-            </div>
-            <div>
-              <label class="text-xs text-gray-500 mb-1 block">Status</label>
-              <select id="tx-status" class="input-field">
-                <option value="completed">Completed</option>
-                <option value="pending">Pending</option>
-                <option value="failed">Failed</option>
-              </select>
-            </div>
-            <div id="tx-msg" class="hidden text-xs px-3 py-2 rounded-lg"></div>
-            <button onclick="createTransaction()" class="btn btn-primary w-full">
-              Create Transaction Record
-            </button>
           </div>
+
+          <!-- DEBIT: Receiver details (manual) -->
+          <div id="tx-receiver-section" class="hidden">
+            <div class="bg-gray-50 border border-gray-200 rounded-xl p-3 mb-3">
+              <p class="text-xs font-semibold text-gray-500 mb-1">Sender (Auto-filled)</p>
+              <p id="tx-sender-display" class="text-sm font-bold text-gray-900">—</p>
+              <p id="tx-sender-acct-display" class="text-xs text-gray-400 mt-0.5 font-mono">—</p>
+            </div>
+            <div class="bg-red-50 border border-red-100 rounded-xl p-4">
+              <p class="text-xs font-bold text-red-700 mb-3 flex items-center gap-1.5">
+                <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+                Receiver Details (where money is going TO)
+              </p>
+              <div class="space-y-3">
+                <div>
+                  <label class="field-label">Receiver Full Name *</label>
+                  <input type="text" id="tx-receiver-name"
+                    placeholder="e.g. Jane Doe, Goldman Sachs, Binance"
+                    class="input-field"/>
+                </div>
+                <div>
+                  <label class="field-label">Receiver Account Number *</label>
+                  <input type="text" id="tx-receiver-account"
+                    placeholder="e.g. 9876543210"
+                    class="input-field"/>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Category -->
+          <div>
+            <label class="field-label">Transaction Category *</label>
+            <select id="tx-category" class="input-field">
+              <option value="Bank Transfer">Bank Transfer</option>
+              <option value="Wire Transfer">Wire Transfer</option>
+              <option value="Crypto">Crypto</option>
+              <option value="Internal Transfer">Internal Transfer</option>
+              <option value="Salary Payment">Salary Payment</option>
+              <option value="Refund">Refund</option>
+              <option value="Loan Disbursement">Loan Disbursement</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <!-- Note -->
+          <div>
+            <label class="field-label">Note / Description *</label>
+            <input type="text" id="tx-note"
+              placeholder="e.g. Q1 salary payment, International wire transfer"
+              class="input-field"/>
+          </div>
+
+          <!-- Date -->
+          <div>
+            <label class="field-label">Transaction Date & Time *</label>
+            <input type="datetime-local" id="tx-date" class="input-field"/>
+          </div>
+
+          <!-- Status -->
+          <div>
+            <label class="field-label">Status *</label>
+            <select id="tx-status" class="input-field">
+              <option value="completed">✅ Completed</option>
+              <option value="pending">⏳ Pending</option>
+              <option value="failed">❌ Failed</option>
+            </select>
+          </div>
+
+          <div id="tx-msg" class="hidden text-xs px-3 py-2 rounded-lg"></div>
+
+          <button onclick="createTransaction()" class="btn btn-primary w-full" style="padding:14px;">
+            Create Transaction Record
+          </button>
+
         </div>
 
       </div>
@@ -392,7 +463,8 @@
             <div class="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2">
               <i data-lucide="search" class="w-3.5 h-3.5 text-gray-400"></i>
               <input type="text" id="tx-search-admin" placeholder="Search..."
-                class="bg-transparent text-sm outline-none w-40" oninput="filterAdminTransactions()"/>
+                class="bg-transparent text-sm outline-none w-40"
+                oninput="filterAdminTransactions()"/>
             </div>
           </div>
           <div id="admin-tx-list"></div>
@@ -419,7 +491,8 @@
       if (!profile?.is_admin) { window.location.href = 'dashboard.html'; return }
       currentAdmin = profile
       document.getElementById('admin-name').textContent = profile.full_name || 'Admin'
-      document.getElementById('admin-avatar').textContent = (profile.full_name || 'A').charAt(0).toUpperCase()
+      document.getElementById('admin-avatar').textContent =
+        (profile.full_name || 'A').charAt(0).toUpperCase()
       await loadAllData()
     }
 
@@ -432,7 +505,8 @@
     }
 
     async function loadUsers() {
-      const { data } = await supabase.from('profiles').select('*').order('created_at', { ascending: false })
+      const { data } = await supabase
+        .from('profiles').select('*').order('created_at', { ascending: false })
       allUsers = data || []
     }
 
@@ -447,7 +521,7 @@
     // ── OVERVIEW ─────────────────────────
     function renderOverview() {
       const nonAdmins = allUsers.filter(u => !u.is_admin)
-      const totalBalance = nonAdmins.reduce((sum, u) => sum + parseFloat(u.balance || 0), 0)
+      const totalBalance = nonAdmins.reduce((s, u) => s + parseFloat(u.balance || 0), 0)
       const kycPending = nonAdmins.filter(u => u.kyc_status === 'pending').length
       document.getElementById('stat-total-users').textContent = nonAdmins.length
       document.getElementById('stat-total-balance').textContent = '$' + totalBalance.toFixed(2)
@@ -487,7 +561,8 @@
       }
       const kyc = kycColors[u.kyc_status] || kycColors.unverified
       return `
-        <div class="flex items-center gap-3 py-3 border-b border-gray-50 hover:bg-gray-50 rounded-xl px-2 cursor-pointer transition"
+        <div class="flex items-center gap-3 py-3 border-b border-gray-50
+          hover:bg-gray-50 rounded-xl px-2 cursor-pointer transition"
           onclick="openUserModal('${u.id}')">
           <div class="w-9 h-9 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
             <span class="text-indigo-600 font-bold text-sm">${initial}</span>
@@ -527,15 +602,17 @@
           new Date(u.kyc_submitted_at).toLocaleDateString('en-US',
             { month:'short', day:'numeric', year:'numeric' }) : 'Unknown'
         return `
-          <div class="flex items-center gap-3 py-4 border-b border-gray-50 cursor-pointer hover:bg-gray-50 rounded-xl px-2 transition"
-            onclick="openUserModal('${u.id}')">
+          <div class="flex items-center gap-3 py-4 border-b border-gray-50 cursor-pointer
+            hover:bg-gray-50 rounded-xl px-2 transition" onclick="openUserModal('${u.id}')">
             <div class="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
               <span class="text-amber-600 font-bold">${initial}</span>
             </div>
             <div class="flex-1 min-w-0">
               <p class="text-sm font-semibold text-gray-900">${u.full_name || 'Unknown'}</p>
               <p class="text-xs text-gray-400">${u.email}</p>
-              <p class="text-xs text-gray-400 mt-0.5">Submitted: ${submitted} · Doc: ${u.kyc_document_type || 'Unknown'}</p>
+              <p class="text-xs text-gray-400 mt-0.5">
+                Submitted: ${submitted} · Doc: ${u.kyc_document_type || 'Unknown'}
+              </p>
             </div>
             <div class="flex items-center gap-2">
               <span class="badge" style="background:#eff6ff;color:#3b82f6;">Pending Review</span>
@@ -552,6 +629,8 @@
         !filter ||
         (tx.sender?.full_name || '').toLowerCase().includes(filter) ||
         (tx.receiver?.full_name || '').toLowerCase().includes(filter) ||
+        (tx.sender_name || '').toLowerCase().includes(filter) ||
+        (tx.receiver_name || '').toLowerCase().includes(filter) ||
         (tx.note || '').toLowerCase().includes(filter)
       )
       document.getElementById('admin-tx-list').innerHTML =
@@ -569,15 +648,29 @@
         failed: { bg:'#fff1f2', color:'#ef4444' }
       }
       const s = statusColors[tx.status] || statusColors.completed
-      // Use note as label for admin-created transactions
-      const label = tx.admin_created
-        ? (tx.note || 'Bank Transaction')
-        : `${tx.sender?.full_name || 'Unknown'} → ${tx.receiver?.full_name || 'Unknown'}`
+      const txId = 'TXN-' + tx.id.replace(/-/g,'').substring(0,8).toUpperCase()
+
+      // Determine display label
+      let fromLabel, toLabel
+      if (tx.admin_created) {
+        fromLabel = tx.sender_name || tx.sender?.full_name || 'Unknown'
+        toLabel = tx.receiver_name || tx.receiver?.full_name || 'Unknown'
+      } else {
+        fromLabel = tx.sender?.full_name || 'Unknown'
+        toLabel = tx.receiver?.full_name || 'Unknown'
+      }
+
       return `
         <div class="flex items-center gap-3 py-3 border-b border-gray-50">
           <div class="flex-1 min-w-0">
-            <p class="text-sm font-semibold text-gray-900 truncate">${label}</p>
-            <p class="text-xs text-gray-400 mt-0.5">${date}</p>
+            <div class="flex items-center gap-2 mb-0.5">
+              <p class="text-xs font-mono text-gray-400">${txId}</p>
+              ${tx.category ? `<span class="badge" style="background:#f1f5f9;color:#64748b;font-size:10px;">${tx.category}</span>` : ''}
+            </div>
+            <p class="text-sm font-semibold text-gray-900 truncate">
+              ${fromLabel} → ${toLabel}
+            </p>
+            <p class="text-xs text-gray-400 mt-0.5">${tx.note || '—'} · ${date}</p>
           </div>
           <div class="flex items-center gap-2 flex-shrink-0">
             <span class="badge" style="background:${s.bg};color:${s.color};">${tx.status || 'completed'}</span>
@@ -605,7 +698,8 @@
       document.getElementById('modal-name').textContent = u.full_name || 'Unknown'
       document.getElementById('modal-email').textContent = u.email
       document.getElementById('modal-acct').textContent = digits
-      document.getElementById('modal-balance').textContent = '$' + parseFloat(u.balance || 0).toFixed(2)
+      document.getElementById('modal-balance').textContent =
+        '$' + parseFloat(u.balance || 0).toFixed(2)
       document.getElementById('modal-phone').textContent = u.phone || 'Not provided'
       document.getElementById('modal-country').textContent = u.country || 'Not provided'
       document.getElementById('modal-gender').textContent = u.gender || 'Not provided'
@@ -613,9 +707,11 @@
       document.getElementById('modal-address').textContent = u.address || 'Not provided'
       document.getElementById('modal-funds').textContent = u.source_of_funds || 'Not provided'
       document.getElementById('modal-dob').textContent = u.date_of_birth ?
-        new Date(u.date_of_birth).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' }) : 'Not provided'
+        new Date(u.date_of_birth).toLocaleDateString('en-US',
+          { year:'numeric', month:'long', day:'numeric' }) : 'Not provided'
       document.getElementById('modal-joined').textContent =
-        new Date(u.created_at).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' })
+        new Date(u.created_at).toLocaleDateString('en-US',
+          { year:'numeric', month:'long', day:'numeric' })
 
       // KYC badge
       const kycConfigs = {
@@ -631,13 +727,10 @@
 
       // Suspend badge
       const suspBadge = document.getElementById('modal-suspend-badge')
-      if (u.is_suspended) {
-        suspBadge.textContent = 'Suspended'
-        suspBadge.style.cssText = 'background:#fff1f2;color:#ef4444;display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;'
-      } else {
-        suspBadge.textContent = 'Active'
-        suspBadge.style.cssText = 'background:#f0fdf4;color:#16a34a;display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;'
-      }
+      suspBadge.textContent = u.is_suspended ? 'Suspended' : 'Active'
+      suspBadge.style.cssText = u.is_suspended
+        ? 'background:#fff1f2;color:#ef4444;display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;'
+        : 'background:#f0fdf4;color:#16a34a;display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;'
 
       renderKYCActions(u)
 
@@ -654,22 +747,40 @@
         suspText.textContent = 'This account is currently active'
       }
 
+      // Pre-fill transaction form with user info
+      document.getElementById('tx-receiver-display').textContent = u.full_name || 'Unknown'
+      document.getElementById('tx-receiver-acct-display').textContent = 'Acc: ' + digits
+      document.getElementById('tx-sender-display').textContent = u.full_name || 'Unknown'
+      document.getElementById('tx-sender-acct-display').textContent = 'Acc: ' + digits
+
       // Set default tx date
       const now = new Date()
       now.setMinutes(now.getMinutes() - now.getTimezoneOffset())
       document.getElementById('tx-date').value = now.toISOString().slice(0, 16)
 
-      // Clear fields
+      // Reset form
+      document.getElementById('tx-type').value = 'credit'
+      updateTxForm()
       document.getElementById('balance-msg').classList.add('hidden')
       document.getElementById('tx-msg').classList.add('hidden')
       document.getElementById('balance-amount').value = ''
       document.getElementById('tx-amount').value = ''
-      document.getElementById('tx-display-name').value = ''
+      document.getElementById('tx-sender-name').value = ''
+      document.getElementById('tx-sender-account').value = ''
+      document.getElementById('tx-receiver-name').value = ''
+      document.getElementById('tx-receiver-account').value = ''
       document.getElementById('tx-note').value = ''
 
       document.getElementById('user-modal').classList.remove('hidden')
       document.body.style.overflow = 'hidden'
       lucide.createIcons()
+    }
+
+    // ── TX FORM TOGGLE ────────────────────
+    window.updateTxForm = function() {
+      const type = document.getElementById('tx-type').value
+      document.getElementById('tx-sender-section').classList.toggle('hidden', type !== 'credit')
+      document.getElementById('tx-receiver-section').classList.toggle('hidden', type !== 'debit')
     }
 
     function renderKYCActions(u) {
@@ -729,7 +840,10 @@
 
       selectedUser.kyc_status = newStatus
       const idx = allUsers.findIndex(u => u.id === selectedUser.id)
-      if (idx !== -1) { allUsers[idx].kyc_status = newStatus; if (reason) allUsers[idx].kyc_rejection_reason = reason }
+      if (idx !== -1) {
+        allUsers[idx].kyc_status = newStatus
+        if (reason) allUsers[idx].kyc_rejection_reason = reason
+      }
 
       renderKYCActions(selectedUser)
       const kycConfigs = {
@@ -751,7 +865,8 @@
     window.toggleSuspend = async function() {
       if (!selectedUser) return
       const newStatus = !selectedUser.is_suspended
-      const { error } = await supabase.from('profiles').update({ is_suspended: newStatus }).eq('id', selectedUser.id)
+      const { error } = await supabase.from('profiles')
+        .update({ is_suspended: newStatus }).eq('id', selectedUser.id)
       if (error) { alert('Error: ' + error.message); return }
 
       selectedUser.is_suspended = newStatus
@@ -785,23 +900,25 @@
       if (!selectedUser) return
       const action = document.getElementById('balance-action').value
       const amount = parseFloat(document.getElementById('balance-amount').value)
-      if (!amount || amount <= 0) { showMsg('balance-msg', 'Please enter a valid amount.', 'error'); return }
-
+      if (!amount || amount <= 0) {
+        showMsg('balance-msg', 'Please enter a valid amount.', 'error'); return
+      }
       const currentBalance = parseFloat(selectedUser.balance || 0)
       const newBalance = action === 'add' ? currentBalance + amount : currentBalance - amount
-      if (newBalance < 0) { showMsg('balance-msg', 'Balance cannot go below $0.', 'error'); return }
-
-      const { error } = await supabase.from('profiles').update({ balance: newBalance }).eq('id', selectedUser.id)
+      if (newBalance < 0) {
+        showMsg('balance-msg', 'Balance cannot go below $0.', 'error'); return
+      }
+      const { error } = await supabase.from('profiles')
+        .update({ balance: newBalance }).eq('id', selectedUser.id)
       if (error) { showMsg('balance-msg', 'Error: ' + error.message, 'error'); return }
 
       selectedUser.balance = newBalance
       const idx = allUsers.findIndex(u => u.id === selectedUser.id)
       if (idx !== -1) allUsers[idx].balance = newBalance
-
       document.getElementById('modal-balance').textContent = '$' + newBalance.toFixed(2)
       document.getElementById('balance-amount').value = ''
       showMsg('balance-msg',
-        `✅ Balance ${action === 'add' ? 'increased' : 'reduced'} by $${amount.toFixed(2)}. New balance: $${newBalance.toFixed(2)}`,
+        `✅ Balance ${action === 'add' ? 'increased' : 'reduced'} by $${amount.toFixed(2)}. New: $${newBalance.toFixed(2)}`,
         'success')
       renderUsers()
     }
@@ -811,30 +928,65 @@
       if (!selectedUser) return
       const type = document.getElementById('tx-type').value
       const amount = parseFloat(document.getElementById('tx-amount').value)
-      const displayName = document.getElementById('tx-display-name').value.trim()
+      const category = document.getElementById('tx-category').value
       const note = document.getElementById('tx-note').value.trim()
       const date = document.getElementById('tx-date').value
       const status = document.getElementById('tx-status').value
 
-      if (!amount || amount <= 0) { showMsg('tx-msg', 'Please enter a valid amount.', 'error'); return }
-      if (!displayName) { showMsg('tx-msg', 'Please enter a display name.', 'error'); return }
-      if (!note) { showMsg('tx-msg', 'Please enter a note/description.', 'error'); return }
+      // Validate amount
+      if (!amount || amount <= 0) {
+        showMsg('tx-msg', 'Please enter a valid amount.', 'error'); return
+      }
+      if (!note) {
+        showMsg('tx-msg', 'Please enter a note/description.', 'error'); return
+      }
 
-      const txData = {
-        sender_id: type === 'debit' ? selectedUser.id : currentAdmin.id,
-        receiver_id: type === 'credit' ? selectedUser.id : currentAdmin.id,
+      let txData = {
         amount,
-        note: displayName,
-        admin_created: true,
+        note,
+        category,
         status,
+        admin_created: true,
         created_at: date ? new Date(date).toISOString() : new Date().toISOString()
+      }
+
+      if (type === 'credit') {
+        const senderName = document.getElementById('tx-sender-name').value.trim()
+        const senderAccount = document.getElementById('tx-sender-account').value.trim()
+        if (!senderName) { showMsg('tx-msg', 'Please enter the sender name.', 'error'); return }
+        if (!senderAccount) { showMsg('tx-msg', 'Please enter the sender account number.', 'error'); return }
+        txData.sender_id = currentAdmin.id
+        txData.receiver_id = selectedUser.id
+        txData.sender_name = senderName
+        txData.sender_account = senderAccount
+        txData.receiver_name = selectedUser.full_name
+        txData.receiver_account = selectedUser.id.replace(/-/g,'')
+          .replace(/[a-f]/gi, d => String(d.charCodeAt(0) - 87))
+          .replace(/[^0-9]/g,'').substring(0,12).padEnd(12,'0')
+      } else {
+        const receiverName = document.getElementById('tx-receiver-name').value.trim()
+        const receiverAccount = document.getElementById('tx-receiver-account').value.trim()
+        if (!receiverName) { showMsg('tx-msg', 'Please enter the receiver name.', 'error'); return }
+        if (!receiverAccount) { showMsg('tx-msg', 'Please enter the receiver account number.', 'error'); return }
+        txData.sender_id = selectedUser.id
+        txData.receiver_id = currentAdmin.id
+        txData.sender_name = selectedUser.full_name
+        txData.sender_account = selectedUser.id.replace(/-/g,'')
+          .replace(/[a-f]/gi, d => String(d.charCodeAt(0) - 87))
+          .replace(/[^0-9]/g,'').substring(0,12).padEnd(12,'0')
+        txData.receiver_name = receiverName
+        txData.receiver_account = receiverAccount
       }
 
       const { error } = await supabase.from('transactions').insert(txData)
       if (error) { showMsg('tx-msg', 'Error: ' + error.message, 'error'); return }
 
+      // Clear form
       document.getElementById('tx-amount').value = ''
-      document.getElementById('tx-display-name').value = ''
+      document.getElementById('tx-sender-name').value = ''
+      document.getElementById('tx-sender-account').value = ''
+      document.getElementById('tx-receiver-name').value = ''
+      document.getElementById('tx-receiver-account').value = ''
       document.getElementById('tx-note').value = ''
       showMsg('tx-msg', '✅ Transaction record created successfully!', 'success')
       await loadTransactions()
@@ -845,8 +997,8 @@
       const el = document.getElementById(elementId)
       el.textContent = text
       el.style.cssText = type === 'success'
-        ? 'background:#f0fdf4;color:#16a34a;display:block;font-size:12px;padding:8px 12px;border-radius:8px;'
-        : 'background:#fff1f2;color:#ef4444;display:block;font-size:12px;padding:8px 12px;border-radius:8px;'
+        ? 'background:#f0fdf4;color:#16a34a;display:block;font-size:12px;padding:8px 12px;border-radius:8px;margin-bottom:8px;'
+        : 'background:#fff1f2;color:#ef4444;display:block;font-size:12px;padding:8px 12px;border-radius:8px;margin-bottom:8px;'
       el.classList.remove('hidden')
     }
 
@@ -856,7 +1008,10 @@
       document.getElementById('section-' + name).classList.add('active')
       document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'))
       document.getElementById('nav-' + name).classList.add('active')
-      const titles = { overview:'Overview', users:'All Users', kyc:'KYC Reviews', transactions:'All Transactions' }
+      const titles = {
+        overview:'Overview', users:'All Users',
+        kyc:'KYC Reviews', transactions:'All Transactions'
+      }
       document.getElementById('admin-page-title').textContent = titles[name] || name
     }
 

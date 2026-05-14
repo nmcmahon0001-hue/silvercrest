@@ -250,6 +250,7 @@
           <i data-lucide="x" class="w-4 h-4 text-gray-500"></i>
         </button>
       </div>
+      
       <div id="tx-modal-amount-section"
         style="text-align:center;padding:24px;background:#f8fafc;border-radius:16px;margin-bottom:20px;">
         <div id="tx-modal-icon"
@@ -259,6 +260,10 @@
         <p id="tx-modal-label" style="font-size:14px;color:#64748b;margin:0;"></p>
       </div>
       <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f1f5f9;">
+          <span style="font-size:13px;color:#94a3b8;">Transaction ID</span>
+          <span id="tx-modal-txid" style="font-size:12px;font-weight:600;color:#1e293b;font-family:monospace;"></span>
+        </div>
         <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f1f5f9;">
           <span style="font-size:13px;color:#94a3b8;">Status</span>
           <span id="tx-modal-status" style="font-size:13px;font-weight:600;"></span>
@@ -1166,72 +1171,97 @@
     })
 
     // ── TRANSACTION MODAL ─────────────────
-    window.openTransactionModal = function(index) {
-      const tx = window._currentTxList?.[index]
-      if (!tx) return
+  window.openTransactionModal = function(index) {
+  const tx = window._currentTxList?.[index]
+  if (!tx) return
 
-      const isSender = tx.sender_id === currentUser.id
-      const isSelf = tx.sender_id === currentUser.id && tx.receiver_id === currentUser.id
+  const isSender = tx.sender_id === currentUser.id
+  const isSelf = tx.sender_id === currentUser.id && tx.receiver_id === currentUser.id
 
-      // Label
-      let label = ''
-      if (tx.admin_created) {
-        label = tx.note || 'Bank Transaction'
-      } else if (isSelf) {
-        label = tx.note || 'Transfer'
-      } else if (isSender) {
-        label = `To ${tx.receiver?.full_name || 'Unknown'}`
-      } else {
-        label = `From ${tx.sender?.full_name || 'Unknown'}`
-      }
+  // Label
+  let label = ''
+  if (tx.admin_created) {
+    label = isSender ? (tx.receiver_name || 'Bank Transfer') : (tx.sender_name || 'Bank Transfer')
+  } else if (isSelf) {
+    label = tx.note || 'Transfer'
+  } else if (isSender) {
+    label = `To ${tx.receiver?.full_name || 'Unknown'}`
+  } else {
+    label = `From ${tx.sender?.full_name || 'Unknown'}`
+  }
 
-      const amountColor = isSender && !isSelf ? '#ef4444' : isSelf ? '#6366f1' : '#22c55e'
-      const amountPrefix = isSender && !isSelf ? '-' : isSelf ? '' : '+'
-      const iconBg = isSender && !isSelf ? '#fff1f2' : isSelf ? '#eef2ff' : '#f0fdf4'
-      const iconColor = isSender && !isSelf ? '#ef4444' : isSelf ? '#6366f1' : '#22c55e'
-      const iconName = isSender && !isSelf ? 'arrow-up-right' : isSelf ? 'refresh-cw' : 'arrow-down-left'
+  const amountColor = isSender && !isSelf ? '#ef4444' : '#22c55e'
+  const amountPrefix = isSender && !isSelf ? '-' : '+'
+  const iconBg = isSender && !isSelf ? '#fff1f2' : '#f0fdf4'
+  const iconColor = isSender && !isSelf ? '#ef4444' : '#22c55e'
+  const iconName = isSender && !isSelf ? 'arrow-up-right' : 'arrow-down-left'
 
-      const statusColors = { completed:'#16a34a', pending:'#d97706', failed:'#ef4444' }
-      const statusLabels = { completed:'✅ Completed', pending:'⏳ Pending', failed:'❌ Failed' }
-      const status = tx.status || 'completed'
+  const statusColors = { completed:'#16a34a', pending:'#d97706', failed:'#ef4444' }
+  const statusLabels = { completed:'✅ Completed', pending:'⏳ Pending', failed:'❌ Failed' }
+  const status = tx.status || 'completed'
 
-      const fullDate = new Date(tx.created_at).toLocaleDateString('en-US', {
-        weekday:'short', month:'long', day:'numeric', year:'numeric'
-      })
-      const fullTime = new Date(tx.created_at).toLocaleTimeString('en-US', {
-        hour:'2-digit', minute:'2-digit'
-      })
+  const fullDate = new Date(tx.created_at).toLocaleDateString('en-US', {
+    weekday:'short', month:'long', day:'numeric', year:'numeric'
+  })
+  const fullTime = new Date(tx.created_at).toLocaleTimeString('en-US', {
+    hour:'2-digit', minute:'2-digit'
+  })
 
-      const fromName = tx.admin_created
-  ? (tx.sender?.full_name || 'SilverCrest Bank')
-  : (tx.sender?.full_name || 'Unknown')
+  // From / To with account numbers
+  let fromName, fromAcct, toName, toAcct
 
-const toName = tx.admin_created
-  ? (tx.receiver?.full_name || 'SilverCrest Bank')
-  : (tx.receiver?.full_name || 'Unknown')
-
-      document.getElementById('tx-modal-icon').style.background = iconBg
-      document.getElementById('tx-modal-icon').innerHTML =
-        `<i data-lucide="${iconName}" style="width:24px;height:24px;color:${iconColor};"></i>`
-      document.getElementById('tx-modal-amount').textContent = `${amountPrefix}$${parseFloat(tx.amount).toFixed(2)}`
-      document.getElementById('tx-modal-amount').style.color = amountColor
-      document.getElementById('tx-modal-label').textContent = label
-      document.getElementById('tx-modal-status').textContent = statusLabels[status] || status
-      document.getElementById('tx-modal-status').style.color = statusColors[status] || '#94a3b8'
-      document.getElementById('tx-modal-date').textContent = `${fullDate} at ${fullTime}`
-      document.getElementById('tx-modal-type').textContent =
-        tx.admin_created ? 'Bank Transaction' :
-        isSelf ? 'Internal Transfer' :
-        isSender ? 'Outgoing Transfer' : 'Incoming Transfer'
-      document.getElementById('tx-modal-from').textContent = fromName
-      document.getElementById('tx-modal-to').textContent = toName
-      document.getElementById('tx-modal-note').textContent = tx.note || '—'
-
-      const modal = document.getElementById('tx-modal')
-      modal.style.display = 'flex'
-      document.body.style.overflow = 'hidden'
-      lucide.createIcons()
+  if (tx.admin_created) {
+    if (isSender) {
+      // Debit — user sent
+      fromName = tx.sender_name || currentProfile?.full_name || 'You'
+      fromAcct = tx.sender_account || '—'
+      toName = tx.receiver_name || 'Unknown'
+      toAcct = tx.receiver_account || '—'
+    } else {
+      // Credit — user received
+      fromName = tx.sender_name || 'Unknown'
+      fromAcct = tx.sender_account || '—'
+      toName = tx.receiver_name || currentProfile?.full_name || 'You'
+      toAcct = tx.receiver_account || '—'
     }
+  } else {
+    fromName = tx.sender?.full_name || 'Unknown'
+    fromAcct = '—'
+    toName = tx.receiver?.full_name || 'Unknown'
+    toAcct = '—'
+  }
+
+  const txId = 'TXN-' + tx.id.replace(/-/g,'').substring(0,8).toUpperCase()
+
+  document.getElementById('tx-modal-icon').style.background = iconBg
+  document.getElementById('tx-modal-icon').innerHTML =
+    `<i data-lucide="${iconName}" style="width:24px;height:24px;color:${iconColor};"></i>`
+  document.getElementById('tx-modal-amount').textContent =
+    `${amountPrefix}$${parseFloat(tx.amount).toFixed(2)}`
+  document.getElementById('tx-modal-amount').style.color = amountColor
+  document.getElementById('tx-modal-label').textContent = label
+  document.getElementById('tx-modal-status').textContent = statusLabels[status] || status
+  document.getElementById('tx-modal-status').style.color = statusColors[status] || '#94a3b8'
+  document.getElementById('tx-modal-date').textContent = `${fullDate} at ${fullTime}`
+  document.getElementById('tx-modal-type').textContent =
+    tx.admin_created ? (tx.category || 'Bank Transaction') :
+    isSelf ? 'Internal Transfer' :
+    isSender ? 'Outgoing Transfer' : 'Incoming Transfer'
+  document.getElementById('tx-modal-from').textContent =
+    fromAcct !== '—' ? `${fromName} · Acc: ${fromAcct}` : fromName
+  document.getElementById('tx-modal-to').textContent =
+    toAcct !== '—' ? `${toName} · Acc: ${toAcct}` : toName
+  document.getElementById('tx-modal-note').textContent = tx.note || '—'
+
+  // Add transaction ID to modal — find the note row and add ID above it
+  const txIdEl = document.getElementById('tx-modal-txid')
+  if (txIdEl) txIdEl.textContent = txId
+
+  const modal = document.getElementById('tx-modal')
+  modal.style.display = 'flex'
+  document.body.style.overflow = 'hidden'
+  lucide.createIcons()
+}
 
     window.closeTxModal = function() {
       document.getElementById('tx-modal').style.display = 'none'
@@ -1455,89 +1485,102 @@ const toName = tx.admin_created
     }
 
     // ── TRANSACTIONS ──────────────────────
-    async function loadTransactions() {
-      const { data: txs } = await supabase
-        .from('transactions')
-        .select('*, sender:sender_id(full_name,email,is_admin), receiver:receiver_id(full_name,email,is_admin)')
-        .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
-        .order('created_at', { ascending: false })
-     // Filter out admin transactions where admin is both sender and receiver (internal adjustments)
-allTransactions = (txs || []).filter(tx => {
-  if (tx.admin_created && tx.sender_id === tx.receiver_id) return false
-  return true
-})
-      renderTransactions(allTransactions, 'recent-tx-list', 5)
-      renderTransactions(allTransactions, 'all-tx-list')
-    }
+async function loadTransactions() {
+  const { data: txs } = await supabase
+    .from('transactions')
+    .select('*, sender:sender_id(full_name,email,is_admin), receiver:receiver_id(full_name,email,is_admin)')
+    .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
+    .order('created_at', { ascending: false })
+
+  // Filter out admin self-transactions (balance adjustments)
+  allTransactions = (txs || []).filter(tx => {
+    if (tx.admin_created && tx.sender_id === tx.receiver_id) return false
+    if (tx.admin_created && tx.sender?.is_admin && tx.receiver?.is_admin) return false
+    return true
+  })
+
+  renderTransactions(allTransactions, 'recent-tx-list', 5)
+  renderTransactions(allTransactions, 'all-tx-list')
+}
 
     function renderTransactions(txs, containerId, limit = null) {
-      const container = document.getElementById(containerId)
-      const list = limit ? txs.slice(0, limit) : txs
-      if (!list.length) {
-        container.innerHTML = `
-          <div style="text-align:center;padding:32px 0;">
-            <i data-lucide="inbox" style="width:32px;height:32px;color:#e2e8f0;margin:0 auto 8px;display:block;"></i>
-            <p style="color:#94a3b8;font-size:14px;">No transactions yet</p>
-          </div>`
-        lucide.createIcons(); return
+  const container = document.getElementById(containerId)
+  const list = limit ? txs.slice(0, limit) : txs
+  if (!list.length) {
+    container.innerHTML = `
+      <div style="text-align:center;padding:32px 0;">
+        <i data-lucide="inbox" style="width:32px;height:32px;color:#e2e8f0;margin:0 auto 8px;display:block;"></i>
+        <p style="color:#94a3b8;font-size:14px;">No transactions yet</p>
+      </div>`
+    lucide.createIcons(); return
+  }
+
+  window._currentTxList = list
+
+  container.innerHTML = list.map((tx, index) => {
+    const isSender = tx.sender_id === currentUser.id
+    const isSelf = tx.sender_id === currentUser.id && tx.receiver_id === currentUser.id
+
+    // Display label — use custom names for admin-created
+    let label = ''
+    if (tx.admin_created) {
+      if (isSender) {
+        // Debit — user is sender
+        label = tx.receiver_name || 'Bank Transfer'
+      } else {
+        // Credit — user is receiver
+        label = tx.sender_name || 'Bank Transfer'
       }
-
-      // Store for modal access
-      window._currentTxList = list
-
-      container.innerHTML = list.map((tx, index) => {
-        const isSender = tx.sender_id === currentUser.id
-        const isSelf = tx.sender_id === currentUser.id && tx.receiver_id === currentUser.id
-
-        // Display label
-        let label = ''
-        if (tx.admin_created) {
-          label = tx.note || 'Bank Transaction'
-        } else if (isSelf) {
-          label = tx.note || 'Transfer'
-        } else if (isSender) {
-          label = `To ${tx.receiver?.full_name || 'Unknown'}`
-        } else {
-          label = `From ${tx.sender?.full_name || 'Unknown'}`
-        }
-
-        const amountColor = isSender && !isSelf ? '#ef4444' : isSelf ? '#6366f1' : '#22c55e'
-        const amountPrefix = isSender && !isSelf ? '-' : isSelf ? '' : '+'
-        const iconBg = isSender && !isSelf ? '#fff1f2' : isSelf ? '#eef2ff' : '#f0fdf4'
-        const iconColor = isSender && !isSelf ? '#ef4444' : isSelf ? '#6366f1' : '#22c55e'
-        const iconName = isSender && !isSelf ? 'arrow-up-right' : isSelf ? 'refresh-cw' : 'arrow-down-left'
-
-        const statusBadge = tx.status && tx.status !== 'completed' ?
-          `<span style="font-size:10px;font-weight:600;color:${tx.status === 'pending' ? '#d97706' : '#ef4444'};margin-left:4px;">${tx.status.toUpperCase()}</span>` : ''
-
-        // Full date with year
-        const date = new Date(tx.created_at).toLocaleDateString('en-US', {
-          month:'short', day:'numeric', year:'numeric'
-        })
-
-        return `
-          <div class="tx-item" onclick="openTransactionModal(${index})">
-            <div class="tx-icon" style="background:${iconBg};">
-              <i data-lucide="${iconName}" style="width:16px;height:16px;color:${iconColor};"></i>
-            </div>
-            <div style="flex:1;min-width:0;">
-              <div style="display:flex;align-items:center;gap:4px;">
-                <p style="font-size:13px;font-weight:600;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${label}</p>
-                ${statusBadge}
-              </div>
-              <p style="font-size:11px;color:#94a3b8;margin-top:2px;">${date}</p>
-            </div>
-            <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-              <span style="font-size:13px;font-weight:700;color:${amountColor};">
-                ${amountPrefix}$${parseFloat(tx.amount).toFixed(2)}
-              </span>
-              <i data-lucide="chevron-right" style="width:14px;height:14px;color:#cbd5e1;"></i>
-            </div>
-          </div>`
-      }).join('')
-
-      lucide.createIcons()
+    } else if (isSelf) {
+      label = tx.note || 'Transfer'
+    } else if (isSender) {
+      label = `To ${tx.receiver?.full_name || 'Unknown'}`
+    } else {
+      label = `From ${tx.sender?.full_name || 'Unknown'}`
     }
+
+    const amountColor = isSender && !isSelf ? '#ef4444' : '#22c55e'
+    const amountPrefix = isSender && !isSelf ? '-' : '+'
+    const iconBg = isSender && !isSelf ? '#fff1f2' : '#f0fdf4'
+    const iconColor = isSender && !isSelf ? '#ef4444' : '#22c55e'
+    const iconName = isSender && !isSelf ? 'arrow-up-right' : 'arrow-down-left'
+
+    const statusBadge = tx.status && tx.status !== 'completed' ?
+      `<span style="font-size:10px;font-weight:600;color:${tx.status === 'pending' ? '#d97706' : '#ef4444'};margin-left:4px;">
+        ${tx.status.toUpperCase()}
+      </span>` : ''
+
+    const date = new Date(tx.created_at).toLocaleDateString('en-US', {
+      month:'short', day:'numeric', year:'numeric'
+    })
+
+    const txId = 'TXN-' + tx.id.replace(/-/g,'').substring(0,8).toUpperCase()
+
+    return `
+      <div class="tx-item" onclick="openTransactionModal(${index})">
+        <div class="tx-icon" style="background:${iconBg};">
+          <i data-lucide="${iconName}" style="width:16px;height:16px;color:${iconColor};"></i>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:4px;">
+            <p style="font-size:13px;font-weight:600;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+              ${label}
+            </p>
+            ${statusBadge}
+          </div>
+          <p style="font-size:11px;color:#94a3b8;margin-top:2px;">${date}</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+          <span style="font-size:13px;font-weight:700;color:${amountColor};">
+            ${amountPrefix}$${parseFloat(tx.amount).toFixed(2)}
+          </span>
+          <i data-lucide="chevron-right" style="width:14px;height:14px;color:#cbd5e1;"></i>
+        </div>
+      </div>`
+  }).join('')
+
+  lucide.createIcons()
+}
 
     window.filterTransactions = function() {
       const q = document.getElementById('tx-search').value.toLowerCase()
