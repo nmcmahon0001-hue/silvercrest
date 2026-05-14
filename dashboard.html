@@ -1203,14 +1203,12 @@
       })
 
       const fromName = tx.admin_created
-        ? 'SilverCrest Bank'
-        : tx.sender?.is_admin
-        ? 'SilverCrest Bank'
-        : (tx.sender?.full_name || 'Unknown')
+  ? (tx.sender?.full_name || 'SilverCrest Bank')
+  : (tx.sender?.full_name || 'Unknown')
 
-      const toName = tx.receiver?.is_admin
-        ? 'SilverCrest Bank'
-        : (tx.receiver?.full_name || 'Unknown')
+const toName = tx.admin_created
+  ? (tx.receiver?.full_name || 'SilverCrest Bank')
+  : (tx.receiver?.full_name || 'Unknown')
 
       document.getElementById('tx-modal-icon').style.background = iconBg
       document.getElementById('tx-modal-icon').innerHTML =
@@ -1463,7 +1461,11 @@
         .select('*, sender:sender_id(full_name,email,is_admin), receiver:receiver_id(full_name,email,is_admin)')
         .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
         .order('created_at', { ascending: false })
-      allTransactions = txs || []
+     // Filter out admin transactions where admin is both sender and receiver (internal adjustments)
+allTransactions = (txs || []).filter(tx => {
+  if (tx.admin_created && tx.sender_id === tx.receiver_id) return false
+  return true
+})
       renderTransactions(allTransactions, 'recent-tx-list', 5)
       renderTransactions(allTransactions, 'all-tx-list')
     }
