@@ -655,7 +655,7 @@
           </div>
 
           <!-- ── WIRE TRANSFER ── -->
-          <div id="form-wire" class="hidden">
+          <div id="form-wire" style="display:none;">
             <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-5">
               <p class="text-xs text-blue-700 font-semibold mb-1">🌐 International Wire Transfer</p>
               <p class="text-xs text-blue-600">Funds are held immediately and released upon approval. Usually processed within 1-3 business days.</p>
@@ -710,7 +710,7 @@
           </div>
 
           <!-- ── BANK TRANSFER ── -->
-          <div id="form-bank" class="hidden">
+          <div id="form-bank" style="display:none;">
             <div class="bg-green-50 border border-green-100 rounded-xl p-4 mb-5">
               <p class="text-xs text-green-700 font-semibold mb-1">🏦 Domestic Bank Transfer</p>
               <p class="text-xs text-green-600">Funds are held immediately and released upon approval. Usually processed within 2-5 business days.</p>
@@ -1325,15 +1325,7 @@
     const tabBtn = document.getElementById('tab-' + t)
     const formDiv = document.getElementById('form-' + t)
     if (tabBtn) tabBtn.classList.toggle('active', t === tab)
-    if (formDiv) {
-      if (t === tab) {
-        formDiv.style.display = 'block'
-        formDiv.classList.remove('hidden')
-      } else {
-        formDiv.style.display = 'none'
-        formDiv.classList.add('hidden')
-      }
-    }
+    if (formDiv) formDiv.style.display = t === tab ? 'block' : 'none'
   })
   document.getElementById('transfer-error').classList.add('hidden')
   document.getElementById('transfer-success').classList.add('hidden')
