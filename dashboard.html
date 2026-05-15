@@ -1509,6 +1509,8 @@ window.closeSuccessModal = function() {
   document.getElementById('success-modal').style.display = 'none'
   document.body.style.overflow = ''
 }
+
+
 // PIN SYSTEM
 var currentPin = ''
 var pinAttempts = 0
@@ -1548,7 +1550,7 @@ function shakePinDots(prefix) {
   }, 600)
 }
 
-window.showPinModal = function(callback) {
+window._showPinModal = function(callback) {
   if (!currentProfile || !currentProfile.transaction_pin) {
     window.openSetPinModal(function() {
       window.showPinModal(callback)
@@ -1571,14 +1573,14 @@ window.showPinModal = function(callback) {
   lucide.createIcons()
 }
 
-window.closePinModal = function() {
+window._closePinModal = function() {
   document.getElementById('pin-modal').style.display = 'none'
   document.body.style.overflow = ''
   currentPin = ''
   pinCallback = null
 }
 
-window.pinInput = function(digit) {
+window._pinInput = function(digit) {
   if (currentPin.length >= 4 || pinLocked) return
   currentPin += digit
   updatePinDots('pin-dot', currentPin)
@@ -1587,7 +1589,7 @@ window.pinInput = function(digit) {
   }
 }
 
-window.pinBackspace = function() {
+window._pinBackspace = function() {
   if (currentPin.length === 0) return
   currentPin = currentPin.slice(0, -1)
   updatePinDots('pin-dot', currentPin)
@@ -1627,7 +1629,7 @@ function validatePin() {
   }
 }
 
-window.openSetPinModal = function(callback) {
+window._openSetPinModal = function(callback) {
   setPinCurrent = ''
   setPinFirst = ''
   setPinStep = 1
@@ -1643,7 +1645,7 @@ window.openSetPinModal = function(callback) {
   lucide.createIcons()
 }
 
-window.closeSetPinModal = function() {
+window._closeSetPinModal = function() {
   document.getElementById('set-pin-modal').style.display = 'none'
   document.body.style.overflow = ''
   setPinCurrent = ''
@@ -1651,7 +1653,7 @@ window.closeSetPinModal = function() {
   setPinStep = 1
 }
 
-window.setPinInput = function(digit) {
+window._setPinInput = function(digit) {
   if (setPinCurrent.length >= 4) return
   setPinCurrent += digit
   updatePinDots('set-pin-dot', setPinCurrent)
@@ -1660,7 +1662,7 @@ window.setPinInput = function(digit) {
   }
 }
 
-window.setPinBackspace = function() {
+window._setPinBackspace = function() {
   if (setPinCurrent.length === 0) return
   setPinCurrent = setPinCurrent.slice(0, -1)
   updatePinDots('set-pin-dot', setPinCurrent)
@@ -1915,7 +1917,7 @@ function setupTransferButtons() {
       return
     }
 
-    window.showPinModal(async function() {
+    window._showPinModal(async function() {
       var btn = document.getElementById('instant-btn')
       btn.textContent = 'Sending...'; btn.disabled = true
 
@@ -1997,7 +1999,7 @@ function setupTransferButtons() {
       return
     }
 
-    window.showPinModal(async function() {
+    window._showPinModal(async function() {
       var btn = document.getElementById('wire-btn')
       btn.textContent = 'Submitting...'; btn.disabled = true
 
@@ -2077,7 +2079,7 @@ function setupTransferButtons() {
       return
     }
 
-    window.showPinModal(async function() {
+   window._showPinModal(async function() {
       var btn = document.getElementById('bank-btn')
       btn.textContent = 'Submitting...'; btn.disabled = true
 
@@ -2352,6 +2354,32 @@ window.handleLogout = async function() {
 }
 
 init()
+</script>
+ <script>
+function openSetPinModal(cb) {
+  if (window._openSetPinModal) window._openSetPinModal(cb)
+}
+function closeSetPinModal() {
+  if (window._closeSetPinModal) window._closeSetPinModal()
+}
+function setPinInput(d) {
+  if (window._setPinInput) window._setPinInput(d)
+}
+function setPinBackspace() {
+  if (window._setPinBackspace) window._setPinBackspace()
+}
+function pinInput(d) {
+  if (window._pinInput) window._pinInput(d)
+}
+function pinBackspace() {
+  if (window._pinBackspace) window._pinBackspace()
+}
+function closePinModal() {
+  if (window._closePinModal) window._closePinModal()
+}
+function showPinModal(cb) {
+  if (window._showPinModal) window._showPinModal(cb)
+}
 </script>
 <script>lucide.createIcons();</script>
 </body>
