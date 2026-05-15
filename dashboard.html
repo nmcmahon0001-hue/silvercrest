@@ -1514,13 +1514,42 @@ var currentPin = ''
 var pinAttempts = 0
 var pinLocked = false
 var pinCallback = null
-
 var setPinCurrent = ''
 var setPinFirst = ''
 var setPinStep = 1
 
+function updatePinDots(prefix, pin) {
+  for (var i = 0; i < 4; i++) {
+    var dot = document.getElementById(prefix + '-' + i)
+    if (dot) {
+      dot.style.background = i < pin.length ? '#4f46e5' : '#e2e8f0'
+      dot.style.transform = i < pin.length ? 'scale(1.2)' : 'scale(1)'
+    }
+  }
+}
+
+function shakePinDots(prefix) {
+  for (var i = 0; i < 4; i++) {
+    var dot = document.getElementById(prefix + '-' + i)
+    if (dot) {
+      dot.style.background = '#ef4444'
+      dot.style.animation = 'shake 0.4s ease'
+    }
+  }
+  setTimeout(function() {
+    for (var i = 0; i < 4; i++) {
+      var dot = document.getElementById(prefix + '-' + i)
+      if (dot) {
+        dot.style.background = '#e2e8f0'
+        dot.style.animation = ''
+        dot.style.transform = 'scale(1)'
+      }
+    }
+  }, 600)
+}
+
 window.showPinModal = function(callback) {
-  if (!currentProfile.transaction_pin) {
+  if (!currentProfile || !currentProfile.transaction_pin) {
     window.openSetPinModal(function() {
       window.showPinModal(callback)
     })
@@ -1536,7 +1565,8 @@ window.showPinModal = function(callback) {
   updatePinDots('pin-dot', currentPin)
   document.getElementById('pin-error').style.display = 'none'
   document.getElementById('pin-attempts').textContent = ''
-  document.getElementById('pin-modal').style.display = 'flex'
+  var modal = document.getElementById('pin-modal')
+  modal.style.display = 'flex'
   document.body.style.overflow = 'hidden'
   lucide.createIcons()
 }
@@ -1576,35 +1606,20 @@ function validatePin() {
     pinAttempts++
     currentPin = ''
     updatePinDots('pin-dot', '')
-    var dotsContainer = document.querySelector('#pin-modal .pin-dots')
+    shakePinDots('pin-dot')
     var errEl = document.getElementById('pin-error')
     var attEl = document.getElementById('pin-attempts')
     errEl.textContent = 'Incorrect PIN. Try again.'
     errEl.style.display = 'block'
-
-    // Shake dots
-    for (var i = 0; i < 4; i++) {
-      var dot = document.getElementById('pin-dot-' + i)
-      dot.style.animation = 'none'
-      dot.style.background = '#ef4444'
-      void dot.offsetWidth
-      dot.style.animation = 'shake 0.4s ease'
-    }
-    setTimeout(function() {
-      for (var i = 0; i < 4; i++) {
-        document.getElementById('pin-dot-' + i).style.background = '#e2e8f0'
-        document.getElementById('pin-dot-' + i).style.animation = ''
-      }
-    }, 600)
-
     if (pinAttempts >= 3) {
       pinLocked = true
       errEl.textContent = 'Too many attempts. Locked for 30 seconds.'
       attEl.textContent = ''
+      document.getElementById('pin-modal').style.display = 'none'
+      document.body.style.overflow = ''
       setTimeout(function() {
         pinLocked = false
         pinAttempts = 0
-        errEl.style.display = 'none'
       }, 30000)
     } else {
       attEl.textContent = (3 - pinAttempts) + ' attempt' + (3 - pinAttempts === 1 ? '' : 's') + ' remaining'
@@ -1612,28 +1627,18 @@ function validatePin() {
   }
 }
 
-function updatePinDots(prefix, pin) {
-  for (var i = 0; i < 4; i++) {
-    var dot = document.getElementById(prefix + '-' + i)
-    if (dot) {
-      dot.style.background = i < pin.length ? '#4f46e5' : '#e2e8f0'
-      dot.style.transform = i < pin.length ? 'scale(1.2)' : 'scale(1)'
-    }
-  }
-}
-
-// SET PIN
 window.openSetPinModal = function(callback) {
   setPinCurrent = ''
   setPinFirst = ''
   setPinStep = 1
   pinCallback = callback || null
   updatePinDots('set-pin-dot', '')
-  document.getElementById('set-pin-title').textContent = currentProfile.transaction_pin ? 'Change Transaction PIN' : 'Set Transaction PIN'
-  document.getElementById('set-pin-subtitle').textContent = currentProfile.transaction_pin ? 'Enter a new 4-digit PIN' : 'Choose a 4-digit PIN for authorizing transactions'
+  document.getElementById('set-pin-title').textContent = (currentProfile && currentProfile.transaction_pin) ? 'Change Transaction PIN' : 'Set Transaction PIN'
+  document.getElementById('set-pin-subtitle').textContent = (currentProfile && currentProfile.transaction_pin) ? 'Enter a new 4-digit PIN' : 'Choose a 4-digit PIN for authorizing transactions'
   document.getElementById('set-pin-step-label').textContent = 'Step 1 of 2: Enter new PIN'
   document.getElementById('set-pin-error').style.display = 'none'
-  document.getElementById('set-pin-modal').style.display = 'flex'
+  var modal = document.getElementById('set-pin-modal')
+  modal.style.display = 'flex'
   document.body.style.overflow = 'hidden'
   lucide.createIcons()
 }
@@ -1671,15 +1676,31 @@ async function processPinStep() {
     document.getElementById('set-pin-error').style.display = 'none'
   } else {
     if (setPinCurrent === setPinFirst) {
-      await supabase.from('profiles').update({ transaction_pin: setPinCurrent }).eq('id', currentUser.id)
+      var res = await supabase.from('profiles').update({ transaction_pin: setPinCurrent }).eq('id', currentUser.id)
+      if (res.error) {
+        document.getElementById('set-pin-error').textContent = 'Failed to save PIN: ' + res.error.message
+        document.getElementById('set-pin-error').style.display = 'block'
+        setPinCurrent = ''
+        setPinStep = 1
+        setPinFirst = ''
+        updatePinDots('set-pin-dot', '')
+        document.getElementById('set-pin-step-label').textContent = 'Step 1 of 2: Enter new PIN'
+        return
+      }
       currentProfile.transaction_pin = setPinCurrent
       document.getElementById('set-pin-modal').style.display = 'none'
       document.body.style.overflow = ''
+      var cb = pinCallback
       setPinCurrent = ''
       setPinFirst = ''
       setPinStep = 1
-      var cb = pinCallback
       pinCallback = null
+
+      var pinStatus = document.getElementById('profile-pin-status')
+      var pinBtn = document.getElementById('profile-pin-btn')
+      if (pinStatus) pinStatus.textContent = 'PIN is active'
+      if (pinBtn) pinBtn.textContent = 'Change PIN'
+
       if (cb) {
         cb()
       } else {
@@ -1689,8 +1710,6 @@ async function processPinStep() {
           'Your transaction PIN has been saved. You will need it to authorize all future transactions.',
           [{ label: 'Status', value: 'Active' }]
         )
-        // Refresh profile section
-        updateProfilePinSection()
       }
     } else {
       setPinCurrent = ''
@@ -1700,26 +1719,9 @@ async function processPinStep() {
       document.getElementById('set-pin-error').textContent = 'PINs do not match. Try again.'
       document.getElementById('set-pin-error').style.display = 'block'
       document.getElementById('set-pin-step-label').textContent = 'Step 1 of 2: Enter new PIN'
-      for (var i = 0; i < 4; i++) {
-        var dot = document.getElementById('set-pin-dot-' + i)
-        dot.style.background = '#ef4444'
-        dot.style.animation = 'shake 0.4s ease'
-      }
-      setTimeout(function() {
-        for (var i = 0; i < 4; i++) {
-          document.getElementById('set-pin-dot-' + i).style.background = '#e2e8f0'
-          document.getElementById('set-pin-dot-' + i).style.animation = ''
-        }
-      }, 600)
+      shakePinDots('set-pin-dot')
     }
   }
-}
-
-function updateProfilePinSection() {
-  var pinStatus = document.getElementById('profile-pin-status')
-  var pinBtn = document.getElementById('profile-pin-btn')
-  if (pinStatus) pinStatus.textContent = currentProfile.transaction_pin ? 'PIN is set' : 'No PIN set'
-  if (pinBtn) pinBtn.textContent = currentProfile.transaction_pin ? 'Change PIN' : 'Set PIN'
 }
 // INIT
 async function init() {
