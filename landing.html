@@ -9,124 +9,99 @@
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <style>
     * { font-family: 'Inter', sans-serif; }
-    .orb {
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(90px);
-      opacity: 0.2;
-      pointer-events: none;
-    }
+    .orb { position:absolute; border-radius:50%; filter:blur(90px); opacity:0.2; pointer-events:none; }
     .card-glass {
-      background: rgba(255,255,255,0.08);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255,255,255,0.15);
+      background:rgba(255,255,255,0.08); backdrop-filter:blur(12px);
+      -webkit-backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.15);
     }
-    .float-card { animation: floatCard 7s ease-in-out infinite; }
-    @keyframes floatCard {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-14px); }
-    }
-    .float-card-2 { animation: floatCard2 9s ease-in-out infinite; }
-    @keyframes floatCard2 {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-10px); }
-    }
-    .fade-in {
-      opacity: 0;
-      transform: translateY(24px);
-      animation: fadeIn 0.9s ease forwards;
-    }
-    .delay-1 { animation-delay: 0.15s; }
-    .delay-2 { animation-delay: 0.3s; }
-    .delay-3 { animation-delay: 0.5s; }
-    .delay-4 { animation-delay: 0.7s; }
+    .float-card { animation:floatCard 7s ease-in-out infinite; }
+    @keyframes floatCard { 0%,100%{transform:translateY(0px);} 50%{transform:translateY(-14px);} }
+    .float-card-2 { animation:floatCard2 9s ease-in-out infinite; }
+    @keyframes floatCard2 { 0%,100%{transform:translateY(0px);} 50%{transform:translateY(-10px);} }
+    .fade-in { opacity:0; transform:translateY(24px); animation:fadeIn 0.9s ease forwards; }
+    .delay-1 { animation-delay:0.15s; }
+    .delay-2 { animation-delay:0.3s; }
+    .delay-3 { animation-delay:0.5s; }
+    .delay-4 { animation-delay:0.7s; }
     @keyframes fadeIn { to { opacity:1; transform:translateY(0); } }
-    .pulse-dot { animation: pulseDot 2s ease-in-out infinite; }
+    .pulse-dot { animation:pulseDot 2s ease-in-out infinite; }
     @keyframes pulseDot { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
-    .ticker-wrap { overflow: hidden; background: #08080f; }
-    .ticker { display: flex; animation: ticker 28s linear infinite; width: max-content; }
+    .ticker-wrap { overflow:hidden; background:#08080f; }
+    .ticker { display:flex; animation:ticker 28s linear infinite; width:max-content; }
     @keyframes ticker { from{transform:translateX(0);} to{transform:translateX(-50%);} }
-    .feature-card { transition: transform 0.25s ease, box-shadow 0.25s ease; }
-    .feature-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.08); }
+    .feature-card { transition:transform 0.25s ease,box-shadow 0.25s ease; }
+    .feature-card:hover { transform:translateY(-5px); box-shadow:0 20px 40px rgba(0,0,0,0.08); }
+    .testimonial-card {
+      background:white; border-radius:20px; padding:24px; border:1px solid #f1f5f9;
+      transition:transform 0.25s ease,box-shadow 0.25s ease;
+    }
+    .testimonial-card:hover { transform:translateY(-4px); box-shadow:0 16px 40px rgba(0,0,0,0.08); }
   </style>
 </head>
 <body style="background:#fff;margin:0;padding:0;">
 
   <!-- NAVBAR -->
   <nav style="background:rgba(255,255,255,0.95);backdrop-filter:blur(12px);position:fixed;top:0;left:0;right:0;z-index:50;border-bottom:1px solid #f1f5f9;">
-    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-      <div class="flex items-center gap-2.5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex justify-between items-center">
+      <div class="flex items-center gap-2 flex-shrink-0">
         <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
           <span class="text-white font-bold text-sm">S</span>
         </div>
-        <span class="text-gray-900 font-bold text-xl">SilverCrest</span>
+        <span class="text-gray-900 font-bold text-lg">SilverCrest</span>
       </div>
       <div class="hidden md:flex items-center gap-8">
         <a href="#features" class="text-gray-500 hover:text-gray-900 text-sm font-medium transition">Features</a>
-        <a href="#crypto" class="text-gray-500 hover:text-gray-900 text-sm font-medium transition">Crypto</a>
+        <a href="#how-it-works" class="text-gray-500 hover:text-gray-900 text-sm font-medium transition">How it works</a>
         <a href="#security" class="text-gray-500 hover:text-gray-900 text-sm font-medium transition">Security</a>
       </div>
-      <div class="flex items-center gap-3">
-        <a href="index.html" class="text-gray-600 hover:text-gray-900 text-sm font-medium px-4 py-2 transition">Sign in</a>
-        <a href="signup.html" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition">
-          Get started free
+      <!-- Mobile + Desktop buttons -->
+      <div class="flex items-center gap-2">
+        <a href="index.html"
+          class="text-gray-600 hover:text-gray-900 font-medium transition rounded-xl hover:bg-gray-50"
+          style="padding:8px 12px;font-size:13px;white-space:nowrap;">
+          Sign in
+        </a>
+        <a href="signup.html"
+          class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition"
+          style="padding:8px 14px;font-size:13px;white-space:nowrap;">
+          Get started
         </a>
       </div>
     </div>
   </nav>
 
-  <!-- HERO SECTION — inline background guaranteed -->
+  <!-- HERO -->
   <section style="background:linear-gradient(135deg,#0f0c29 0%,#302b63 50%,#24243e 100%);min-height:100vh;display:flex;align-items:center;position:relative;overflow:hidden;padding-top:80px;">
-
-    <!-- Grid overlay -->
     <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;"></div>
-
-    <!-- Orbs -->
     <div class="orb" style="width:600px;height:600px;background:#4f46e5;top:-200px;left:-200px;"></div>
     <div class="orb" style="width:500px;height:500px;background:#7c3aed;bottom:-100px;right:-150px;"></div>
     <div class="orb" style="width:350px;height:350px;background:#2563eb;top:50%;left:40%;"></div>
 
-    <div class="max-w-7xl mx-auto px-6 py-20 w-full relative" style="z-index:10;">
-      <div class="grid lg:grid-cols-2 gap-20 items-center">
+    <div class="max-w-7xl mx-auto px-6 py-16 lg:py-20 w-full relative" style="z-index:10;">
+      <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
 
-        <!-- LEFT: Text -->
+        <!-- LEFT -->
         <div>
-          <div class="fade-in inline-flex items-center gap-2 rounded-full px-4 py-2 mb-7"
-            style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);">
+          <div class="fade-in inline-flex items-center gap-2 rounded-full px-4 py-2 mb-6" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);">
             <div class="pulse-dot w-2 h-2 bg-green-400 rounded-full"></div>
-            <span style="color:rgba(255,255,255,0.8);" class="text-xs font-medium">
-              Now with Crypto support
-            </span>
+            <span style="color:rgba(255,255,255,0.8);" class="text-xs font-medium">Now with Crypto support</span>
           </div>
-
-          <h1 class="fade-in delay-1 text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-6">
+          <h1 class="fade-in delay-1 text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-5">
             Banking for<br/>
-            <span style="background:linear-gradient(90deg,#818cf8,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
-              the digital age.
-            </span>
+            <span style="background:linear-gradient(90deg,#818cf8,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">the digital age.</span>
           </h1>
-
-          <p class="fade-in delay-2 text-lg mb-8 leading-relaxed max-w-lg"
-            style="color:rgba(200,210,255,0.85);">
-            Send money instantly, track every transaction, and manage crypto —
-            all from one clean, secure dashboard.
+          <p class="fade-in delay-2 text-base sm:text-lg mb-8 leading-relaxed max-w-lg" style="color:rgba(200,210,255,0.85);">
+            Send money instantly, track every transaction, and manage crypto — all from one clean, secure dashboard.
           </p>
-
-          <div class="fade-in delay-3 flex flex-col sm:flex-row gap-3 mb-10">
-            <a href="signup.html"
-              class="bg-white font-bold px-8 py-4 rounded-xl hover:bg-indigo-50 transition text-center text-sm shadow-2xl"
-              style="color:#4338ca;">
+          <div class="fade-in delay-3 flex flex-col sm:flex-row gap-3 mb-8">
+            <a href="signup.html" class="bg-white font-bold px-8 py-4 rounded-xl hover:bg-indigo-50 transition text-center text-sm shadow-2xl" style="color:#4338ca;">
               Open free account →
             </a>
-            <a href="index.html"
-              class="font-semibold px-8 py-4 rounded-xl transition text-center text-sm text-white"
-              style="border:1px solid rgba(255,255,255,0.25);">
+            <a href="index.html" class="font-semibold px-8 py-4 rounded-xl transition text-center text-sm text-white" style="border:1px solid rgba(255,255,255,0.25);">
               Sign in
             </a>
           </div>
-
-          <div class="fade-in delay-4 flex items-center gap-6">
+          <div class="fade-in delay-4 flex items-center gap-4 sm:gap-6 flex-wrap">
             <div class="flex items-center gap-2">
               <i data-lucide="shield-check" class="w-4 h-4 text-green-400"></i>
               <span class="text-xs" style="color:rgba(255,255,255,0.5);">256-bit SSL</span>
@@ -142,15 +117,12 @@
           </div>
         </div>
 
-        <!-- RIGHT: Floating Cards -->
-        <div class="flex flex-col items-center gap-4">
-
-          <!-- Main debit card -->
+        <!-- RIGHT: Floating Cards (hidden on mobile) -->
+        <div class="hidden lg:flex flex-col items-center gap-4">
           <div class="float-card w-80 card-glass rounded-2xl p-6 shadow-2xl">
             <div class="flex justify-between items-start mb-8">
               <div>
-                <p class="text-xs tracking-widest font-semibold uppercase mb-1"
-                  style="color:rgba(180,200,255,0.7);">SilverCrest</p>
+                <p class="text-xs tracking-widest font-semibold uppercase mb-1" style="color:rgba(180,200,255,0.7);">SilverCrest</p>
                 <p class="text-white text-sm font-medium">Personal Account</p>
               </div>
               <div class="w-10 h-7 rounded" style="background:linear-gradient(135deg,#f59e0b,#fcd34d);"></div>
@@ -168,13 +140,10 @@
               </div>
             </div>
           </div>
-
-          <!-- Two mini transaction cards -->
           <div class="flex gap-3 w-80">
             <div class="float-card-2 flex-1 card-glass rounded-2xl p-4">
               <div class="flex items-center gap-2 mb-2">
-                <div class="w-7 h-7 rounded-lg flex items-center justify-center"
-                  style="background:rgba(52,211,153,0.2);">
+                <div class="w-7 h-7 rounded-lg flex items-center justify-center" style="background:rgba(52,211,153,0.2);">
                   <i data-lucide="arrow-down-left" class="w-3.5 h-3.5 text-green-400"></i>
                 </div>
                 <span class="text-white text-xs font-medium">Received</span>
@@ -184,8 +153,7 @@
             </div>
             <div class="float-card flex-1 card-glass rounded-2xl p-4">
               <div class="flex items-center gap-2 mb-2">
-                <div class="w-7 h-7 rounded-lg flex items-center justify-center"
-                  style="background:rgba(96,165,250,0.2);">
+                <div class="w-7 h-7 rounded-lg flex items-center justify-center" style="background:rgba(96,165,250,0.2);">
                   <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 text-blue-400"></i>
                 </div>
                 <span class="text-white text-xs font-medium">Sent</span>
@@ -194,16 +162,12 @@
               <p class="text-xs mt-0.5" style="color:rgba(255,255,255,0.35);">To James M.</p>
             </div>
           </div>
-
-          <!-- Crypto card -->
           <div class="float-card-2 w-80 card-glass rounded-2xl p-4">
-            <p class="text-xs tracking-widest uppercase font-semibold mb-3"
-              style="color:rgba(255,255,255,0.4);">Crypto Portfolio</p>
+            <p class="text-xs tracking-widest uppercase font-semibold mb-3" style="color:rgba(255,255,255,0.4);">Crypto Portfolio</p>
             <div class="space-y-3">
               <div class="flex justify-between items-center">
                 <div class="flex items-center gap-2.5">
-                  <div class="w-8 h-8 rounded-full flex items-center justify-center"
-                    style="background:rgba(245,158,11,0.2);">
+                  <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background:rgba(245,158,11,0.2);">
                     <i data-lucide="bitcoin" class="w-4 h-4 text-yellow-400"></i>
                   </div>
                   <div>
@@ -218,8 +182,7 @@
               </div>
               <div class="flex justify-between items-center">
                 <div class="flex items-center gap-2.5">
-                  <div class="w-8 h-8 rounded-full flex items-center justify-center"
-                    style="background:rgba(96,165,250,0.2);">
+                  <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background:rgba(96,165,250,0.2);">
                     <i data-lucide="trending-up" class="w-4 h-4 text-blue-400"></i>
                   </div>
                   <div>
@@ -265,76 +228,137 @@
     </div>
   </div>
 
-  <!-- FEATURES -->
-  <section class="py-24 bg-white" id="features">
-    <div class="max-w-7xl mx-auto px-6">
-      <div class="text-center mb-16">
-        <p class="text-indigo-600 text-xs font-bold tracking-widest uppercase mb-3">Everything you need</p>
-        <h2 class="text-4xl font-bold text-gray-900 mb-4">Banking that works for you</h2>
-        <p class="text-gray-400 text-lg max-w-xl mx-auto">Built for speed, security, and simplicity.</p>
-      </div>
-      <div class="grid md:grid-cols-3 gap-6">
-        <div class="feature-card bg-gray-50 rounded-2xl p-7 border border-gray-100">
-          <div class="w-11 h-11 bg-indigo-100 rounded-xl flex items-center justify-center mb-5">
-            <i data-lucide="send" class="w-5 h-5 text-indigo-600"></i>
-          </div>
-          <h3 class="text-gray-900 font-bold text-base mb-2">Instant Transfers</h3>
-          <p class="text-gray-500 text-sm leading-relaxed">Send money to anyone in seconds. No delays, no fees, no paperwork.</p>
+  <!-- STATS -->
+  <section style="background:#f8fafc;border-bottom:1px solid #f1f5f9;" class="py-12">
+    <div class="max-w-5xl mx-auto px-6">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 text-center">
+        <div>
+          <p class="text-3xl lg:text-4xl font-extrabold text-indigo-600 mb-1">10K+</p>
+          <p class="text-sm text-gray-500 font-medium">Active Users</p>
         </div>
-        <div class="feature-card bg-gray-50 rounded-2xl p-7 border border-gray-100">
-          <div class="w-11 h-11 bg-yellow-100 rounded-xl flex items-center justify-center mb-5">
-            <i data-lucide="bitcoin" class="w-5 h-5 text-yellow-600"></i>
-          </div>
-          <h3 class="text-gray-900 font-bold text-base mb-2">Crypto Wallet</h3>
-          <p class="text-gray-500 text-sm leading-relaxed">Buy, sell, and hold Bitcoin, Ethereum and more — right from your dashboard.</p>
+        <div>
+          <p class="text-3xl lg:text-4xl font-extrabold text-indigo-600 mb-1">$2M+</p>
+          <p class="text-sm text-gray-500 font-medium">Transferred</p>
         </div>
-        <div class="feature-card bg-gray-50 rounded-2xl p-7 border border-gray-100">
-          <div class="w-11 h-11 bg-green-100 rounded-xl flex items-center justify-center mb-5">
-            <i data-lucide="shield-check" class="w-5 h-5 text-green-600"></i>
-          </div>
-          <h3 class="text-gray-900 font-bold text-base mb-2">Bank-grade Security</h3>
-          <p class="text-gray-500 text-sm leading-relaxed">256-bit encryption, secure auth, and real-time fraud monitoring.</p>
+        <div>
+          <p class="text-3xl lg:text-4xl font-extrabold text-indigo-600 mb-1">99.9%</p>
+          <p class="text-sm text-gray-500 font-medium">Uptime</p>
         </div>
-        <div class="feature-card bg-gray-50 rounded-2xl p-7 border border-gray-100">
-          <div class="w-11 h-11 bg-blue-100 rounded-xl flex items-center justify-center mb-5">
-            <i data-lucide="bar-chart-3" class="w-5 h-5 text-blue-600"></i>
-          </div>
-          <h3 class="text-gray-900 font-bold text-base mb-2">Live Transaction History</h3>
-          <p class="text-gray-500 text-sm leading-relaxed">Every transaction logged instantly. Always know where your money is.</p>
-        </div>
-        <div class="feature-card bg-gray-50 rounded-2xl p-7 border border-gray-100">
-          <div class="w-11 h-11 bg-purple-100 rounded-xl flex items-center justify-center mb-5">
-            <i data-lucide="globe" class="w-5 h-5 text-purple-600"></i>
-          </div>
-          <h3 class="text-gray-900 font-bold text-base mb-2">Send Anywhere</h3>
-          <p class="text-gray-500 text-sm leading-relaxed">Transfer money to any SilverCrest user globally. Borders don't stop us.</p>
-        </div>
-        <div class="feature-card bg-gray-50 rounded-2xl p-7 border border-gray-100">
-          <div class="w-11 h-11 bg-rose-100 rounded-xl flex items-center justify-center mb-5">
-            <i data-lucide="layout-dashboard" class="w-5 h-5 text-rose-600"></i>
-          </div>
-          <h3 class="text-gray-900 font-bold text-base mb-2">Smart Dashboard</h3>
-          <p class="text-gray-500 text-sm leading-relaxed">One clean view of your balance, transfers, and crypto portfolio.</p>
+        <div>
+          <p class="text-3xl lg:text-4xl font-extrabold text-indigo-600 mb-1">4.9★</p>
+          <p class="text-sm text-gray-500 font-medium">User Rating</p>
         </div>
       </div>
     </div>
   </section>
 
+  <!-- FEATURES -->
+  <section class="py-20 lg:py-24 bg-white" id="features">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center mb-14">
+        <p class="text-indigo-600 text-xs font-bold tracking-widest uppercase mb-3">Everything you need</p>
+        <h2 class="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">Banking that works for you</h2>
+        <p class="text-gray-400 text-base lg:text-lg max-w-xl mx-auto">Built for speed, security, and simplicity.</p>
+      </div>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div class="feature-card bg-gray-50 rounded-2xl p-6 border border-gray-100">
+          <div class="w-11 h-11 bg-indigo-100 rounded-xl flex items-center justify-center mb-4">
+            <i data-lucide="send" class="w-5 h-5 text-indigo-600"></i>
+          </div>
+          <h3 class="text-gray-900 font-bold text-base mb-2">Instant Transfers</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">Send money to any SilverCrest user in seconds. No delays, no fees, no paperwork.</p>
+        </div>
+        <div class="feature-card bg-gray-50 rounded-2xl p-6 border border-gray-100">
+          <div class="w-11 h-11 bg-yellow-100 rounded-xl flex items-center justify-center mb-4">
+            <i data-lucide="bitcoin" class="w-5 h-5 text-yellow-600"></i>
+          </div>
+          <h3 class="text-gray-900 font-bold text-base mb-2">Crypto Wallet</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">Buy, sell, and hold Bitcoin, Ethereum and more — right from your dashboard.</p>
+        </div>
+        <div class="feature-card bg-gray-50 rounded-2xl p-6 border border-gray-100">
+          <div class="w-11 h-11 bg-green-100 rounded-xl flex items-center justify-center mb-4">
+            <i data-lucide="shield-check" class="w-5 h-5 text-green-600"></i>
+          </div>
+          <h3 class="text-gray-900 font-bold text-base mb-2">Bank-grade Security</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">256-bit encryption, secure auth, and real-time fraud monitoring keep you safe.</p>
+        </div>
+        <div class="feature-card bg-gray-50 rounded-2xl p-6 border border-gray-100">
+          <div class="w-11 h-11 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
+            <i data-lucide="bar-chart-3" class="w-5 h-5 text-blue-600"></i>
+          </div>
+          <h3 class="text-gray-900 font-bold text-base mb-2">Live Transaction History</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">Every transaction logged instantly. Always know exactly where your money is.</p>
+        </div>
+        <div class="feature-card bg-gray-50 rounded-2xl p-6 border border-gray-100">
+          <div class="w-11 h-11 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
+            <i data-lucide="globe" class="w-5 h-5 text-purple-600"></i>
+          </div>
+          <h3 class="text-gray-900 font-bold text-base mb-2">Wire & Bank Transfers</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">Send money internationally via wire or bank transfer to any account worldwide.</p>
+        </div>
+        <div class="feature-card bg-gray-50 rounded-2xl p-6 border border-gray-100">
+          <div class="w-11 h-11 bg-rose-100 rounded-xl flex items-center justify-center mb-4">
+            <i data-lucide="layout-dashboard" class="w-5 h-5 text-rose-600"></i>
+          </div>
+          <h3 class="text-gray-900 font-bold text-base mb-2">Smart Dashboard</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">One clean view of your balance, transfers, crypto portfolio, and spending.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section style="background:#f8fafc;" class="py-20 lg:py-24" id="how-it-works">
+    <div class="max-w-5xl mx-auto px-6">
+      <div class="text-center mb-14">
+        <p class="text-indigo-600 text-xs font-bold tracking-widest uppercase mb-3">Simple process</p>
+        <h2 class="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">Get started in minutes</h2>
+        <p class="text-gray-400 text-base max-w-md mx-auto">No branch visits, no paperwork. Your account is ready in under 5 minutes.</p>
+      </div>
+      <div class="grid sm:grid-cols-3 gap-8 relative">
+        <div class="text-center">
+          <div class="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg" style="box-shadow:0 8px 24px rgba(79,70,229,0.3);">
+            <span class="text-white font-bold text-lg">1</span>
+          </div>
+          <h3 class="text-gray-900 font-bold text-base mb-2">Create Account</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">Sign up with your email and basic details. Takes less than 2 minutes.</p>
+        </div>
+        <div class="text-center">
+          <div class="w-12 h-12 bg-indigo-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg" style="box-shadow:0 8px 24px rgba(79,70,229,0.25);">
+            <span class="text-white font-bold text-lg">2</span>
+          </div>
+          <h3 class="text-gray-900 font-bold text-base mb-2">Verify Identity</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">Upload a valid government ID. Verified within 24 hours by our team.</p>
+        </div>
+        <div class="text-center">
+          <div class="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4" style="background:linear-gradient(135deg,#4f46e5,#7c3aed);box-shadow:0 8px 24px rgba(79,70,229,0.35);">
+            <span class="text-white font-bold text-lg">3</span>
+          </div>
+          <h3 class="text-gray-900 font-bold text-base mb-2">Start Banking</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">Send money, buy crypto, pay bills, and manage your finances freely.</p>
+        </div>
+      </div>
+      <div class="text-center mt-10">
+        <a href="signup.html"
+          class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-8 py-3.5 rounded-xl transition text-sm"
+          style="box-shadow:0 8px 24px rgba(79,70,229,0.3);">
+          Open free account
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </a>
+      </div>
+    </div>
+  </section>
+
   <!-- SECURITY -->
-  <section style="background:#0a0a1a;" class="py-24" id="security">
-    <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
+  <section style="background:#0a0a1a;" class="py-20 lg:py-24" id="security">
+    <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
       <div>
         <p class="text-indigo-400 text-xs font-bold tracking-widest uppercase mb-4">Security first</p>
-        <h2 class="text-4xl font-bold text-white mb-5 leading-tight">
-          Your money is safe<br/>with us. Always.
-        </h2>
-        <p class="text-gray-400 text-base mb-8 leading-relaxed">
-          We use the same security standards as the world's largest banks. Your data and funds are protected 24/7.
-        </p>
+        <h2 class="text-3xl lg:text-4xl font-bold text-white mb-5 leading-tight">Your money is safe<br/>with us. Always.</h2>
+        <p class="text-gray-400 text-base mb-8 leading-relaxed">We use the same security standards as the world's largest banks. Your data and funds are protected 24/7.</p>
         <div class="space-y-5">
           <div class="flex items-center gap-4">
-            <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-              style="background:rgba(99,102,241,0.15);">
+            <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(99,102,241,0.15);">
               <i data-lucide="lock" class="w-5 h-5 text-indigo-400"></i>
             </div>
             <div>
@@ -343,8 +367,7 @@
             </div>
           </div>
           <div class="flex items-center gap-4">
-            <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-              style="background:rgba(99,102,241,0.15);">
+            <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(99,102,241,0.15);">
               <i data-lucide="user-check" class="w-5 h-5 text-indigo-400"></i>
             </div>
             <div>
@@ -353,8 +376,7 @@
             </div>
           </div>
           <div class="flex items-center gap-4">
-            <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-              style="background:rgba(99,102,241,0.15);">
+            <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(99,102,241,0.15);">
               <i data-lucide="shield" class="w-5 h-5 text-indigo-400"></i>
             </div>
             <div>
@@ -362,13 +384,21 @@
               <p class="text-gray-500 text-xs mt-0.5">You only ever see your own data</p>
             </div>
           </div>
+          <div class="flex items-center gap-4">
+            <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(99,102,241,0.15);">
+              <i data-lucide="key" class="w-5 h-5 text-indigo-400"></i>
+            </div>
+            <div>
+              <p class="text-white font-semibold text-sm">Transaction PIN</p>
+              <p class="text-gray-500 text-xs mt-0.5">Extra layer of security for every transfer</p>
+            </div>
+          </div>
         </div>
       </div>
       <div class="flex justify-center">
-        <div class="card-glass rounded-3xl p-8 w-80">
+        <div class="card-glass rounded-3xl p-8 w-full max-w-sm">
           <div class="text-center mb-6">
-            <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3"
-              style="background:rgba(99,102,241,0.2);">
+            <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3" style="background:rgba(99,102,241,0.2);">
               <i data-lucide="shield-check" class="w-7 h-7 text-indigo-400"></i>
             </div>
             <p class="text-white font-bold text-sm">Secured Transaction</p>
@@ -399,14 +429,84 @@
     </div>
   </section>
 
+  <!-- TESTIMONIALS -->
+  <section class="py-20 lg:py-24 bg-white">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center mb-14">
+        <p class="text-indigo-600 text-xs font-bold tracking-widest uppercase mb-3">What our users say</p>
+        <h2 class="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">Trusted by thousands</h2>
+        <p class="text-gray-400 text-base max-w-md mx-auto">Real people, real experiences with SilverCrest.</p>
+      </div>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div class="testimonial-card">
+          <div class="flex items-center gap-0.5 mb-4">
+            <svg class="w-4 h-4 text-yellow-400 fill-yellow-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-4 h-4 text-yellow-400 fill-yellow-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-4 h-4 text-yellow-400 fill-yellow-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-4 h-4 text-yellow-400 fill-yellow-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-4 h-4 text-yellow-400 fill-yellow-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          <p class="text-gray-600 text-sm leading-relaxed mb-5">"SilverCrest made sending money to my family overseas so easy. The wire transfer was processed quickly and the support team was incredibly responsive."</p>
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
+              <span class="text-indigo-600 font-bold text-sm">A</span>
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-gray-900">Amara Osei</p>
+              <p class="text-xs text-gray-400">Business Owner, Ghana</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonial-card">
+          <div class="flex items-center gap-0.5 mb-4">
+            <svg class="w-4 h-4 text-yellow-400 fill-yellow-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-4 h-4 text-yellow-400 fill-yellow-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-4 h-4 text-yellow-400 fill-yellow-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-4 h-4 text-yellow-400 fill-yellow-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-4 h-4 text-yellow-400 fill-yellow-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          <p class="text-gray-600 text-sm leading-relaxed mb-5">"I love the crypto feature. Being able to manage my Bitcoin and my regular bank account in one place is something I've always wanted. Clean and simple."</p>
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+              <span class="text-purple-600 font-bold text-sm">K</span>
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-gray-900">Kofi Mensah</p>
+              <p class="text-xs text-gray-400">Software Engineer, Nigeria</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonial-card">
+          <div class="flex items-center gap-0.5 mb-4">
+            <svg class="w-4 h-4 text-yellow-400 fill-yellow-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-4 h-4 text-yellow-400 fill-yellow-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-4 h-4 text-yellow-400 fill-yellow-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-4 h-4 text-yellow-400 fill-yellow-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-4 h-4 text-yellow-400 fill-yellow-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          <p class="text-gray-600 text-sm leading-relaxed mb-5">"The dashboard is beautiful and incredibly easy to use. I set up my account in minutes and the KYC verification was approved the same day. Highly recommend!"</p>
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+              <span class="text-green-600 font-bold text-sm">F</span>
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-gray-900">Fatima Al-Rashid</p>
+              <p class="text-xs text-gray-400">Freelancer, UAE</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- CTA -->
-  <section style="background:linear-gradient(135deg,#4f46e5,#7c3aed);" class="py-24">
+  <section style="background:linear-gradient(135deg,#4f46e5,#7c3aed);" class="py-20 lg:py-24">
     <div class="max-w-3xl mx-auto px-6 text-center">
-      <h2 class="text-4xl font-bold text-white mb-4">Ready to bank smarter?</h2>
-      <p class="text-indigo-200 text-lg mb-8">Join SilverCrest today. Free forever, no hidden fees.</p>
-      <a href="signup.html"
-        class="inline-block bg-white font-bold px-10 py-4 rounded-xl hover:bg-indigo-50 transition shadow-xl text-sm"
-        style="color:#4338ca;">
+      <h2 class="text-3xl lg:text-4xl font-bold text-white mb-4">Ready to bank smarter?</h2>
+      <p class="text-indigo-200 text-base lg:text-lg mb-8">Join SilverCrest today. Free forever, no hidden fees.</p>
+      <a href="signup.html" class="inline-block bg-white font-bold px-10 py-4 rounded-xl hover:bg-indigo-50 transition shadow-xl text-sm" style="color:#4338ca;">
         Open your free account →
       </a>
     </div>
@@ -425,42 +525,39 @@
       <div class="flex gap-6">
         <a href="index.html" class="text-gray-500 hover:text-white text-xs transition">Login</a>
         <a href="signup.html" class="text-gray-500 hover:text-white text-xs transition">Sign up</a>
+        <a href="support.html" class="text-gray-500 hover:text-white text-xs transition">Support</a>
       </div>
     </div>
   </footer>
 
   <script>lucide.createIcons();</script>
+
   <script type="module">
-  import { supabase } from './supabase.js'
-  // If already logged in, skip landing and go straight to dashboard
-  const { data: { user } } = await supabase.auth.getUser()
-  if (user) {
-    window.location.href = 'dashboard.html'
-  }
-</script>
-<script type="module">
-  import { supabase } from './supabase.js'
-
-  async function checkSession() {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (session) {
-      // Already logged in — check if admin
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('is_admin')
-        .eq('id', session.user.id)
-        .single()
-
-      if (profile?.is_admin) {
-        window.location.href = 'admin.html'
-      } else {
-        window.location.href = 'dashboard.html'
+    import { supabase } from './supabase.js'
+    async function checkSession() {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        const { data: profile } = await supabase.from('profiles').select('is_admin').eq('id', session.user.id).single()
+        if (profile?.is_admin) { window.location.href = 'admin.html' }
+        else { window.location.href = 'dashboard.html' }
       }
     }
-    // Not logged in — stay on landing page
-  }
+    checkSession()
+  </script>
 
-  checkSession()
-</script>
+  <!--Start of Tawk.to Script-->
+  <script type="text/javascript">
+  var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+  (function(){
+  var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+  s1.async=true;
+  s1.src='https://embed.tawk.to/6a08d4bf51864f1c3431cbac/1jop7u475';
+  s1.charset='UTF-8';
+  s1.setAttribute('crossorigin','*');
+  s0.parentNode.insertBefore(s1,s0);
+  })();
+  </script>
+  <!--End of Tawk.to Script-->
+
 </body>
 </html>
