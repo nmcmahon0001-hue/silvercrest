@@ -1748,11 +1748,12 @@
       label = `From ${tx.sender?.full_name || 'Unknown'}`
     }
 
-    const amountColor = isSender && !isSelf ? '#ef4444' : isSelf ? '#6366f1' : '#22c55e'
-    const amountPrefix = isSender && !isSelf ? '-' : isSelf ? '' : '+'
-    const iconBg = isSender && !isSelf ? '#fff1f2' : isSelf ? '#eef2ff' : '#f0fdf4'
-    const iconColor = isSender && !isSelf ? '#ef4444' : isSelf ? '#6366f1' : '#22c55e'
-    const iconName = isSender && !isSelf ? 'arrow-up-right' : isSelf ? 'refresh-cw' : 'arrow-down-left'
+    const isExternalTransfer = tx.transfer_type === 'wire' || tx.transfer_type === 'bank'
+    const amountColor = (isSender && !isSelf) || isExternalTransfer ? '#ef4444' : isSelf ? '#6366f1' : '#22c55e'
+    const amountPrefix = (isSender && !isSelf) || isExternalTransfer ? '-' : isSelf ? '' : '+'
+    const iconBg = (isSender && !isSelf) || isExternalTransfer ? '#fff1f2' : isSelf ? '#eef2ff' : '#f0fdf4'
+    const iconColor = (isSender && !isSelf) || isExternalTransfer ? '#ef4444' : isSelf ? '#6366f1' : '#22c55e'
+    const iconName = isExternalTransfer ? 'arrow-up-right' : isSender && !isSelf ? 'arrow-up-right' : isSelf ? 'refresh-cw' : 'arrow-down-left'
 
     const statusColors = { completed:'#16a34a', pending:'#d97706', failed:'#ef4444' }
     const statusLabels = { completed:'✅ Completed', pending:'⏳ Pending', failed:'❌ Failed' }
@@ -1811,7 +1812,7 @@
     document.getElementById('tx-modal-date').textContent = `${fullDate} at ${fullTime}`
     document.getElementById('tx-modal-type').textContent = typeLabel
     document.getElementById('tx-modal-from').textContent = fromName + (fromSub ? `\n${fromSub}` : '')
-    document.getElementById('tx-modal-to').textContent = toName + (toSub ? `\n${toSub}` : '')
+    document.getElementById('tx-modal-to').textContent = toName
     document.getElementById('tx-modal-note').textContent = tx.note || '—'
 
     // Wire/bank extra fields
@@ -1995,11 +1996,12 @@
         label = `From ${tx.sender?.full_name || 'Unknown'}`
       }
 
-      const amountColor = isSender && !isSelf ? '#ef4444' : isSelf ? '#6366f1' : '#22c55e'
-      const amountPrefix = isSender && !isSelf ? '-' : isSelf ? '' : '+'
-      const iconBg = isSender && !isSelf ? '#fff1f2' : isSelf ? '#eef2ff' : '#f0fdf4'
-      const iconColor = isSender && !isSelf ? '#ef4444' : isSelf ? '#6366f1' : '#22c55e'
-      const iconName = isSender && !isSelf ? 'arrow-up-right' : isSelf ? 'refresh-cw' : 'arrow-down-left'
+      const isExternal = tx.transfer_type === 'wire' || tx.transfer_type === 'bank'
+      const amountColor = (isSender && !isSelf) || isExternal ? '#ef4444' : isSelf ? '#6366f1' : '#22c55e'
+      const amountPrefix = (isSender && !isSelf) || isExternal ? '-' : isSelf ? '' : '+'
+      const iconBg = (isSender && !isSelf) || isExternal ? '#fff1f2' : isSelf ? '#eef2ff' : '#f0fdf4'
+      const iconColor = (isSender && !isSelf) || isExternal ? '#ef4444' : isSelf ? '#6366f1' : '#22c55e'
+      const iconName = isExternal ? 'arrow-up-right' : isSender && !isSelf ? 'arrow-up-right' : isSelf ? 'refresh-cw' : 'arrow-down-left'
 
       const statusBadge = tx.status && tx.status !== 'completed'
         ? `<span style="font-size:10px;font-weight:600;color:${tx.status === 'pending' ? '#d97706' : '#ef4444'};margin-left:4px;">${tx.status.toUpperCase()}</span>` : ''
