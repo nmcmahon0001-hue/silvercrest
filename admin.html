@@ -146,7 +146,18 @@
         </div>
         <div class="bg-gray-50 rounded-xl p-3">
           <p class="text-xs text-gray-400 mb-1">Member Since</p>
-          <p id="modal-joined" class="text-sm font-semibold text-gray-900">—</p>
+          <div class="flex items-center justify-between gap-2">
+            <p id="modal-joined" class="text-sm font-semibold text-gray-900">—</p>
+            <button onclick="editMemberSince()" class="text-xs text-indigo-600 font-semibold hover:underline flex-shrink-0">Edit</button>
+          </div>
+          <div id="modal-joined-edit" class="hidden mt-2">
+            <input type="date" id="modal-joined-input" class="input-field text-sm mb-2"/>
+            <div class="flex gap-2">
+              <button onclick="saveMemberSince()" class="flex-1 bg-indigo-600 text-white text-xs font-semibold py-1.5 rounded-lg hover:bg-indigo-700 transition">Save</button>
+              <button onclick="cancelMemberSince()" class="flex-1 bg-gray-100 text-gray-600 text-xs font-semibold py-1.5 rounded-lg hover:bg-gray-200 transition">Cancel</button>
+            </div>
+            <div id="modal-joined-msg" class="hidden text-xs text-green-600 mt-1.5 font-medium">✅ Date updated!</div>
+          </div>
         </div>
         <div class="bg-gray-50 rounded-xl p-3 col-span-2">
           <p class="text-xs text-gray-400 mb-1">Address</p>
@@ -1594,6 +1605,36 @@
     msg.style.cssText = 'background:#f0fdf4;color:#16a34a;display:block;padding:12px 16px;border-radius:12px;font-size:14px;'
     msg.classList.remove('hidden')
     setTimeout(() => msg.classList.add('hidden'), 3000)
+  }
+
+  // ── MEMBER SINCE EDIT ────────────────────────
+  window.editMemberSince = () => {
+    const current = selectedUser?.created_at
+    if (current) {
+      document.getElementById('modal-joined-input').value = new Date(current).toISOString().split('T')[0]
+    }
+    document.getElementById('modal-joined-edit').classList.remove('hidden')
+    document.getElementById('modal-joined-msg').classList.add('hidden')
+  }
+
+  window.cancelMemberSince = () => {
+    document.getElementById('modal-joined-edit').classList.add('hidden')
+  }
+
+  window.saveMemberSince = async () => {
+    const newDate = document.getElementById('modal-joined-input').value
+    if (!newDate || !selectedUser) return
+    const newISO = new Date(newDate).toISOString()
+    const { error } = await supabase.from('profiles').update({ created_at: newISO }).eq('id', selectedUser.id)
+    if (error) { alert('Error: ' + error.message); return }
+    selectedUser.created_at = newISO
+    const idx = allUsers.findIndex(u => u.id === selectedUser.id)
+    if (idx !== -1) allUsers[idx].created_at = newISO
+    document.getElementById('modal-joined').textContent =
+      new Date(newISO).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' })
+    document.getElementById('modal-joined-edit').classList.add('hidden')
+    document.getElementById('modal-joined-msg').classList.remove('hidden')
+    setTimeout(() => document.getElementById('modal-joined-msg').classList.add('hidden'), 3000)
   }
 
   window.handleLogout = async () => {
