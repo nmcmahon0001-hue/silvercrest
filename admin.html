@@ -332,6 +332,10 @@
     <button class="nav-item" id="nav-crypto-settings" onclick="showAdminSection('crypto-settings')">
       <i data-lucide="bitcoin" class="w-4 h-4"></i> Crypto Wallets
     </button>
+    <button class="nav-item" id="nav-crypto-withdrawals" onclick="showAdminSection('crypto-withdrawals')">
+      <i data-lucide="upload" class="w-4 h-4"></i> Crypto Withdrawals
+      <span id="crypto-wd-badge" class="ml-auto bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full hidden"></span>
+    </button>
   </nav>
   <div class="border-t border-white/10 pt-4 mt-4">
     <a href="dashboard.html" class="nav-item flex items-center gap-2">
@@ -469,6 +473,22 @@
       </div>
     </div>
 
+    <!-- ══ CRYPTO WITHDRAWALS ══ -->
+    <div class="admin-section" id="section-crypto-withdrawals">
+      <div class="section-card">
+        <div class="flex justify-between items-center mb-5">
+          <div>
+            <h3 class="text-base font-bold text-gray-900">Crypto Withdrawal Requests</h3>
+            <p class="text-xs text-gray-400 mt-0.5">Review and approve or reject user withdrawal requests</p>
+          </div>
+          <button onclick="loadAllData()" class="btn btn-gray flex items-center gap-1.5 text-xs">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Refresh
+          </button>
+        </div>
+        <div id="crypto-wd-list"></div>
+      </div>
+    </div>
+
     <!-- ══ CRYPTO WALLET SETTINGS ══ -->
     <div class="admin-section" id="section-crypto-settings">
       <div class="section-card max-w-lg">
@@ -577,6 +597,7 @@
     renderKYC()
     renderPendingTransfers()
     renderTransactions()
+    renderCryptoWithdrawals()
   }
 
   async function loadUsers() {
@@ -1207,6 +1228,89 @@
     el.classList.remove('hidden')
   }
 
+  // ── CRYPTO WITHDRAWALS ───────────────────────
+  function renderCryptoWithdrawals() {
+    const pending = allTransactions.filter(tx => tx.transfer_type === 'crypto_withdrawal' && tx.status === 'pending')
+
+    // Update badge
+    const badge = document.getElementById('crypto-wd-badge')
+    if (pending.length > 0) { badge.textContent = pending.length; badge.classList.remove('hidden') }
+    else badge.classList.add('hidden')
+
+    const container = document.getElementById('crypto-wd-list')
+    if (!container) return
+
+    if (!pending.length) {
+      container.innerHTML = `
+        <div class="text-center py-16">
+          <i data-lucide="check-circle" class="w-14 h-14 text-green-300 mx-auto mb-4"></i>
+          <p class="text-gray-500 text-sm font-semibold">No pending withdrawals</p>
+          <p class="text-gray-400 text-xs mt-1">All withdrawal requests have been reviewed</p>
+        </div>`
+      lucide.createIcons(); return
+    }
+
+    container.innerHTML = pending.map(tx => {
+      const sender = allUsers.find(u => u.id === tx.sender_id)
+      const senderName = sender?.full_name || 'Unknown'
+      const senderEmail = sender?.email || ''
+      const date = new Date(tx.created_at).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' })
+      const time = new Date(tx.created_at).toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' })
+      const coin = tx.recipient_bank || 'Crypto'
+      const network = tx.swift_code ? ` (${tx.swift_code})` : ''
+      const walletAddress = tx.recipient_name || '—'
+
+      return `
+        <div style="border:1px solid #f1f5f9;border-radius:16px;padding:20px;margin-bottom:12px;background:white;">
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <div style="width:44px;height:44px;border-radius:12px;background:#fff1f2;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <i data-lucide="upload" style="width:20px;height:20px;color:#ef4444;"></i>
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <p class="text-sm font-bold text-gray-900">${senderName}</p>
+                  <span class="badge" style="background:#fef3c7;color:#d97706;">${coin}${network}</span>
+                </div>
+                <p class="text-xs text-gray-400">${senderEmail} · ${date} at ${time}</p>
+              </div>
+            </div>
+            <p class="text-lg font-bold text-gray-900">$${parseFloat(tx.amount).toFixed(2)}</p>
+          </div>
+
+          <div style="background:#f8fafc;border-radius:12px;padding:14px;margin-bottom:16px;">
+            <div class="grid grid-cols-1 gap-2">
+              <div>
+                <p class="text-xs text-gray-400">Wallet Address</p>
+                <p class="text-sm font-semibold text-gray-900 font-mono break-all">${walletAddress}</p>
+              </div>
+              ${tx.note ? `<div><p class="text-xs text-gray-400">Note</p><p class="text-sm font-semibold text-gray-900">${tx.note}</p></div>` : ''}
+            </div>
+          </div>
+
+          <div class="flex gap-3">
+            <button onclick="approveCryptoWithdrawal('${tx.id}')"
+              class="btn btn-success flex items-center gap-2 flex-1 justify-center">
+              <i data-lucide="check" class="w-4 h-4"></i> Approve
+            </button>
+            <button onclick="openRejectModal('${tx.id}', ${tx.amount}, '${tx.sender_id}')"
+              class="btn btn-danger flex items-center gap-2 flex-1 justify-center">
+              <i data-lucide="x" class="w-4 h-4"></i> Reject
+            </button>
+          </div>
+        </div>`
+    }).join('')
+
+    lucide.createIcons()
+  }
+
+  window.approveCryptoWithdrawal = async (txId) => {
+    const { error } = await supabase.from('transactions').update({ status: 'completed' }).eq('id', txId)
+    if (error) { alert('Error: ' + error.message); return }
+    await loadAllData()
+    alert('✅ Crypto withdrawal approved!')
+  }
+
   window.showAdminSection = (name) => {
     document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'))
     document.getElementById('section-' + name).classList.add('active')
@@ -1215,7 +1319,8 @@
     const titles = {
       overview:'Overview', users:'All Users',
       kyc:'KYC Reviews', pending:'Pending Transfers',
-      transactions:'All Transactions', 'crypto-settings':'Crypto Wallet Settings'
+      transactions:'All Transactions', 'crypto-settings':'Crypto Wallet Settings',
+      'crypto-withdrawals':'Crypto Withdrawal Requests'
     }
     document.getElementById('admin-page-title').textContent = titles[name] || name
     if (name === 'crypto-settings') loadWalletSettings()

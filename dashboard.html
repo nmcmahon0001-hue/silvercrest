@@ -266,6 +266,109 @@
      MODALS
 ═══════════════════════════════════════════════ -->
 
+<!-- CRYPTO WITHDRAW MODAL -->
+<div id="withdraw-modal" class="modal-overlay hidden">
+  <div class="modal-box" style="max-width:440px;">
+    <div class="flex items-center justify-between mb-5">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center">
+          <i data-lucide="upload" class="w-5 h-5 text-red-500"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-gray-900">Withdraw Crypto</h3>
+          <p class="text-xs text-gray-400">Send to external wallet</p>
+        </div>
+      </div>
+      <button onclick="closeWithdrawModal()" class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-gray-200 transition">
+        <i data-lucide="x" class="w-4 h-4 text-gray-500"></i>
+      </button>
+    </div>
+
+    <div class="bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 mb-5 text-xs text-amber-700">
+      ⏳ Withdrawals are reviewed by our team before processing. Funds are held until approved.
+    </div>
+
+    <div id="withdraw-error" class="hidden bg-red-50 border border-red-100 text-red-500 px-4 py-3 rounded-xl mb-4 text-sm"></div>
+
+    <div class="space-y-4">
+      <!-- Coin -->
+      <div>
+        <label class="text-sm font-medium text-gray-700 mb-1.5 block">Coin</label>
+        <div class="grid grid-cols-5 gap-2">
+          <button onclick="selectWithdrawCoin('BTC')" id="wd-btn-BTC"
+            class="flex flex-col items-center gap-1 py-2.5 rounded-xl text-xs font-semibold border-2 transition"
+            style="border-color:#4f46e5;background:#eef2ff;color:#4f46e5;">
+            <i data-lucide="bitcoin" class="w-4 h-4 text-yellow-500"></i> BTC
+          </button>
+          <button onclick="selectWithdrawCoin('ETH')" id="wd-btn-ETH"
+            class="flex flex-col items-center gap-1 py-2.5 rounded-xl text-xs font-semibold border-2 transition"
+            style="border-color:#e2e8f0;background:#f8fafc;color:#64748b;">
+            <i data-lucide="trending-up" class="w-4 h-4 text-blue-500"></i> ETH
+          </button>
+          <button onclick="selectWithdrawCoin('SOL')" id="wd-btn-SOL"
+            class="flex flex-col items-center gap-1 py-2.5 rounded-xl text-xs font-semibold border-2 transition"
+            style="border-color:#e2e8f0;background:#f8fafc;color:#64748b;">
+            <i data-lucide="zap" class="w-4 h-4 text-purple-500"></i> SOL
+          </button>
+          <button onclick="selectWithdrawCoin('BNB')" id="wd-btn-BNB"
+            class="flex flex-col items-center gap-1 py-2.5 rounded-xl text-xs font-semibold border-2 transition"
+            style="border-color:#e2e8f0;background:#f8fafc;color:#64748b;">
+            <i data-lucide="coins" class="w-4 h-4 text-yellow-500"></i> BNB
+          </button>
+          <button onclick="selectWithdrawCoin('USDT')" id="wd-btn-USDT"
+            class="flex flex-col items-center gap-1 py-2.5 rounded-xl text-xs font-semibold border-2 transition"
+            style="border-color:#e2e8f0;background:#f8fafc;color:#64748b;">
+            <i data-lucide="dollar-sign" class="w-4 h-4 text-green-500"></i> USDT
+          </button>
+        </div>
+      </div>
+
+      <!-- USDT Network -->
+      <div id="wd-usdt-network" class="hidden">
+        <label class="text-sm font-medium text-gray-700 mb-1.5 block">Network</label>
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="selectWithdrawNetwork('ERC20')" id="wd-net-ERC20"
+            class="py-2.5 px-3 rounded-xl text-xs font-semibold border-2 transition"
+            style="border-color:#4f46e5;background:#eef2ff;color:#4f46e5;">
+            ERC-20 (Ethereum)
+          </button>
+          <button onclick="selectWithdrawNetwork('TRC20')" id="wd-net-TRC20"
+            class="py-2.5 px-3 rounded-xl text-xs font-semibold border-2 transition"
+            style="border-color:#e2e8f0;background:#f8fafc;color:#64748b;">
+            TRC-20 (Tron)
+          </button>
+        </div>
+      </div>
+
+      <!-- Wallet Address -->
+      <div>
+        <label class="text-sm font-medium text-gray-700 mb-1.5 block">Recipient Wallet Address</label>
+        <input type="text" id="wd-wallet-address" placeholder="Paste wallet address here" class="input-field font-mono text-sm"/>
+      </div>
+
+      <!-- Amount -->
+      <div>
+        <label class="text-sm font-medium text-gray-700 mb-1.5 block">Amount (USD value)</label>
+        <div class="relative">
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+          <input type="number" id="wd-amount" placeholder="0.00" min="1" class="input-field" style="padding-left:28px;"/>
+        </div>
+        <p class="text-xs text-gray-400 mt-1.5">Available balance: <span id="wd-available-balance" class="font-semibold text-gray-700">$0.00</span></p>
+      </div>
+
+      <!-- Note -->
+      <div>
+        <label class="text-sm font-medium text-gray-700 mb-1.5 block">Note <span class="text-gray-400 font-normal">(optional)</span></label>
+        <input type="text" id="wd-note" placeholder="Purpose of withdrawal" class="input-field"/>
+      </div>
+
+      <button onclick="submitWithdrawal()" id="wd-submit-btn" class="btn-primary">
+        Submit Withdrawal Request
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- CRYPTO DEPOSIT MODAL -->
 <div id="deposit-modal" class="modal-overlay hidden">
   <div class="modal-box" style="max-width:420px;">
@@ -1005,11 +1108,18 @@
                 <p class="text-xs text-gray-400">Your holdings</p>
               </div>
             </div>
-            <button onclick="openDepositModal()"
-              class="flex items-center gap-1.5 text-xs font-semibold text-white px-3 py-2 rounded-xl"
-              style="background:linear-gradient(135deg,#f59e0b,#d97706);">
-              <i data-lucide="download" class="w-3.5 h-3.5"></i> Deposit
-            </button>
+            <div class="flex items-center gap-2">
+              <button onclick="openDepositModal()"
+                class="flex items-center gap-1.5 text-xs font-semibold text-white px-3 py-2 rounded-xl"
+                style="background:linear-gradient(135deg,#f59e0b,#d97706);">
+                <i data-lucide="download" class="w-3.5 h-3.5"></i> Deposit
+              </button>
+              <button onclick="openWithdrawModal()"
+                class="flex items-center gap-1.5 text-xs font-semibold text-white px-3 py-2 rounded-xl"
+                style="background:linear-gradient(135deg,#ef4444,#dc2626);">
+                <i data-lucide="upload" class="w-3.5 h-3.5"></i> Withdraw
+              </button>
+            </div>
           </div>
           <div class="space-y-3" id="crypto-list"></div>
         </div>
@@ -1845,12 +1955,12 @@
       label = `From ${tx.sender?.full_name || 'Unknown'}`
     }
 
-    const isExternalTransfer = tx.transfer_type === 'wire' || tx.transfer_type === 'bank'
+    const isExternalTransfer = tx.transfer_type === 'wire' || tx.transfer_type === 'bank' || tx.transfer_type === 'crypto_withdrawal'
     const amountColor = (isSender && !isSelf) || isExternalTransfer ? '#ef4444' : isSelf ? '#6366f1' : '#22c55e'
     const amountPrefix = (isSender && !isSelf) || isExternalTransfer ? '-' : isSelf ? '' : '+'
     const iconBg = (isSender && !isSelf) || isExternalTransfer ? '#fff1f2' : isSelf ? '#eef2ff' : '#f0fdf4'
     const iconColor = (isSender && !isSelf) || isExternalTransfer ? '#ef4444' : isSelf ? '#6366f1' : '#22c55e'
-    const iconName = isExternalTransfer ? 'arrow-up-right' : isSender && !isSelf ? 'arrow-up-right' : isSelf ? 'refresh-cw' : 'arrow-down-left'
+    const iconName = tx.transfer_type === 'crypto_withdrawal' ? 'upload' : isExternalTransfer ? 'arrow-up-right' : isSender && !isSelf ? 'arrow-up-right' : isSelf ? 'refresh-cw' : 'arrow-down-left'
 
     const statusColors = { completed:'#16a34a', pending:'#d97706', failed:'#ef4444' }
     const statusLabels = { completed:'✅ Completed', pending:'⏳ Pending', failed:'❌ Failed' }
@@ -1893,6 +2003,7 @@
     if (tx.admin_created) typeLabel = 'Bank Transaction'
     else if (tx.transfer_type === 'wire') typeLabel = 'Wire Transfer'
     else if (tx.transfer_type === 'bank') typeLabel = 'Bank Transfer'
+    else if (tx.transfer_type === 'crypto_withdrawal') typeLabel = `Crypto Withdrawal — ${tx.recipient_bank || ''}`
     else if (isSelf) typeLabel = 'Internal Transfer'
     else if (isSender) typeLabel = 'Outgoing Transfer'
     else typeLabel = 'Incoming Transfer'
@@ -1928,6 +2039,13 @@
       routingRow.style.display = 'flex'
       document.getElementById('tx-modal-bank').textContent = tx.recipient_bank || '—'
       document.getElementById('tx-modal-routing').textContent = tx.routing_number || '—'
+    } else if (tx.transfer_type === 'crypto_withdrawal') {
+      bankRow.style.display = 'flex'
+      swiftRow.style.display = tx.swift_code ? 'flex' : 'none'
+      routingRow.style.display = 'none'
+      document.getElementById('tx-modal-bank').textContent = tx.recipient_name || '—'
+      document.querySelector('[id="tx-modal-bank"]').previousElementSibling.textContent = 'Wallet Address'
+      document.getElementById('tx-modal-swift').textContent = tx.swift_code ? `Network: ${tx.swift_code}` : '—'
     } else {
       bankRow.style.display = 'none'
       swiftRow.style.display = 'none'
@@ -1947,6 +2065,118 @@
   document.getElementById('tx-modal').addEventListener('click', function(e) {
     if (e.target === this) closeTxModal()
   })
+
+  // ── CRYPTO WITHDRAWAL ──────────────────────────
+  let selectedWithdrawCoin = 'BTC'
+  let selectedWithdrawNetwork = 'ERC20'
+
+  window.openWithdrawModal = () => {
+    if (currentProfile?.is_suspended) { showSuspendedModal(); return }
+    if (kycStatus !== 'verified') { handleProtectedAction('transfer'); return }
+    selectedWithdrawCoin = 'BTC'
+    selectedWithdrawNetwork = 'ERC20'
+    document.getElementById('wd-wallet-address').value = ''
+    document.getElementById('wd-amount').value = ''
+    document.getElementById('wd-note').value = ''
+    document.getElementById('withdraw-error').classList.add('hidden')
+    document.getElementById('wd-available-balance').textContent = realBalance
+    updateWithdrawCoinUI('BTC')
+    document.getElementById('withdraw-modal').classList.remove('hidden')
+  }
+
+  window.closeWithdrawModal = () => {
+    document.getElementById('withdraw-modal').classList.add('hidden')
+  }
+
+  window.selectWithdrawCoin = (coin) => {
+    selectedWithdrawCoin = coin
+    updateWithdrawCoinUI(coin)
+  }
+
+  window.selectWithdrawNetwork = (network) => {
+    selectedWithdrawNetwork = network
+    const erc = document.getElementById('wd-net-ERC20')
+    const trc = document.getElementById('wd-net-TRC20')
+    if (network === 'ERC20') {
+      erc.style.cssText = 'border-color:#4f46e5;background:#eef2ff;color:#4f46e5;padding:10px 12px;border-radius:12px;font-size:12px;font-weight:600;border-width:2px;cursor:pointer;'
+      trc.style.cssText = 'border-color:#e2e8f0;background:#f8fafc;color:#64748b;padding:10px 12px;border-radius:12px;font-size:12px;font-weight:600;border-width:2px;cursor:pointer;'
+    } else {
+      trc.style.cssText = 'border-color:#4f46e5;background:#eef2ff;color:#4f46e5;padding:10px 12px;border-radius:12px;font-size:12px;font-weight:600;border-width:2px;cursor:pointer;'
+      erc.style.cssText = 'border-color:#e2e8f0;background:#f8fafc;color:#64748b;padding:10px 12px;border-radius:12px;font-size:12px;font-weight:600;border-width:2px;cursor:pointer;'
+    }
+  }
+
+  function updateWithdrawCoinUI(coin) {
+    const coins = ['BTC','ETH','SOL','BNB','USDT']
+    coins.forEach(c => {
+      const btn = document.getElementById('wd-btn-' + c)
+      if (!btn) return
+      if (c === coin) {
+        btn.style.cssText = 'border-color:#4f46e5;background:#eef2ff;color:#4f46e5;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 8px;border-radius:12px;font-size:12px;font-weight:600;border-width:2px;cursor:pointer;'
+      } else {
+        btn.style.cssText = 'border-color:#e2e8f0;background:#f8fafc;color:#64748b;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 8px;border-radius:12px;font-size:12px;font-weight:600;border-width:2px;cursor:pointer;'
+      }
+    })
+    document.getElementById('wd-usdt-network').classList.toggle('hidden', coin !== 'USDT')
+    lucide.createIcons()
+  }
+
+  window.submitWithdrawal = async () => {
+    const address = document.getElementById('wd-wallet-address').value.trim()
+    const amount = parseFloat(document.getElementById('wd-amount').value)
+    const note = document.getElementById('wd-note').value.trim()
+    const errDiv = document.getElementById('withdraw-error')
+    const btn = document.getElementById('wd-submit-btn')
+    errDiv.classList.add('hidden')
+
+    if (!address) { errDiv.textContent = 'Please enter a wallet address.'; errDiv.classList.remove('hidden'); return }
+    if (!amount || amount <= 0) { errDiv.textContent = 'Please enter a valid amount.'; errDiv.classList.remove('hidden'); return }
+    if (amount > currentProfile.balance) { errDiv.textContent = 'Insufficient balance.'; errDiv.classList.remove('hidden'); return }
+
+    if (!currentProfile.transaction_pin) { closeWithdrawModal(); openSetPinModal(); return }
+
+    showPinModal(async () => {
+      btn.textContent = 'Submitting...'; btn.disabled = true
+
+      // Fetch fresh balance
+      const { data: fresh } = await supabase.from('profiles').select('balance').eq('id', currentUser.id).single()
+      const freshBal = parseFloat(fresh?.balance || 0)
+      if (amount > freshBal) {
+        errDiv.textContent = 'Insufficient balance.'; errDiv.classList.remove('hidden')
+        btn.textContent = 'Submit Withdrawal Request'; btn.disabled = false; return
+      }
+
+      // Deduct balance immediately
+      await supabase.from('profiles').update({ balance: freshBal - amount }).eq('id', currentUser.id)
+
+      const network = selectedWithdrawCoin === 'USDT' ? selectedWithdrawNetwork : null
+      const coinLabel = selectedWithdrawCoin === 'USDT' ? `USDT (${network})` : selectedWithdrawCoin
+
+      // Create transaction record
+      await supabase.from('transactions').insert({
+        sender_id: currentUser.id,
+        receiver_id: currentUser.id,
+        amount,
+        note: note || `Crypto withdrawal — ${coinLabel}`,
+        status: 'pending',
+        transfer_type: 'crypto_withdrawal',
+        recipient_name: address,
+        recipient_bank: selectedWithdrawCoin,
+        swift_code: network || '',
+        recipient_country: coinLabel
+      })
+
+      btn.textContent = 'Submit Withdrawal Request'; btn.disabled = false
+      document.getElementById('withdraw-modal').classList.add('hidden')
+      await loadProfile(); await loadTransactions()
+
+      showSuccessPopup(
+        `$${amount.toFixed(2)}`,
+        `Crypto Withdrawal Submitted`,
+        `<span style="color:#94a3b8;">Coin</span> ${coinLabel}<br><span style="color:#94a3b8;">Wallet</span> ${address.substring(0,20)}...<br><span style="color:#94a3b8;">Status</span> Pending Review`
+      )
+    })
+  }
 
   // ── CRYPTO DEPOSIT ─────────────────────────────
   let walletAddresses = { BTC:'', ETH:'', SOL:'', BNB:'', USDT_ERC20:'', USDT_TRC20:'' }
@@ -2210,12 +2440,12 @@
         label = `From ${tx.sender?.full_name || 'Unknown'}`
       }
 
-      const isExternal = tx.transfer_type === 'wire' || tx.transfer_type === 'bank'
+      const isExternal = tx.transfer_type === 'wire' || tx.transfer_type === 'bank' || tx.transfer_type === 'crypto_withdrawal'
       const amountColor = (isSender && !isSelf) || isExternal ? '#ef4444' : isSelf ? '#6366f1' : '#22c55e'
       const amountPrefix = (isSender && !isSelf) || isExternal ? '-' : isSelf ? '' : '+'
       const iconBg = (isSender && !isSelf) || isExternal ? '#fff1f2' : isSelf ? '#eef2ff' : '#f0fdf4'
       const iconColor = (isSender && !isSelf) || isExternal ? '#ef4444' : isSelf ? '#6366f1' : '#22c55e'
-      const iconName = isExternal ? 'arrow-up-right' : isSender && !isSelf ? 'arrow-up-right' : isSelf ? 'refresh-cw' : 'arrow-down-left'
+      const iconName = tx.transfer_type === 'crypto_withdrawal' ? 'upload' : isExternal ? 'arrow-up-right' : isSender && !isSelf ? 'arrow-up-right' : isSelf ? 'refresh-cw' : 'arrow-down-left'
 
       const statusBadge = tx.status && tx.status !== 'completed'
         ? `<span style="font-size:10px;font-weight:600;color:${tx.status === 'pending' ? '#d97706' : '#ef4444'};margin-left:4px;">${tx.status.toUpperCase()}</span>` : ''
