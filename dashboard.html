@@ -1559,7 +1559,7 @@
           <div class="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center">
             <span id="profile-avatar" class="text-indigo-600 font-bold text-2xl">U</span>
           </div>
-          <div>
+          <div class="flex-1">
             <h3 id="profile-name" class="text-lg font-bold text-gray-900">Loading...</h3>
             <p id="profile-email" class="text-sm text-gray-400">...</p>
             <span class="badge mt-1" style="background:#eef2ff;color:#4f46e5;">Personal Account</span>
@@ -1620,6 +1620,15 @@
               <button id="profile-pin-btn" onclick="openSetPinModal()" class="text-xs text-indigo-600 font-medium">Set PIN</button>
             </div>
           </div>
+
+          <!-- Sign Out — visible on mobile -->
+          <div class="pt-2 lg:hidden">
+            <button onclick="handleLogout()"
+              class="w-full flex items-center justify-center gap-2 bg-red-50 border border-red-100 text-red-500 font-semibold py-3 rounded-xl hover:bg-red-100 transition text-sm">
+              <i data-lucide="log-out" class="w-4 h-4"></i> Sign Out
+            </button>
+          </div>
+
         </div>
       </div>
     </div>
