@@ -346,14 +346,26 @@
         <input type="text" id="wd-wallet-address" placeholder="Paste wallet address here" class="input-field font-mono text-sm"/>
       </div>
 
-      <!-- Amount -->
+      <!-- Amount with toggle -->
       <div>
-        <label class="text-sm font-medium text-gray-700 mb-1.5 block">Amount (USD value)</label>
-        <div class="relative">
-          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
-          <input type="number" id="wd-amount" placeholder="0.00" min="1" class="input-field" style="padding-left:28px;"/>
+        <div class="flex items-center justify-between mb-1.5">
+          <label class="text-sm font-medium text-gray-700">Amount</label>
+          <div class="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5">
+            <button onclick="setWdAmountMode('usd')" id="wd-mode-usd"
+              class="px-2.5 py-1 rounded-md text-xs font-semibold transition"
+              style="background:white;color:#4f46e5;box-shadow:0 1px 3px rgba(0,0,0,0.1);">USD</button>
+            <button onclick="setWdAmountMode('crypto')" id="wd-mode-crypto"
+              class="px-2.5 py-1 rounded-md text-xs font-semibold transition"
+              style="background:transparent;color:#94a3b8;">Crypto</button>
+          </div>
         </div>
-        <p class="text-xs text-gray-400 mt-1.5">Available balance: <span id="wd-available-balance" class="font-semibold text-gray-700">$0.00</span></p>
+        <div class="relative">
+          <span id="wd-amount-prefix" class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+          <input type="number" id="wd-amount" placeholder="0.00" min="0" step="any"
+            class="input-field" style="padding-left:28px;" oninput="updateWdPreview()"/>
+        </div>
+        <p id="wd-equivalent" class="text-xs text-gray-400 mt-1.5">≈ — crypto</p>
+        <p class="text-xs text-gray-400 mt-0.5">Available: <span id="wd-available-balance" class="font-semibold text-indigo-600">0.000000 BTC</span></p>
       </div>
 
       <!-- Note -->
@@ -452,12 +464,41 @@
         </div>
       </div>
 
-      <div class="bg-amber-50 border border-amber-100 rounded-xl p-3 text-xs text-amber-700 leading-relaxed">
-        ⚠️ <strong>Important:</strong> Only send <span id="deposit-coin-name">BTC</span> to this address. Sending any other coin may result in permanent loss of funds. After sending, contact support with your transaction hash for confirmation.
+      <!-- Submit deposit proof -->
+      <div id="deposit-proof-section" class="hidden">
+        <div class="border-t border-gray-100 pt-4">
+          <p class="text-xs font-semibold text-gray-700 mb-1">Already sent? Submit proof</p>
+          <p class="text-xs text-gray-400 mb-3">Paste your transaction hash so our team can verify and credit your account.</p>
+          <div class="space-y-3">
+            <div>
+              <label class="text-xs font-medium text-gray-600 mb-1 block">Amount Sent</label>
+              <input type="number" id="dep-amount-sent" placeholder="e.g. 0.001" step="any" class="input-field text-sm"/>
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-600 mb-1 block">Transaction Hash / ID</label>
+              <input type="text" id="dep-tx-hash" placeholder="Paste tx hash here" class="input-field font-mono text-sm"/>
+            </div>
+            <button onclick="submitDepositProof()" id="dep-submit-btn"
+              class="w-full bg-green-600 hover:bg-green-700 text-white text-sm font-semibold py-2.5 rounded-xl transition flex items-center justify-center gap-2">
+              <i data-lucide="send" class="w-4 h-4"></i> Submit for Review
+            </button>
+            <div id="dep-submit-msg" class="hidden text-xs px-3 py-2 rounded-lg"></div>
+          </div>
+        </div>
+      </div>
+
+      <button onclick="document.getElementById('deposit-proof-section').classList.toggle('hidden')"
+        class="w-full text-xs text-indigo-600 font-medium mt-3 py-1 hover:underline">
+        I've already sent — submit proof →
+      </button>
+
+      <div class="bg-amber-50 border border-amber-100 rounded-xl p-3 text-xs text-amber-700 leading-relaxed mt-3">
+        ⚠️ <strong>Important:</strong> Only send <span id="deposit-coin-name">BTC</span> to this address. Sending any other coin may result in permanent loss of funds.
       </div>
     </div>
   </div>
 </div>
+
 
 <!-- KYC / SUSPENDED MODAL -->
 <div id="kyc-modal" class="modal-overlay hidden">
@@ -1130,7 +1171,7 @@
             </div>
             <div>
               <h3 class="text-base font-bold text-gray-900">Buy / Sell</h3>
-              <p class="text-xs text-gray-400">Simulated transactions</p>
+              <p class="text-xs text-gray-400">Trade with your balance</p>
             </div>
           </div>
           <div id="crypto-error" class="hidden bg-red-50 border border-red-100 text-red-500 px-4 py-3 rounded-xl mb-4 text-sm"></div>
@@ -1163,6 +1204,9 @@
                 <input type="number" id="crypto-amount" placeholder="0.00" class="input-field" style="padding-left:28px;" oninput="updateCryptoPreview()"/>
               </div>
               <p id="crypto-preview" class="text-xs text-gray-400 mt-1.5">You will receive: —</p>
+              <p id="crypto-available-info" class="text-xs mt-1">
+                Available bank balance: <span id="crypto-bank-balance" class="font-semibold text-gray-700">$0.00</span>
+              </p>
             </div>
             <button id="crypto-btn" class="btn-primary" onclick="executeCryptoTrade()">Confirm Purchase</button>
           </div>
@@ -2069,18 +2113,63 @@
   // ── CRYPTO WITHDRAWAL ──────────────────────────
   let selectedWithdrawCoin = 'BTC'
   let selectedWithdrawNetwork = 'ERC20'
+  let wdAmountMode = 'usd'
+
+  window.setWdAmountMode = (mode) => {
+    wdAmountMode = mode
+    const usdBtn = document.getElementById('wd-mode-usd')
+    const cryptoBtn = document.getElementById('wd-mode-crypto')
+    const prefix = document.getElementById('wd-amount-prefix')
+    if (mode === 'usd') {
+      usdBtn.style.cssText = 'background:white;color:#4f46e5;box-shadow:0 1px 3px rgba(0,0,0,0.1);padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600;'
+      cryptoBtn.style.cssText = 'background:transparent;color:#94a3b8;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600;'
+      prefix.textContent = '$'
+    } else {
+      cryptoBtn.style.cssText = 'background:white;color:#4f46e5;box-shadow:0 1px 3px rgba(0,0,0,0.1);padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600;'
+      usdBtn.style.cssText = 'background:transparent;color:#94a3b8;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600;'
+      prefix.textContent = selectedWithdrawCoin.substring(0,3)
+    }
+    document.getElementById('wd-amount').value = ''
+    document.getElementById('wd-equivalent').textContent = '≈ —'
+    updateWdAvailableBalance()
+  }
+
+  window.updateWdPreview = () => {
+    const coin = selectedWithdrawCoin === 'USDT' ? 'BTC' : selectedWithdrawCoin
+    const price = cryptoPrices[coin] || 1
+    const val = parseFloat(document.getElementById('wd-amount').value) || 0
+    const eqEl = document.getElementById('wd-equivalent')
+    if (wdAmountMode === 'usd') {
+      eqEl.textContent = val > 0 ? `≈ ${(val/price).toFixed(6)} ${selectedWithdrawCoin}` : '≈ —'
+    } else {
+      eqEl.textContent = val > 0 ? `≈ $${(val * price).toFixed(2)} USD` : '≈ —'
+    }
+  }
+
+  function updateWdAvailableBalance() {
+    const coin = selectedWithdrawCoin
+    const held = cryptoHoldings[coin] || 0
+    const price = cryptoPrices[coin] || 0
+    const availEl = document.getElementById('wd-available-balance')
+    if (availEl) availEl.textContent = `${held.toFixed(6)} ${coin} ($${(held * price).toFixed(2)})`
+  }
 
   window.openWithdrawModal = () => {
     if (currentProfile?.is_suspended) { showSuspendedModal(); return }
     if (kycStatus !== 'verified') { handleProtectedAction('transfer'); return }
     selectedWithdrawCoin = 'BTC'
     selectedWithdrawNetwork = 'ERC20'
+    wdAmountMode = 'usd'
     document.getElementById('wd-wallet-address').value = ''
     document.getElementById('wd-amount').value = ''
     document.getElementById('wd-note').value = ''
+    document.getElementById('wd-equivalent').textContent = '≈ —'
+    document.getElementById('wd-amount-prefix').textContent = '$'
     document.getElementById('withdraw-error').classList.add('hidden')
-    document.getElementById('wd-available-balance').textContent = realBalance
+    document.getElementById('wd-mode-usd').style.cssText = 'background:white;color:#4f46e5;box-shadow:0 1px 3px rgba(0,0,0,0.1);padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600;'
+    document.getElementById('wd-mode-crypto').style.cssText = 'background:transparent;color:#94a3b8;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600;'
     updateWithdrawCoinUI('BTC')
+    updateWdAvailableBalance()
     document.getElementById('withdraw-modal').classList.remove('hidden')
   }
 
@@ -2090,7 +2179,11 @@
 
   window.selectWithdrawCoin = (coin) => {
     selectedWithdrawCoin = coin
+    if (wdAmountMode === 'crypto') document.getElementById('wd-amount-prefix').textContent = coin.substring(0,3)
     updateWithdrawCoinUI(coin)
+    updateWdAvailableBalance()
+    document.getElementById('wd-amount').value = ''
+    document.getElementById('wd-equivalent').textContent = '≈ —'
   }
 
   window.selectWithdrawNetwork = (network) => {
@@ -2111,11 +2204,9 @@
     coins.forEach(c => {
       const btn = document.getElementById('wd-btn-' + c)
       if (!btn) return
-      if (c === coin) {
-        btn.style.cssText = 'border-color:#4f46e5;background:#eef2ff;color:#4f46e5;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 8px;border-radius:12px;font-size:12px;font-weight:600;border-width:2px;cursor:pointer;'
-      } else {
-        btn.style.cssText = 'border-color:#e2e8f0;background:#f8fafc;color:#64748b;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 8px;border-radius:12px;font-size:12px;font-weight:600;border-width:2px;cursor:pointer;'
-      }
+      btn.style.cssText = c === coin
+        ? 'border-color:#4f46e5;background:#eef2ff;color:#4f46e5;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 8px;border-radius:12px;font-size:12px;font-weight:600;border-width:2px;cursor:pointer;'
+        : 'border-color:#e2e8f0;background:#f8fafc;color:#64748b;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 8px;border-radius:12px;font-size:12px;font-weight:600;border-width:2px;cursor:pointer;'
     })
     document.getElementById('wd-usdt-network').classList.toggle('hidden', coin !== 'USDT')
     lucide.createIcons()
@@ -2123,57 +2214,55 @@
 
   window.submitWithdrawal = async () => {
     const address = document.getElementById('wd-wallet-address').value.trim()
-    const amount = parseFloat(document.getElementById('wd-amount').value)
+    const rawAmount = parseFloat(document.getElementById('wd-amount').value)
     const note = document.getElementById('wd-note').value.trim()
     const errDiv = document.getElementById('withdraw-error')
     const btn = document.getElementById('wd-submit-btn')
     errDiv.classList.add('hidden')
 
     if (!address) { errDiv.textContent = 'Please enter a wallet address.'; errDiv.classList.remove('hidden'); return }
-    if (!amount || amount <= 0) { errDiv.textContent = 'Please enter a valid amount.'; errDiv.classList.remove('hidden'); return }
-    if (amount > currentProfile.balance) { errDiv.textContent = 'Insufficient balance.'; errDiv.classList.remove('hidden'); return }
+    if (!rawAmount || rawAmount <= 0) { errDiv.textContent = 'Please enter a valid amount.'; errDiv.classList.remove('hidden'); return }
+
+    const coin = selectedWithdrawCoin
+    const price = cryptoPrices[coin] || 1
+    const heldCrypto = cryptoHoldings[coin] || 0
+
+    let cryptoAmount, usdAmount
+    if (wdAmountMode === 'usd') {
+      usdAmount = rawAmount; cryptoAmount = rawAmount / price
+    } else {
+      cryptoAmount = rawAmount; usdAmount = rawAmount * price
+    }
+
+    if (cryptoAmount > heldCrypto) {
+      errDiv.textContent = `Insufficient ${coin}. You hold ${heldCrypto.toFixed(6)} ${coin}.`
+      errDiv.classList.remove('hidden'); return
+    }
 
     if (!currentProfile.transaction_pin) { closeWithdrawModal(); openSetPinModal(); return }
 
     showPinModal(async () => {
       btn.textContent = 'Submitting...'; btn.disabled = true
-
-      // Fetch fresh balance
-      const { data: fresh } = await supabase.from('profiles').select('balance').eq('id', currentUser.id).single()
-      const freshBal = parseFloat(fresh?.balance || 0)
-      if (amount > freshBal) {
-        errDiv.textContent = 'Insufficient balance.'; errDiv.classList.remove('hidden')
-        btn.textContent = 'Submit Withdrawal Request'; btn.disabled = false; return
-      }
-
-      // Deduct balance immediately
-      await supabase.from('profiles').update({ balance: freshBal - amount }).eq('id', currentUser.id)
-
-      const network = selectedWithdrawCoin === 'USDT' ? selectedWithdrawNetwork : null
-      const coinLabel = selectedWithdrawCoin === 'USDT' ? `USDT (${network})` : selectedWithdrawCoin
-
-      // Create transaction record
+      const newHolding = heldCrypto - cryptoAmount
+      await saveCryptoHolding(coin, newHolding)
+      const network = coin === 'USDT' ? selectedWithdrawNetwork : null
+      const coinLabel = coin === 'USDT' ? `USDT (${network})` : coin
       await supabase.from('transactions').insert({
-        sender_id: currentUser.id,
-        receiver_id: currentUser.id,
-        amount,
-        note: note || `Crypto withdrawal — ${coinLabel}`,
-        status: 'pending',
-        transfer_type: 'crypto_withdrawal',
-        recipient_name: address,
-        recipient_bank: selectedWithdrawCoin,
-        swift_code: network || '',
-        recipient_country: coinLabel
+        sender_id: currentUser.id, receiver_id: currentUser.id,
+        amount: usdAmount,
+        note: note || `Crypto withdrawal — ${cryptoAmount.toFixed(6)} ${coinLabel}`,
+        status: 'pending', transfer_type: 'crypto_withdrawal',
+        recipient_name: address, recipient_bank: coin,
+        swift_code: network || '', recipient_country: coinLabel,
+        recipient_account: cryptoAmount.toFixed(8)
       })
-
       btn.textContent = 'Submit Withdrawal Request'; btn.disabled = false
       document.getElementById('withdraw-modal').classList.add('hidden')
-      await loadProfile(); await loadTransactions()
-
+      await loadProfile(); await loadCryptoPortfolio(); await loadTransactions()
       showSuccessPopup(
-        `$${amount.toFixed(2)}`,
+        `${cryptoAmount.toFixed(6)} ${coin}`,
         `Crypto Withdrawal Submitted`,
-        `<span style="color:#94a3b8;">Coin</span> ${coinLabel}<br><span style="color:#94a3b8;">Wallet</span> ${address.substring(0,20)}...<br><span style="color:#94a3b8;">Status</span> Pending Review`
+        `<span style="color:#94a3b8;">Coin</span> ${coinLabel}<br><span style="color:#94a3b8;">USD Value</span> $${usdAmount.toFixed(2)}<br><span style="color:#94a3b8;">Wallet</span> ${address.substring(0,20)}...<br><span style="color:#94a3b8;">Status</span> Pending Review`
       )
     })
   }
@@ -2295,6 +2384,51 @@
     setTimeout(() => { document.getElementById('copy-btn-label').textContent = 'Copy Address' }, 2000)
   }
 
+  window.submitDepositProof = async () => {
+    const txHash = document.getElementById('dep-tx-hash').value.trim()
+    const amountSent = parseFloat(document.getElementById('dep-amount-sent').value)
+    const msgEl = document.getElementById('dep-submit-msg')
+    const btn = document.getElementById('dep-submit-btn')
+    msgEl.classList.add('hidden')
+
+    if (!txHash) {
+      msgEl.textContent = 'Please enter your transaction hash.'
+      msgEl.style.cssText = 'display:block;background:#fff1f2;color:#ef4444;padding:8px 12px;border-radius:8px;font-size:12px;'
+      msgEl.classList.remove('hidden'); return
+    }
+    if (!amountSent || amountSent <= 0) {
+      msgEl.textContent = 'Please enter the amount you sent.'
+      msgEl.style.cssText = 'display:block;background:#fff1f2;color:#ef4444;padding:8px 12px;border-radius:8px;font-size:12px;'
+      msgEl.classList.remove('hidden'); return
+    }
+
+    btn.textContent = 'Submitting...'; btn.disabled = true
+
+    const network = selectedDepositCoin === 'USDT' ? selectedUSDTNetwork : null
+    const coinLabel = selectedDepositCoin === 'USDT' ? `USDT (${network})` : selectedDepositCoin
+
+    await supabase.from('transactions').insert({
+      sender_id: currentUser.id,
+      receiver_id: currentUser.id,
+      amount: amountSent * (cryptoPrices[selectedDepositCoin] || 1),
+      note: `Crypto deposit — ${amountSent} ${coinLabel}`,
+      status: 'pending',
+      transfer_type: 'crypto_deposit',
+      recipient_name: txHash,
+      recipient_bank: selectedDepositCoin,
+      swift_code: network || '',
+      recipient_account: amountSent.toString()
+    })
+
+    btn.textContent = 'Submit for Review'; btn.disabled = false
+    document.getElementById('dep-tx-hash').value = ''
+    document.getElementById('dep-amount-sent').value = ''
+    msgEl.textContent = '✅ Submitted! Our team will verify and credit your account within 24 hours.'
+    msgEl.style.cssText = 'display:block;background:#f0fdf4;color:#16a34a;padding:8px 12px;border-radius:8px;font-size:12px;'
+    msgEl.classList.remove('hidden')
+    await loadTransactions()
+  }
+
   // ── INIT ───────────────────────────────────────
   async function init() {
     const { data: { user } } = await supabase.auth.getUser()
@@ -2302,7 +2436,7 @@
     currentUser = user
     await loadProfile()
     await loadTransactions()
-    loadCryptoPortfolio()
+    await loadCryptoPortfolio()
     checkReturnFromKYC()
     updatePinStatusDisplay()
   }
@@ -2378,12 +2512,7 @@
 
     renderKYCBanner(kycStatus, profile.kyc_rejection_reason)
 
-    // Crypto portfolio
-    const cryptoSaved = JSON.parse(localStorage.getItem('sc_crypto_' + currentUser.id) || '{}')
-    const cryptoPrices = { BTC:63420, ETH:3290, SOL:142, BNB:580 }
-    const totalCrypto = Object.entries(cryptoSaved).reduce((sum, [coin, amt]) => sum + (amt * (cryptoPrices[coin] || 0)), 0)
-    document.getElementById('crypto-portfolio-value').textContent = '$' + totalCrypto.toFixed(2)
-    if (totalCrypto > 0) document.getElementById('crypto-portfolio-value').style.color = '#16a34a'
+    // Crypto portfolio value will be updated by loadCryptoPortfolio()
 
     lucide.createIcons()
   }
@@ -2423,13 +2552,16 @@
 
       let label = ''
       if (tx.admin_created) {
-        if (isSender) {
-          // debit — show receiver_name (what admin typed as who money went to)
-          label = tx.receiver_name || tx.note || 'Bank Transaction'
-        } else {
-          // credit — show sender_name (what admin typed as who sent it)
-          label = tx.sender_name || tx.note || 'Bank Transaction'
-        }
+        if (isSender) { label = tx.receiver_name || tx.note || 'Bank Transaction' }
+        else { label = tx.sender_name || tx.note || 'Bank Transaction' }
+      } else if (tx.transfer_type === 'crypto_buy') {
+        label = tx.note || 'Crypto Purchase'
+      } else if (tx.transfer_type === 'crypto_sell') {
+        label = tx.note || 'Crypto Sale'
+      } else if (tx.transfer_type === 'crypto_deposit') {
+        label = tx.note || 'Crypto Deposit'
+      } else if (tx.transfer_type === 'crypto_withdrawal') {
+        label = tx.note || `Crypto Withdrawal — ${tx.recipient_bank || ''}`
       } else if (tx.transfer_type === 'wire' || tx.transfer_type === 'bank') {
         label = tx.recipient_name || 'External Transfer'
       } else if (isSelf) {
@@ -2441,11 +2573,14 @@
       }
 
       const isExternal = tx.transfer_type === 'wire' || tx.transfer_type === 'bank' || tx.transfer_type === 'crypto_withdrawal'
-      const amountColor = (isSender && !isSelf) || isExternal ? '#ef4444' : isSelf ? '#6366f1' : '#22c55e'
-      const amountPrefix = (isSender && !isSelf) || isExternal ? '-' : isSelf ? '' : '+'
-      const iconBg = (isSender && !isSelf) || isExternal ? '#fff1f2' : isSelf ? '#eef2ff' : '#f0fdf4'
-      const iconColor = (isSender && !isSelf) || isExternal ? '#ef4444' : isSelf ? '#6366f1' : '#22c55e'
-      const iconName = tx.transfer_type === 'crypto_withdrawal' ? 'upload' : isExternal ? 'arrow-up-right' : isSender && !isSelf ? 'arrow-up-right' : isSelf ? 'refresh-cw' : 'arrow-down-left'
+      const isCryptoBuy = tx.transfer_type === 'crypto_buy'
+      const isCryptoSell = tx.transfer_type === 'crypto_sell'
+      const isCryptoDeposit = tx.transfer_type === 'crypto_deposit'
+      const amountColor = isExternal ? '#ef4444' : (isSender && !isSelf) ? '#ef4444' : isCryptoBuy ? '#f59e0b' : isCryptoSell || isCryptoDeposit ? '#22c55e' : isSelf ? '#6366f1' : '#22c55e'
+      const amountPrefix = isExternal || isCryptoBuy || (isSender && !isSelf) ? '-' : '+'
+      const iconBg = isExternal || (isSender && !isSelf) ? '#fff1f2' : isCryptoBuy ? '#fffbeb' : isCryptoSell || isCryptoDeposit ? '#f0fdf4' : isSelf ? '#eef2ff' : '#f0fdf4'
+      const iconColor = isExternal || (isSender && !isSelf) ? '#ef4444' : isCryptoBuy ? '#f59e0b' : isCryptoSell || isCryptoDeposit ? '#22c55e' : isSelf ? '#6366f1' : '#22c55e'
+      const iconName = tx.transfer_type === 'crypto_withdrawal' ? 'upload' : tx.transfer_type === 'crypto_deposit' ? 'download' : isCryptoBuy ? 'bitcoin' : isCryptoSell ? 'trending-up' : isExternal ? 'arrow-up-right' : isSender && !isSelf ? 'arrow-up-right' : isSelf ? 'refresh-cw' : 'arrow-down-left'
 
       const statusBadge = tx.status && tx.status !== 'completed'
         ? `<span style="font-size:10px;font-weight:600;color:${tx.status === 'pending' ? '#d97706' : '#ef4444'};margin-left:4px;">${tx.status.toUpperCase()}</span>` : ''
@@ -2690,34 +2825,57 @@
   }
 
   // ── CRYPTO ─────────────────────────────────────
-  function loadCryptoPortfolio() {
-    const coins = [
-      { symbol:'BTC', name:'Bitcoin', price:63420, icon:'bitcoin', color:'#f59e0b', bg:'#fffbeb' },
-      { symbol:'ETH', name:'Ethereum', price:3290, icon:'trending-up', color:'#6366f1', bg:'#eef2ff' },
-      { symbol:'SOL', name:'Solana', price:142, icon:'zap', color:'#8b5cf6', bg:'#f5f3ff' },
-      { symbol:'BNB', name:'BNB', price:580, icon:'coins', color:'#f59e0b', bg:'#fffbeb' },
-    ]
-    const saved = JSON.parse(localStorage.getItem('sc_crypto_' + currentUser?.id) || '{}')
-    cryptoHoldings = saved
-    document.getElementById('crypto-list').innerHTML = coins.map(c => {
-      const held = saved[c.symbol] || 0
-      const value = held * c.price
+  // ── CRYPTO PORTFOLIO (SUPABASE) ────────────────
+  const cryptoPrices = { BTC:63420, ETH:3290, SOL:142, BNB:580 }
+  const cryptoMeta = {
+    BTC: { name:'Bitcoin', icon:'bitcoin', color:'#f59e0b', bg:'#fffbeb' },
+    ETH: { name:'Ethereum', icon:'trending-up', color:'#6366f1', bg:'#eef2ff' },
+    SOL: { name:'Solana', icon:'zap', color:'#8b5cf6', bg:'#f5f3ff' },
+    BNB: { name:'BNB', icon:'coins', color:'#f59e0b', bg:'#fffbeb' },
+  }
+
+  async function loadCryptoHoldings() {
+    const { data } = await supabase.from('crypto_holdings')
+      .select('coin, amount').eq('user_id', currentUser.id)
+    cryptoHoldings = {}
+    if (data) data.forEach(row => { cryptoHoldings[row.coin] = parseFloat(row.amount) || 0 })
+  }
+
+  async function saveCryptoHolding(coin, amount) {
+    await supabase.from('crypto_holdings').upsert(
+      { user_id: currentUser.id, coin, amount },
+      { onConflict: 'user_id,coin' }
+    )
+  }
+
+  async function loadCryptoPortfolio() {
+    await loadCryptoHoldings()
+    const coins = Object.keys(cryptoMeta)
+    let total = 0
+    document.getElementById('crypto-list').innerHTML = coins.map(symbol => {
+      const c = cryptoMeta[symbol]
+      const held = cryptoHoldings[symbol] || 0
+      const value = held * cryptoPrices[symbol]
+      total += value
       const change = (Math.random() * 6 - 2).toFixed(2)
-      const changeColor = change >= 0 ? '#22c55e' : '#ef4444'
+      const changeColor = parseFloat(change) >= 0 ? '#22c55e' : '#ef4444'
       return `<div style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;background:#f8fafc;">
         <div style="width:36px;height:36px;border-radius:50%;background:${c.bg};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
           <i data-lucide="${c.icon}" style="width:16px;height:16px;color:${c.color};"></i>
         </div>
         <div style="flex:1;">
           <p style="font-size:13px;font-weight:600;color:#1e293b;">${c.name}</p>
-          <p style="font-size:11px;color:#94a3b8;">${held.toFixed(6)} ${c.symbol}</p>
+          <p style="font-size:11px;color:#94a3b8;">${held.toFixed(6)} ${symbol}</p>
         </div>
         <div style="text-align:right;">
           <p style="font-size:13px;font-weight:700;color:#1e293b;">$${value.toFixed(2)}</p>
-          <p style="font-size:11px;font-weight:600;color:${changeColor};">${change >= 0 ? '+' : ''}${change}%</p>
+          <p style="font-size:11px;font-weight:600;color:${changeColor};">${parseFloat(change) >= 0 ? '+' : ''}${change}%</p>
         </div>
       </div>`
     }).join('')
+    document.getElementById('crypto-portfolio-value').textContent = '$' + total.toFixed(2)
+    if (total > 0) document.getElementById('crypto-portfolio-value').style.color = '#16a34a'
+    document.getElementById('crypto-bank-balance').textContent = realBalance
     lucide.createIcons()
   }
 
@@ -2726,23 +2884,38 @@
     const buyBtn = document.getElementById('btn-buy')
     const sellBtn = document.getElementById('btn-sell')
     const confirmBtn = document.getElementById('crypto-btn')
+    const availInfo = document.getElementById('crypto-available-info')
     if (action === 'buy') {
       buyBtn.style.cssText = 'background:#eef2ff;color:#4f46e5;border-color:#4f46e5;padding:10px;border-radius:12px;font-size:14px;font-weight:600;border-width:2px;cursor:pointer;width:100%;'
       sellBtn.style.cssText = 'background:#f8fafc;color:#64748b;border-color:#e2e8f0;padding:10px;border-radius:12px;font-size:14px;font-weight:600;border-width:2px;cursor:pointer;width:100%;'
       confirmBtn.textContent = 'Confirm Purchase'
+      availInfo.innerHTML = 'Available bank balance: <span id="crypto-bank-balance" class="font-semibold text-gray-700">' + realBalance + '</span>'
     } else {
       sellBtn.style.cssText = 'background:#fff1f2;color:#ef4444;border-color:#ef4444;padding:10px;border-radius:12px;font-size:14px;font-weight:600;border-width:2px;cursor:pointer;width:100%;'
       buyBtn.style.cssText = 'background:#f8fafc;color:#64748b;border-color:#e2e8f0;padding:10px;border-radius:12px;font-size:14px;font-weight:600;border-width:2px;cursor:pointer;width:100%;'
       confirmBtn.textContent = 'Confirm Sale'
+      const symbol = document.getElementById('crypto-coin').value
+      const held = cryptoHoldings[symbol] || 0
+      availInfo.innerHTML = `Available ${symbol}: <span class="font-semibold text-indigo-600">${held.toFixed(6)} ${symbol}</span>`
     }
+    updateCryptoPreview()
   }
 
   window.updateCryptoPreview = () => {
     const select = document.getElementById('crypto-coin')
+    const symbol = select.value
     const price = parseFloat(select.options[select.selectedIndex].dataset.price)
     const usd = parseFloat(document.getElementById('crypto-amount').value) || 0
-    document.getElementById('crypto-preview').textContent =
-      usd > 0 ? `You will ${cryptoAction === 'buy' ? 'receive' : 'sell'}: ${(usd/price).toFixed(6)} ${select.value}` : 'You will receive: —'
+    const previewEl = document.getElementById('crypto-preview')
+    const availInfo = document.getElementById('crypto-available-info')
+    if (cryptoAction === 'buy') {
+      previewEl.textContent = usd > 0 ? `You will receive: ${(usd/price).toFixed(6)} ${symbol}` : 'You will receive: —'
+      availInfo.innerHTML = 'Available bank balance: <span id="crypto-bank-balance" class="font-semibold text-gray-700">' + realBalance + '</span>'
+    } else {
+      previewEl.textContent = usd > 0 ? `You will sell: ${(usd/price).toFixed(6)} ${symbol}` : 'You will sell: —'
+      const held = cryptoHoldings[symbol] || 0
+      availInfo.innerHTML = `Available ${symbol}: <span class="font-semibold text-indigo-600">${held.toFixed(6)} ${symbol}</span>`
+    }
   }
 
   window.executeCryptoTrade = async () => {
@@ -2754,26 +2927,35 @@
     const okDiv = document.getElementById('crypto-success')
     errDiv.classList.add('hidden'); okDiv.classList.add('hidden')
     if (!usd || usd <= 0) { errDiv.textContent = 'Enter a valid amount.'; errDiv.classList.remove('hidden'); return }
+    const btn = document.getElementById('crypto-btn')
+    btn.textContent = 'Processing...'; btn.disabled = true
+    const { data: fresh } = await supabase.from('profiles').select('balance').eq('id', currentUser.id).single()
+    const freshBal = parseFloat(fresh?.balance || 0)
     if (cryptoAction === 'buy') {
-      if (usd > currentProfile.balance) { errDiv.textContent = 'Insufficient balance.'; errDiv.classList.remove('hidden'); return }
+      if (usd > freshBal) { errDiv.textContent = 'Insufficient bank balance.'; errDiv.classList.remove('hidden'); btn.textContent = 'Confirm Purchase'; btn.disabled = false; return }
       const coinsToAdd = usd / price
-      cryptoHoldings[symbol] = (cryptoHoldings[symbol] || 0) + coinsToAdd
-      await supabase.from('profiles').update({ balance: currentProfile.balance - usd }).eq('id', currentUser.id)
-      await supabase.from('transactions').insert({ sender_id: currentUser.id, receiver_id: currentUser.id, amount: usd, note: `Bought ${coinsToAdd.toFixed(6)} ${symbol}`, status:'completed' })
-      okDiv.textContent = `✅ Bought ${coinsToAdd.toFixed(6)} ${symbol}!`
+      const newHolding = (cryptoHoldings[symbol] || 0) + coinsToAdd
+      await supabase.from('profiles').update({ balance: freshBal - usd }).eq('id', currentUser.id)
+      await saveCryptoHolding(symbol, newHolding)
+      await supabase.from('transactions').insert({ sender_id: currentUser.id, receiver_id: currentUser.id, amount: usd, note: `Bought ${coinsToAdd.toFixed(6)} ${symbol}`, status:'completed', transfer_type:'crypto_buy' })
+      okDiv.textContent = `✅ Bought ${coinsToAdd.toFixed(6)} ${symbol} for $${usd.toFixed(2)}!`
     } else {
       const coinsToSell = usd / price
-      if (coinsToSell > (cryptoHoldings[symbol] || 0)) { errDiv.textContent = `Not enough ${symbol}.`; errDiv.classList.remove('hidden'); return }
-      cryptoHoldings[symbol] -= coinsToSell
-      await supabase.from('profiles').update({ balance: currentProfile.balance + usd }).eq('id', currentUser.id)
-      await supabase.from('transactions').insert({ sender_id: currentUser.id, receiver_id: currentUser.id, amount: usd, note: `Sold ${coinsToSell.toFixed(6)} ${symbol}`, status:'completed' })
-      okDiv.textContent = `✅ Sold ${coinsToSell.toFixed(6)} ${symbol}!`
+      const held = cryptoHoldings[symbol] || 0
+      if (coinsToSell > held) { errDiv.textContent = `Insufficient ${symbol}. You hold ${held.toFixed(6)} ${symbol}.`; errDiv.classList.remove('hidden'); btn.textContent = 'Confirm Sale'; btn.disabled = false; return }
+      const newHolding = held - coinsToSell
+      await supabase.from('profiles').update({ balance: freshBal + usd }).eq('id', currentUser.id)
+      await saveCryptoHolding(symbol, newHolding)
+      await supabase.from('transactions').insert({ sender_id: currentUser.id, receiver_id: currentUser.id, amount: usd, note: `Sold ${coinsToSell.toFixed(6)} ${symbol}`, status:'completed', transfer_type:'crypto_sell' })
+      okDiv.textContent = `✅ Sold ${coinsToSell.toFixed(6)} ${symbol} for $${usd.toFixed(2)}!`
     }
-    localStorage.setItem('sc_crypto_' + currentUser.id, JSON.stringify(cryptoHoldings))
     okDiv.classList.remove('hidden')
     document.getElementById('crypto-amount').value = ''
-    await loadProfile(); loadCryptoPortfolio()
+    btn.textContent = cryptoAction === 'buy' ? 'Confirm Purchase' : 'Confirm Sale'
+    btn.disabled = false
+    await loadProfile(); await loadCryptoPortfolio(); await loadTransactions()
   }
+
 
   // ── CARDS ──────────────────────────────────────
   window.selectCardType = (type) => {
