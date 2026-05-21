@@ -285,7 +285,7 @@
     </div>
 
     <!-- Coin Selector -->
-    <div class="grid grid-cols-4 gap-2 mb-5">
+    <div class="grid grid-cols-5 gap-2 mb-5">
       <button onclick="selectDepositCoin('BTC')" id="dep-btn-BTC"
         class="flex flex-col items-center gap-1 py-2.5 rounded-xl text-xs font-semibold border-2 transition"
         style="border-color:#4f46e5;background:#eef2ff;color:#4f46e5;">
@@ -306,6 +306,28 @@
         style="border-color:#e2e8f0;background:#f8fafc;color:#64748b;">
         <i data-lucide="coins" class="w-4 h-4 text-yellow-500"></i> BNB
       </button>
+      <button onclick="selectDepositCoin('USDT')" id="dep-btn-USDT"
+        class="flex flex-col items-center gap-1 py-2.5 rounded-xl text-xs font-semibold border-2 transition"
+        style="border-color:#e2e8f0;background:#f8fafc;color:#64748b;">
+        <i data-lucide="dollar-sign" class="w-4 h-4 text-green-500"></i> USDT
+      </button>
+    </div>
+
+    <!-- USDT Network Selector (only shown for USDT) -->
+    <div id="usdt-network-section" class="hidden mb-4">
+      <label class="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-1.5 block">Select Network</label>
+      <div class="grid grid-cols-2 gap-2">
+        <button onclick="selectUSDTNetwork('ERC20')" id="net-btn-ERC20"
+          class="py-2.5 px-3 rounded-xl text-xs font-semibold border-2 transition text-center"
+          style="border-color:#4f46e5;background:#eef2ff;color:#4f46e5;">
+          ERC-20 (Ethereum)
+        </button>
+        <button onclick="selectUSDTNetwork('TRC20')" id="net-btn-TRC20"
+          class="py-2.5 px-3 rounded-xl text-xs font-semibold border-2 transition text-center"
+          style="border-color:#e2e8f0;background:#f8fafc;color:#64748b;">
+          TRC-20 (Tron)
+        </button>
+      </div>
     </div>
 
     <!-- Wallet Address -->
@@ -1927,17 +1949,18 @@
   })
 
   // ── CRYPTO DEPOSIT ─────────────────────────────
-  let walletAddresses = { BTC:'', ETH:'', SOL:'', BNB:'' }
+  let walletAddresses = { BTC:'', ETH:'', SOL:'', BNB:'', USDT_ERC20:'', USDT_TRC20:'' }
   let selectedDepositCoin = 'BTC'
+  let selectedUSDTNetwork = 'ERC20'
 
   async function loadWalletAddresses() {
     const { data } = await supabase.from('settings')
       .select('key,value')
-      .in('key', ['wallet_btc','wallet_eth','wallet_sol','wallet_bnb'])
+      .in('key', ['wallet_btc','wallet_eth','wallet_sol','wallet_bnb','wallet_usdt_erc20','wallet_usdt_trc20'])
     if (data) {
       data.forEach(row => {
-        const coin = row.key.replace('wallet_','').toUpperCase()
-        walletAddresses[coin] = row.value || ''
+        const key = row.key.replace('wallet_','').toUpperCase()
+        walletAddresses[key] = row.value || ''
       })
     }
   }
@@ -1945,6 +1968,7 @@
   window.openDepositModal = async () => {
     await loadWalletAddresses()
     selectedDepositCoin = 'BTC'
+    selectedUSDTNetwork = 'ERC20'
     updateDepositCoinUI('BTC')
     document.getElementById('deposit-modal').classList.remove('hidden')
   }
@@ -1958,10 +1982,35 @@
     updateDepositCoinUI(coin)
   }
 
+  window.selectUSDTNetwork = (network) => {
+    selectedUSDTNetwork = network
+    const erc = document.getElementById('net-btn-ERC20')
+    const trc = document.getElementById('net-btn-TRC20')
+    if (network === 'ERC20') {
+      erc.style.cssText = 'border-color:#4f46e5;background:#eef2ff;color:#4f46e5;padding:10px 12px;border-radius:12px;font-size:12px;font-weight:600;border-width:2px;cursor:pointer;text-align:center;'
+      trc.style.cssText = 'border-color:#e2e8f0;background:#f8fafc;color:#64748b;padding:10px 12px;border-radius:12px;font-size:12px;font-weight:600;border-width:2px;cursor:pointer;text-align:center;'
+    } else {
+      trc.style.cssText = 'border-color:#4f46e5;background:#eef2ff;color:#4f46e5;padding:10px 12px;border-radius:12px;font-size:12px;font-weight:600;border-width:2px;cursor:pointer;text-align:center;'
+      erc.style.cssText = 'border-color:#e2e8f0;background:#f8fafc;color:#64748b;padding:10px 12px;border-radius:12px;font-size:12px;font-weight:600;border-width:2px;cursor:pointer;text-align:center;'
+    }
+    const addressKey = 'USDT_' + network
+    const address = walletAddresses[addressKey] || ''
+    const noAddr = document.getElementById('deposit-no-address')
+    const hasAddr = document.getElementById('deposit-has-address')
+    if (!address) {
+      noAddr.classList.remove('hidden'); hasAddr.classList.add('hidden')
+    } else {
+      noAddr.classList.add('hidden'); hasAddr.classList.remove('hidden')
+      document.getElementById('deposit-wallet-address').textContent = address
+    }
+    document.getElementById('copy-btn-label').textContent = 'Copy Address'
+  }
+
   function updateDepositCoinUI(coin) {
-    const coins = ['BTC','ETH','SOL','BNB']
+    const coins = ['BTC','ETH','SOL','BNB','USDT']
     coins.forEach(c => {
       const btn = document.getElementById('dep-btn-' + c)
+      if (!btn) return
       if (c === coin) {
         btn.style.cssText = 'border-color:#4f46e5;background:#eef2ff;color:#4f46e5;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 8px;border-radius:12px;font-size:12px;font-weight:600;border-width:2px;cursor:pointer;'
       } else {
@@ -1969,21 +2018,34 @@
       }
     })
 
-    const coinNames = { BTC:'Bitcoin (BTC)', ETH:'Ethereum (ETH)', SOL:'Solana (SOL)', BNB:'BNB' }
-    document.getElementById('deposit-coin-label').textContent = coin + ' Wallet Address'
     document.getElementById('deposit-coin-name').textContent = coin
+    document.getElementById('deposit-coin-label').textContent = coin + ' Wallet Address'
 
-    const address = walletAddresses[coin]
-    const noAddr = document.getElementById('deposit-no-address')
-    const hasAddr = document.getElementById('deposit-has-address')
-
-    if (!address) {
-      noAddr.classList.remove('hidden')
-      hasAddr.classList.add('hidden')
+    // Show/hide USDT network selector
+    const usdtSection = document.getElementById('usdt-network-section')
+    if (coin === 'USDT') {
+      usdtSection.classList.remove('hidden')
+      const addressKey = 'USDT_' + selectedUSDTNetwork
+      const address = walletAddresses[addressKey] || ''
+      const noAddr = document.getElementById('deposit-no-address')
+      const hasAddr = document.getElementById('deposit-has-address')
+      if (!address) {
+        noAddr.classList.remove('hidden'); hasAddr.classList.add('hidden')
+      } else {
+        noAddr.classList.add('hidden'); hasAddr.classList.remove('hidden')
+        document.getElementById('deposit-wallet-address').textContent = address
+      }
     } else {
-      noAddr.classList.add('hidden')
-      hasAddr.classList.remove('hidden')
-      document.getElementById('deposit-wallet-address').textContent = address
+      usdtSection.classList.add('hidden')
+      const address = walletAddresses[coin] || ''
+      const noAddr = document.getElementById('deposit-no-address')
+      const hasAddr = document.getElementById('deposit-has-address')
+      if (!address) {
+        noAddr.classList.remove('hidden'); hasAddr.classList.add('hidden')
+      } else {
+        noAddr.classList.add('hidden'); hasAddr.classList.remove('hidden')
+        document.getElementById('deposit-wallet-address').textContent = address
+      }
     }
 
     document.getElementById('copy-btn-label').textContent = 'Copy Address'
@@ -1991,7 +2053,12 @@
   }
 
   window.copyDepositAddress = () => {
-    const address = walletAddresses[selectedDepositCoin]
+    let address = ''
+    if (selectedDepositCoin === 'USDT') {
+      address = walletAddresses['USDT_' + selectedUSDTNetwork] || ''
+    } else {
+      address = walletAddresses[selectedDepositCoin] || ''
+    }
     if (!address) return
     navigator.clipboard.writeText(address)
     document.getElementById('copy-btn-label').textContent = '✅ Copied!'
