@@ -266,6 +266,74 @@
      MODALS
 ═══════════════════════════════════════════════ -->
 
+<!-- CRYPTO DEPOSIT MODAL -->
+<div id="deposit-modal" class="modal-overlay hidden">
+  <div class="modal-box" style="max-width:420px;">
+    <div class="flex items-center justify-between mb-5">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-yellow-100 rounded-xl flex items-center justify-center">
+          <i data-lucide="download" class="w-5 h-5 text-yellow-600"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-gray-900">Deposit Crypto</h3>
+          <p class="text-xs text-gray-400">Send to the address below</p>
+        </div>
+      </div>
+      <button onclick="closeDepositModal()" class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-gray-200 transition">
+        <i data-lucide="x" class="w-4 h-4 text-gray-500"></i>
+      </button>
+    </div>
+
+    <!-- Coin Selector -->
+    <div class="grid grid-cols-4 gap-2 mb-5">
+      <button onclick="selectDepositCoin('BTC')" id="dep-btn-BTC"
+        class="flex flex-col items-center gap-1 py-2.5 rounded-xl text-xs font-semibold border-2 transition"
+        style="border-color:#4f46e5;background:#eef2ff;color:#4f46e5;">
+        <i data-lucide="bitcoin" class="w-4 h-4 text-yellow-500"></i> BTC
+      </button>
+      <button onclick="selectDepositCoin('ETH')" id="dep-btn-ETH"
+        class="flex flex-col items-center gap-1 py-2.5 rounded-xl text-xs font-semibold border-2 transition"
+        style="border-color:#e2e8f0;background:#f8fafc;color:#64748b;">
+        <i data-lucide="trending-up" class="w-4 h-4 text-blue-500"></i> ETH
+      </button>
+      <button onclick="selectDepositCoin('SOL')" id="dep-btn-SOL"
+        class="flex flex-col items-center gap-1 py-2.5 rounded-xl text-xs font-semibold border-2 transition"
+        style="border-color:#e2e8f0;background:#f8fafc;color:#64748b;">
+        <i data-lucide="zap" class="w-4 h-4 text-purple-500"></i> SOL
+      </button>
+      <button onclick="selectDepositCoin('BNB')" id="dep-btn-BNB"
+        class="flex flex-col items-center gap-1 py-2.5 rounded-xl text-xs font-semibold border-2 transition"
+        style="border-color:#e2e8f0;background:#f8fafc;color:#64748b;">
+        <i data-lucide="coins" class="w-4 h-4 text-yellow-500"></i> BNB
+      </button>
+    </div>
+
+    <!-- Wallet Address -->
+    <div id="deposit-address-section">
+      <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-4">
+        <p class="text-xs text-gray-400 mb-2 font-semibold uppercase tracking-widest" id="deposit-coin-label">BTC Wallet Address</p>
+        <div id="deposit-no-address" class="hidden text-center py-3">
+          <i data-lucide="alert-circle" class="w-8 h-8 text-amber-400 mx-auto mb-2"></i>
+          <p class="text-sm text-amber-600 font-medium">Wallet address not set yet</p>
+          <p class="text-xs text-gray-400 mt-1">Contact support to set up this deposit address</p>
+        </div>
+        <div id="deposit-has-address">
+          <p id="deposit-wallet-address" class="text-sm font-mono text-gray-900 break-all leading-relaxed mb-3">—</p>
+          <button onclick="copyDepositAddress()"
+            class="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2.5 rounded-xl transition">
+            <i data-lucide="copy" class="w-4 h-4"></i>
+            <span id="copy-btn-label">Copy Address</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="bg-amber-50 border border-amber-100 rounded-xl p-3 text-xs text-amber-700 leading-relaxed">
+        ⚠️ <strong>Important:</strong> Only send <span id="deposit-coin-name">BTC</span> to this address. Sending any other coin may result in permanent loss of funds. After sending, contact support with your transaction hash for confirmation.
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- KYC / SUSPENDED MODAL -->
 <div id="kyc-modal" class="modal-overlay hidden">
   <div class="modal-box">
@@ -905,14 +973,21 @@
     <div id="section-crypto" class="hidden">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div class="section-card">
-          <div class="flex items-center gap-3 mb-4">
-            <div class="w-10 h-10 bg-yellow-100 rounded-xl flex items-center justify-center">
-              <i data-lucide="bitcoin" class="w-5 h-5 text-yellow-600"></i>
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-yellow-100 rounded-xl flex items-center justify-center">
+                <i data-lucide="bitcoin" class="w-5 h-5 text-yellow-600"></i>
+              </div>
+              <div>
+                <h3 class="text-base font-bold text-gray-900">Crypto Portfolio</h3>
+                <p class="text-xs text-gray-400">Your holdings</p>
+              </div>
             </div>
-            <div>
-              <h3 class="text-base font-bold text-gray-900">Crypto Portfolio</h3>
-              <p class="text-xs text-gray-400">Simulated — demo only</p>
-            </div>
+            <button onclick="openDepositModal()"
+              class="flex items-center gap-1.5 text-xs font-semibold text-white px-3 py-2 rounded-xl"
+              style="background:linear-gradient(135deg,#f59e0b,#d97706);">
+              <i data-lucide="download" class="w-3.5 h-3.5"></i> Deposit
+            </button>
           </div>
           <div class="space-y-3" id="crypto-list"></div>
         </div>
@@ -1850,6 +1925,78 @@
   document.getElementById('tx-modal').addEventListener('click', function(e) {
     if (e.target === this) closeTxModal()
   })
+
+  // ── CRYPTO DEPOSIT ─────────────────────────────
+  let walletAddresses = { BTC:'', ETH:'', SOL:'', BNB:'' }
+  let selectedDepositCoin = 'BTC'
+
+  async function loadWalletAddresses() {
+    const { data } = await supabase.from('settings')
+      .select('key,value')
+      .in('key', ['wallet_btc','wallet_eth','wallet_sol','wallet_bnb'])
+    if (data) {
+      data.forEach(row => {
+        const coin = row.key.replace('wallet_','').toUpperCase()
+        walletAddresses[coin] = row.value || ''
+      })
+    }
+  }
+
+  window.openDepositModal = async () => {
+    await loadWalletAddresses()
+    selectedDepositCoin = 'BTC'
+    updateDepositCoinUI('BTC')
+    document.getElementById('deposit-modal').classList.remove('hidden')
+  }
+
+  window.closeDepositModal = () => {
+    document.getElementById('deposit-modal').classList.add('hidden')
+  }
+
+  window.selectDepositCoin = (coin) => {
+    selectedDepositCoin = coin
+    updateDepositCoinUI(coin)
+  }
+
+  function updateDepositCoinUI(coin) {
+    const coins = ['BTC','ETH','SOL','BNB']
+    coins.forEach(c => {
+      const btn = document.getElementById('dep-btn-' + c)
+      if (c === coin) {
+        btn.style.cssText = 'border-color:#4f46e5;background:#eef2ff;color:#4f46e5;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 8px;border-radius:12px;font-size:12px;font-weight:600;border-width:2px;cursor:pointer;'
+      } else {
+        btn.style.cssText = 'border-color:#e2e8f0;background:#f8fafc;color:#64748b;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 8px;border-radius:12px;font-size:12px;font-weight:600;border-width:2px;cursor:pointer;'
+      }
+    })
+
+    const coinNames = { BTC:'Bitcoin (BTC)', ETH:'Ethereum (ETH)', SOL:'Solana (SOL)', BNB:'BNB' }
+    document.getElementById('deposit-coin-label').textContent = coin + ' Wallet Address'
+    document.getElementById('deposit-coin-name').textContent = coin
+
+    const address = walletAddresses[coin]
+    const noAddr = document.getElementById('deposit-no-address')
+    const hasAddr = document.getElementById('deposit-has-address')
+
+    if (!address) {
+      noAddr.classList.remove('hidden')
+      hasAddr.classList.add('hidden')
+    } else {
+      noAddr.classList.add('hidden')
+      hasAddr.classList.remove('hidden')
+      document.getElementById('deposit-wallet-address').textContent = address
+    }
+
+    document.getElementById('copy-btn-label').textContent = 'Copy Address'
+    lucide.createIcons()
+  }
+
+  window.copyDepositAddress = () => {
+    const address = walletAddresses[selectedDepositCoin]
+    if (!address) return
+    navigator.clipboard.writeText(address)
+    document.getElementById('copy-btn-label').textContent = '✅ Copied!'
+    setTimeout(() => { document.getElementById('copy-btn-label').textContent = 'Copy Address' }, 2000)
+  }
 
   // ── INIT ───────────────────────────────────────
   async function init() {
